@@ -1,7 +1,13 @@
 pragma solidity ^0.4.18;
 
+/**
+ * @title LicenseAccessControl
+ * @dev This contract defines organizational roles and permissions.
+ */
 contract LicenseAccessControl {
-  /// @dev
+  /**
+   * @dev ContractUpgrade is the event that will be emitted if we set a new contract address
+   */
   event ContractUpgrade(address newContract);
 
   address public ceoAddress;
