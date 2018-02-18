@@ -1,9 +1,9 @@
 pragma solidity ^0.4.18;
 
-import "./LicenseBase.sol";
+import "./LicenseInventory.sol";
 import "./ERC721.sol";
 
-contract LicenseOwnership is LicenseBase, ERC721 {
+contract LicenseOwnership is LicenseInventory, ERC721 {
   /*** Events ***/
 
   /*** Constants ***/

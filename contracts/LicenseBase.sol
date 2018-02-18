@@ -25,29 +25,4 @@ contract LicenseBase is LicenseAccessControl {
 
   // @dev A mapping from license IDs to an address that is approved to call transferFrom()
   mapping (uint256 => address) public licenseIndexToApproved;
-
-
-  function _createLicense(
-      uint256 _product,
-      uint256 _attributes,
-      address _owner
-    )
-      internal
-      returns (uint)
-  {
-
-    License memory _license = License({
-      product: _product,
-      attributes: _attributes
-    });
-
-    uint256 newLicenseId = licenses.push(_license) - 1;
-
-    Issued(_owner, newLicenseId, _license.product, _license.attributes);
-
-    // TODO --
-    // _transfer(0, _owner, newLicenseId);
-
-    return newLicenseId;
-  }
 }

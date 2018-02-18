@@ -31,6 +31,7 @@ contract LicenseInventory is LicenseBase {
     internal
   {
 
+    // TODO -- maybe we just keep an array of uint256 and forget about the struct. Does that save us anything? The other solution would go full struct and put quantities and pricing in the struct.
     Product memory _product = Product({
       productIdentifier: _productId
     });
@@ -43,33 +44,57 @@ contract LicenseInventory is LicenseBase {
     ProductCreated(_product.productIdentifier, _initialPrice, _initialInventoryQuantity);
   }
 
-  function _setInventory(uint256 _productId, uint256 _inventoryQuantity)
-    internal
+  function createProduct(
+      uint256 _productId,
+      uint256 _initialPrice,
+      uint256 _initialInventoryQuantity
+    ) public onlyCLevel {
+      // Hmm, consider collapsing into one
+      _createProduct(_productId, _initialPrice, _initialInventoryQuantity);
+  }
+
+
+  function _incrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
+  {
+    productInventories[_productId].add(_inventoryAdjustment);
+  }
+
+  function _decrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
+  {
+    productInventories[_productId].sub(_inventoryAdjustment);
+  }
+
+  function setInventory(uint256 _productId, uint256 _inventoryQuantity) public onlyCLevel
   {
     // TODO require productId already exists
     productInventories[_productId] = _inventoryQuantity;
     ProductInventoryChanged(_productId, _inventoryQuantity);
   }
 
-  function _incrementInventory(uint256 _productId, uint256 _inventoryAdjustment)
-    internal
+  function incrementInventory(uint256 _productId, uint256 _inventoryAdjustment) public onlyCLevel
   {
-    productInventories[_productId].add(_inventoryAdjustment);
+    _incrementInventory(_productId, _inventoryAdjustment);
     ProductInventoryChanged(_productId, productInventories[_productId]);
   }
 
-  function _decrementInventory(uint256 _productId, uint256 _inventoryAdjustment)
-    internal
+  function decrementInventory(uint256 _productId, uint256 _inventoryAdjustment) public onlyCLevel
   {
-    productInventories[_productId].sub(_inventoryAdjustment);
+    _decrementInventory(_productId, _inventoryAdjustment);
     ProductInventoryChanged(_productId, productInventories[_productId]);
   }
 
-  function _setPrice(uint256 _productId, uint256 _price)
-    internal
+  function setPrice(uint256 _productId, uint256 _price) public onlyCLevel
   {
     productPrices[_productId] = _price;
     ProductPriceChanged(_productId, _price);
+  }
+
+  function inventoryOf(uint256 _productId) public view returns (uint256) {
+    return productInventories[_productId];
+  }
+
+  function priceOf(uint256 _productId) public view returns (uint256) {
+    return productPrices[_productId];
   }
 
 }
