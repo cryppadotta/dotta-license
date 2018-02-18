@@ -3,12 +3,13 @@ pragma solidity ^0.4.18;
 import "./LicenseAccessControl.sol";
 
 contract LicenseBase is LicenseAccessControl {
-  event Issued(address indexed owner, uint256 licenseId, uint256 product);
+  event Issued(address indexed owner, uint256 licenseId, uint256 product, uint256 attributes);
 
   event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
 
   struct License {
     uint256 product;
+    uint256 attributes;
   }
 
   /**
@@ -25,22 +26,10 @@ contract LicenseBase is LicenseAccessControl {
   // @dev A mapping from license IDs to an address that is approved to call transferFrom()
   mapping (uint256 => address) public licenseIndexToApproved;
 
-  function _transfer(address _from, address _to, uint256 _tokenId) internal {
-    ownershipTokenCount[_to]++;
-    licenseIndexToOwner[_tokenId] = _to;
-
-    // When creating new licenses _from is 0x0, but don't track ownership counts from that address
-    if (_from != address(0)) {
-        ownershipTokenCount[_from]--;
-        // clear any previously approved ownership exchange
-        delete licenseIndexToApproved[_tokenId];
-    }
-    Transfer(_from, _to, _tokenId);
-  }
-
 
   function _createLicense(
       uint256 _product,
+      uint256 _attributes,
       address _owner
     )
       internal
@@ -48,14 +37,16 @@ contract LicenseBase is LicenseAccessControl {
   {
 
     License memory _license = License({
-      product: _product
+      product: _product,
+      attributes: _attributes
     });
 
     uint256 newLicenseId = licenses.push(_license) - 1;
 
-    Issued(_owner, newLicenseId, _license.product);
+    Issued(_owner, newLicenseId, _license.product, _license.attributes);
 
-    // transfer to new owner - todo
+    // TODO --
+    // _transfer(0, _owner, newLicenseId);
 
     return newLicenseId;
   }
