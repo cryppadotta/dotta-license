@@ -1,0 +1,7 @@
+graph TD;
+    LicenseAccessControl-->LicenseBase;
+    LicenseBase-->LicenseInventory;
+    ERC721-->LicenseOwnership;
+    LicenseInventory-->LicenseOwnership;
+    LicenseOwnership-->LicenseSale;
+    LicenseSale-->LicenseCore;
