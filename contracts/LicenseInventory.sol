@@ -96,5 +96,4 @@ contract LicenseInventory is LicenseBase {
   function priceOf(uint256 _productId) public view returns (uint256) {
     return productPrices[_productId];
   }
-
 }

@@ -12,7 +12,7 @@
     "test":
       "npm run transpile; truffle test --network test",
     "watchtest":
-      "tsc-watch --onSuccess 'truffle test --network test'",
+      "tsc-watch --onSuccess 'env truffle test --network test'",
     "compile": "rm -rf build/contracts; truffle compile",
     "migrate": "npm run transpile; truffle migrate",
     "deploy": "npm run migrate --network kovan",

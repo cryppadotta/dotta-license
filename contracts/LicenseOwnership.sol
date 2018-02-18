@@ -4,6 +4,7 @@ import "./LicenseInventory.sol";
 import "./ERC721.sol";
 
 contract LicenseOwnership is LicenseInventory, ERC721 {
+
   /*** Events ***/
 
   /*** Constants ***/
@@ -120,6 +121,11 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
       }
       return result;
     }
+  }
+
+  // TODO!
+  function takeOwnership(uint256 _tokenId) {
+    // TODO
   }
 
 }

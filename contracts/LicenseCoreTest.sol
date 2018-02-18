@@ -1,9 +1,8 @@
 pragma solidity ^0.4.18;
 
-// import "./LicenseCore.sol";
+import "./LicenseCore.sol";
 
-// contract LicenseCoreTest is LicenseCore {
-contract LicenseCoreTest  {
+contract LicenseCoreTest is LicenseCore {
 
   function LicenseTest() public {
   }
