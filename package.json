@@ -9,8 +9,10 @@
   "scripts": {
     "transpile":
       "rm -rf ./transpiled; copyfiles ./build/**/* ./transpiled; tsc",
-    "test": "npm run transpile; truffle test",
-    "watchtest": "tsc-watch --onSuccess 'truffle test'",
+    "test":
+      "npm run transpile; truffle test --network test",
+    "watchtest":
+      "tsc-watch --onSuccess 'truffle test --network test'",
     "compile": "rm -rf build/contracts; truffle compile",
     "migrate": "npm run transpile; truffle migrate",
     "deploy": "npm run migrate --network kovan",
