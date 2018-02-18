@@ -59,7 +59,6 @@ contract LicenseAccessControl {
    */
   function setCEO(address _newCEO) public onlyCEO {
       require(_newCEO != address(0));
-
       ceoAddress = _newCEO;
   }
 
@@ -69,7 +68,6 @@ contract LicenseAccessControl {
    */
   function setCFO(address _newCFO) public onlyCEO {
       require(_newCFO != address(0));
-
       cfoAddress = _newCFO;
   }
 
@@ -79,7 +77,6 @@ contract LicenseAccessControl {
    */
   function setCOO(address _newCOO) public onlyCEO {
       require(_newCOO != address(0));
-
       cooAddress = _newCOO;
   }
 
@@ -89,7 +86,6 @@ contract LicenseAccessControl {
    */
   function setWithdrawalAddress(address _newWithdrawalAddress) public onlyCFO {
       require(_newWithdrawalAddress != address(0));
-
       withdrawalAddress = _newWithdrawalAddress;
   }
 
@@ -99,6 +95,7 @@ contract LicenseAccessControl {
    * We set a withdrawal address seperate from the CFO because this allows us to withdraw to a cold wallet.
    */
   function withdrawBalance() external onlyCFO {
+      require(withdrawalAddress != address(0));
       withdrawalAddress.transfer(this.balance);
   }
 
