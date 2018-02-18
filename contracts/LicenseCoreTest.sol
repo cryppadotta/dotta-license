@@ -11,7 +11,7 @@ contract LicenseCoreTest is LicenseCore {
     return true;
   }
 
-  function timeNow public constant returns (uint256) {
+  function timeNow() public constant returns (uint256) {
     return now;
   }
 }

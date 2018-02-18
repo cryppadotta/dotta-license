@@ -10,15 +10,17 @@
     "transpile":
       "rm -rf ./transpiled; copyfiles ./build/**/* ./transpiled; tsc",
     "test": "npm run transpile; truffle test",
+    "watchtest": "tsc-watch --onSuccess 'truffle test'",
     "compile": "rm -rf build/contracts; truffle compile",
     "migrate": "npm run transpile; truffle migrate",
     "deploy": "npm run migrate --network kovan",
     "lint": "tslint migrations/*.ts test/**/*.ts util/*.ts",
-    "testrpc": "testrpc --networkId 50"
+    "testrpc": "ganache-cli --networkId 50"
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/cryppadotta/dotta-license.git"
+    "url":
+      "https://gitlab.com/cryppadotta/dotta-license.git"
   },
   "author": "Dotta",
   "license": "ISC",
@@ -35,11 +37,13 @@
     "chai-typescript-typings": "^0.0.0",
     "copyfiles": "^1.2.0",
     "dirty-chai": "^2.0.1",
-    "ethereumjs-testrpc": "4.0.1",
+    "ganache-cli": "^6.0.3",
     "solc": "^0.4.11",
     "truffle": "3.4.3",
+    "tsc-watch": "^1.0.16",
     "types-bn": "^0.0.1",
-    "types-ethereumjs-util": "machinomy/types-ethereumjs-util",
+    "types-ethereumjs-util":
+      "machinomy/types-ethereumjs-util",
     "typescript": "^2.5.2",
     "web3-typescript-typings": "^0.6.0"
   },

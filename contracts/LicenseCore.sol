@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "./LicenseMinting.sol";
+import "./LicenseSale.sol";
 
 contract LicenseCore is LicenseSale {
   address public newContractAddress;
