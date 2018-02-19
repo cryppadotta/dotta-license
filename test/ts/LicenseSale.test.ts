@@ -78,10 +78,66 @@ contract('LicenseSale', (accounts: string[]) => {
 
   describe('when purchasing', async () => {
     describe('it should fail because it', async () => {
-      it('should not sell a product that has no inventory');
-      it('should not sell at a price too low');
-      it('should not sell at a price too high');
-      it('should not sell if the contract is paused');
+      it('should not sell a product that has no inventory', async () => {
+        await token.clearInventory(firstProduct.id, { from: ceo });
+        await assertRevert(
+          token.purchase(firstProduct.id, user1, {
+            from: user1,
+            value: firstProduct.price
+          })
+        );
+      });
+      it('should not sell a product that was sold out', async () => {
+        await token.purchase(firstProduct.id, user1, {
+          from: user1,
+          value: firstProduct.price
+        });
+        await token.purchase(firstProduct.id, user2, {
+          from: user2,
+          value: firstProduct.price
+        });
+        await assertRevert(
+          token.purchase(firstProduct.id, user3, {
+            from: user3,
+            value: firstProduct.price
+          })
+        );
+        (await token.totalSold(firstProduct.id)).should.be.bignumber.equal(2);
+        (await token.availableInventoryOf(
+          firstProduct.id
+        )).should.be.bignumber.equal(0);
+      });
+      it('should not sell at a price too low', async () => {
+        await assertRevert(
+          token.purchase(firstProduct.id, user1, {
+            from: user1,
+            value: firstProduct.price - 1
+          })
+        );
+        await assertRevert(
+          token.purchase(firstProduct.id, user1, {
+            from: user1,
+            value: 0
+          })
+        );
+      });
+      it('should not sell at a price too high', async () => {
+        await assertRevert(
+          token.purchase(firstProduct.id, user1, {
+            from: user1,
+            value: firstProduct.price + 1
+          })
+        );
+      });
+      it('should not sell if the contract is paused', async () => {
+        await token.pause({ from: ceo });
+        await assertRevert(
+          token.purchase(firstProduct.id, user1, {
+            from: user1,
+            value: firstProduct.price + 1
+          })
+        );
+      });
     });
 
     describe('and it succeeds', async () => {
@@ -90,31 +146,69 @@ contract('LicenseSale', (accounts: string[]) => {
           value: firstProduct.price
         });
       });
-      it('should create a purchase');
       it('should decrement the inventory', async () => {
         (await token.availableInventoryOf(
           firstProduct.id
         )).should.be.bignumber.equal(1);
       });
-      it('should track the number sold');
+      it('should track the number sold', async () => {
+        (await token.totalSold(firstProduct.id)).should.be.bignumber.equal(1);
+      });
       describe('the resulting License', async () => {
         it('should keep track of the license id');
         it('should store a new License');
         it('should emit an Issued event');
         it('should have an issued time');
         it('should have attributes');
+        it('should allow you to purchase for someone else');
         it('should transfer the license to the new owner');
       });
     });
   });
 
   describe('when creating a promotional purchase', async () => {
-    it('should not allow a rando');
-    it('should allow the COO');
-    it('should not allow violation of the total supply');
-    it('should require appropriate inventory');
-    it('should decrement the inventory');
-    it('should count the amount sold');
+    describe('if a rando is trying', async () => {
+      it('should not allow it', async () => {
+        await assertRevert(
+          token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+            from: user3
+          })
+        );
+      });
+    });
+    describe('if the COO is creating it', async () => {
+      it('should not allow violation of the total inventory', async () => {
+        await token.purchase(firstProduct.id, user3, {
+          from: user3,
+          value: firstProduct.price
+        });
+        await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+          from: coo
+        });
+        await assertRevert(
+          token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+            from: coo
+          })
+        );
+      });
+      it('should not allow violation of the total supply', async () => {
+        await token.purchase(firstProduct.id, user3, {
+          from: user3,
+          value: firstProduct.price
+        });
+        await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+          from: coo
+        });
+
+        await assertRevert(
+          token.incrementInventory(firstProduct.id, 1, {
+            from: coo
+          })
+        );
+      });
+      it('should decrement the inventory');
+      it('should count the amount sold');
+    });
   });
 });
 
