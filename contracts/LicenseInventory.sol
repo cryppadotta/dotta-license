@@ -61,7 +61,6 @@ contract LicenseInventory is LicenseBase {
   function _incrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
   {
     require(_productExists(_productId));
-
     uint256 newInventoryLevel = products[_productId].available.add(_inventoryAdjustment);
 
     // A supply of "0" means "unlimited". Otherwise we need to ensure that we're not over-creating this product
@@ -92,6 +91,17 @@ contract LicenseInventory is LicenseBase {
   {
     require(_productExists(_productId));
     products[_productId].price = _price;
+  }
+
+  function _purchaseOneUnitInStock(uint256 _productId) internal {
+    require(_productExists(_productId));
+    require(availableInventoryOf(_productId) > 0);
+
+    // lower inventory
+    _decrementInventory(_productId, 1);
+
+    // record that one was sold
+    products[_productId].sold = products[_productId].sold.add(1);
   }
 
   /*** public ***/

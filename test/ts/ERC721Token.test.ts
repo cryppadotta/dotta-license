@@ -1,8 +1,11 @@
 import * as chai from 'chai';
-import * as BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js';
+import * as Web3 from 'web3';
+import ethUtil = require('ethereumjs-util');
 import { chaiSetup } from './utils/chai_setup';
-import assertRevert from '../helpers/assertRevert';
 import { Artifacts } from '../../util/artifacts';
+import assertRevert from '../helpers/assertRevert';
+import expectThrow from '../helpers/expectThrow';
 
 chaiSetup.configure();
 const expect = chai.expect;
@@ -10,17 +13,58 @@ const { LicenseCoreTest } = new Artifacts(artifacts);
 const LicenseCore = LicenseCoreTest;
 chai.should();
 
+const web3: Web3 = (global as any).web3;
+
 contract('ERC721Token', (accounts: string[]) => {
   let token: any = null;
+  const creator = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const user3 = accounts[3];
+  const ceo = accounts[4];
+  const cfo = accounts[5];
+  const coo = accounts[6];
   const _firstTokenId = 1;
   const _secondTokenId = 2;
   const _unknownTokenId = 3;
   const _creator = accounts[0];
-  const ZERO_ADDRESS =
-    '0x0000000000000000000000000000000000000000';
+  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
-  beforeEach(async function() {
-    token = await LicenseCore.new({ from: _creator });
+  const firstProduct = {
+    id: 1,
+    price: 1000,
+    initialInventory: 2,
+    supply: 2
+  };
+
+  const secondProduct = {
+    id: 2,
+    price: 2000,
+    initialInventory: 3,
+    supply: 5
+  };
+
+  beforeEach(async () => {
+    token = await LicenseCore.new({ from: creator });
+    await token.setCEO(ceo, { from: creator });
+    await token.setCFO(cfo, { from: ceo });
+    await token.setCOO(coo, { from: ceo });
+
+    await token.createProduct(
+      firstProduct.id,
+      firstProduct.price,
+      firstProduct.initialInventory,
+      firstProduct.supply,
+      { from: ceo }
+    );
+
+    await token.createProduct(
+      secondProduct.id,
+      secondProduct.price,
+      secondProduct.initialInventory,
+      secondProduct.supply,
+      { from: ceo }
+    );
     // await token.mint(_creator, _firstTokenId, {
 
     //   from: _creator
