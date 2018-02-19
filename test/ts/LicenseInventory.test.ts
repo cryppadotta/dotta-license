@@ -223,7 +223,7 @@ contract('LicenseInventory', (accounts: string[]) => {
       });
       logs.length.should.be.equal(1);
       logs[0].event.should.be.eq('ProductInventoryAdjusted');
-      logs[0].args.productId.should.be.bignumber.equal(firstProduct.id);
+      logs[0].args.productId.should.be.bignumber.equal(secondProduct.id);
       logs[0].args.available.should.be.bignumber.equal(
         secondProduct.initialInventory + 2
       );
@@ -250,10 +250,12 @@ contract('LicenseInventory', (accounts: string[]) => {
       await assertRevert(token.setPrice(secondProduct.id, 1, { from: user1 }));
     });
     it('should emit a ProductPriceChanged event', async () => {
-      const { logs } = token.setPrice(secondProduct.id, 1234567, { from: ceo });
+      const { logs } = await token.setPrice(secondProduct.id, 1234567, {
+        from: ceo
+      });
       logs.length.should.be.equal(1);
       logs[0].event.should.be.eq('ProductPriceChanged');
-      logs[0].args.productId.should.be.bignumber.equal(firstProduct.id);
+      logs[0].args.productId.should.be.bignumber.equal(secondProduct.id);
       logs[0].args.price.should.be.bignumber.equal(1234567);
     });
   });

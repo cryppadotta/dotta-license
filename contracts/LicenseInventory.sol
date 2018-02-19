@@ -7,13 +7,13 @@ contract LicenseInventory is LicenseBase {
   using SafeMath for uint256;
 
   event ProductCreated(uint256 productId, uint256 price, uint256 available, uint256 supply);
-  event ProductInventoryAdjusted(uint256 product, uint256 available);
-  event ProductPriceChanged(uint256 product, uint256 price);
+  event ProductInventoryAdjusted(uint256 productId, uint256 available);
+  event ProductPriceChanged(uint256 productId, uint256 price);
 
   struct Product {
     uint256 id;
     uint256 price;
-    uint256 availableInventory;
+    uint256 available;
     uint256 supply;
     uint256 sold;
   }
@@ -47,7 +47,7 @@ contract LicenseInventory is LicenseBase {
     Product memory _product = Product({
       id: _productId,
       price: _initialPrice,
-      availableInventory: _initialInventoryQuantity,
+      available: _initialInventoryQuantity,
       supply: _supply,
       sold: 0
     });
@@ -55,14 +55,14 @@ contract LicenseInventory is LicenseBase {
     products[_productId] = _product;
     allProductIds.push(_productId);
 
-    ProductCreated(_product.id, _product.price, _product.availableInventory, _product.supply);
+    ProductCreated(_product.id, _product.price, _product.available, _product.supply);
   }
 
   function _incrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
   {
     require(_productExists(_productId));
 
-    uint256 newInventoryLevel = products[_productId].availableInventory.add(_inventoryAdjustment);
+    uint256 newInventoryLevel = products[_productId].available.add(_inventoryAdjustment);
 
     // A supply of "0" means "unlimited". Otherwise we need to ensure that we're not over-creating this product
     if(products[_productId].supply > 0) {
@@ -70,22 +70,22 @@ contract LicenseInventory is LicenseBase {
       require(products[_productId].sold + newInventoryLevel <= products[_productId].supply);
     }
 
-    products[_productId].availableInventory = newInventoryLevel;
+    products[_productId].available = newInventoryLevel;
   }
 
   function _decrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
   {
     require(_productExists(_productId));
-    uint256 newInventoryLevel = products[_productId].availableInventory.sub(_inventoryAdjustment);
+    uint256 newInventoryLevel = products[_productId].available.sub(_inventoryAdjustment);
     // unnecessary because we're using SafeMath and an unsigned int
     // require(newInventoryLevel >= 0);
-    products[_productId].availableInventory = newInventoryLevel;
+    products[_productId].available = newInventoryLevel;
   }
 
   function _clearInventory(uint256 _productId) internal
   {
     require(_productExists(_productId));
-    products[_productId].availableInventory = 0;
+    products[_productId].available = 0;
   }
 
   function _setPrice(uint256 _productId, uint256 _price) internal
@@ -137,7 +137,7 @@ contract LicenseInventory is LicenseBase {
   }
 
   function availableInventoryOf(uint256 _productId) public view returns (uint256) {
-    return products[_productId].availableInventory;
+    return products[_productId].available;
   }
 
   function totalSupplyOf(uint256 _productId) public view returns (uint256) {
