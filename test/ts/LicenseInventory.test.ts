@@ -31,31 +31,48 @@ contract('LicenseInventory', (accounts: string[]) => {
   const firstProduct = {
     id: 1,
     price: 1000,
-    initialInventory: 2
+    initialInventory: 2,
+    supply: 2
   };
 
   const secondProduct = {
     id: 2,
     price: 2000,
-    initialInventory: 3
+    initialInventory: 3,
+    supply: 5
+  };
+
+  const thirdProduct = {
+    id: 3,
+    price: 3000,
+    initialInventory: 5,
+    supply: 10
   };
 
   beforeEach(async () => {
     token = await LicenseCore.new({ from: creator });
+    await token.setCEO(ceo);
+    await token.setCFO(cfo);
+    await token.setCOO(coo);
   });
 
   describe('when creating products', async () => {
+    let p1Created: any;
     beforeEach(async () => {
-      await token.createProduct(
+      p1Created = await token.createProduct(
         firstProduct.id,
         firstProduct.price,
-        firstProduct.initialInventory
+        firstProduct.initialInventory,
+        firstProduct.supply,
+        { from: ceo }
       );
 
       await token.createProduct(
         secondProduct.id,
         secondProduct.price,
-        secondProduct.initialInventory
+        secondProduct.initialInventory,
+        secondProduct.supply,
+        { from: ceo }
       );
     });
 
@@ -70,12 +87,41 @@ contract('LicenseInventory', (accounts: string[]) => {
       price.toNumber().should.equal(secondProduct.price);
       inventory.toNumber().should.equal(secondProduct.initialInventory);
     });
-    it('should allow a free product');
-    it('should emit a ProductCreated event');
+    it('should emit a ProductCreated event', async () => {
+      const { logs } = p1Created;
+      logs.length.should.be.equal(1);
+      logs[0].event.should.be.eq('ProductCreated');
+      logs[0].args.product.should.be.bignumber.equal(firstProduct.id);
+      logs[0].args.price.should.be.bignumber.equal(firstProduct.price);
+      logs[0].args.quantity.should.be.bignumber.equal(
+        firstProduct.initialInventory
+      );
+    });
     it('should be able to get all products that exist');
+    it('should not be able to create a product with the same id');
     describe('and minding permissions', async () => {
-      it('should not allow a rando to create a product');
-      it('should allow the CEO or COO to create a product');
+      it('should not allow a rando to create a product', async () => {
+        await assertRevert(
+          token.createProduct(
+            thirdProduct.id,
+            thirdProduct.price,
+            thirdProduct.initialInventory,
+            thirdProduct.supply,
+            { from: user1 }
+          )
+        );
+      });
+      it('should not allow the CFO to create a product', async () => {
+        await assertRevert(
+          token.createProduct(
+            thirdProduct.id,
+            thirdProduct.price,
+            thirdProduct.initialInventory,
+            thirdProduct.supply,
+            { from: cfo }
+          )
+        );
+      });
     });
   });
   describe('when changing inventories', async () => {

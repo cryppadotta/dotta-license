@@ -6,54 +6,83 @@ import "./math/SafeMath.sol";
 contract LicenseInventory is LicenseBase {
   using SafeMath for uint256;
 
-  event ProductCreated(uint256 product, uint256 price, uint256 quantity);
-  event ProductInventoryChanged(uint256 product, uint256 quantity);
+  event ProductCreated(uint256 productId, uint256 price, uint256 available, uint256 supply);
+  event ProductInventoryAdjusted(uint256 product, uint256 quantity);
   event ProductPriceChanged(uint256 product, uint256 price);
 
   struct Product {
-    uint256 productIdentifier;
+    uint256 id;
+    uint256 price;
+    uint256 availableInventory;
+    uint256 supply;
   }
 
   // @dev All products in existence
-  Product[] products;
+  uint256[] public allProductIds;
 
-  // @dev A mapping from license IDs to the address that owns them
-  mapping (uint256 => uint256) public productInventories;
-
-  // @dev A mapping from license IDs to the price
-  mapping (uint256 => uint256) public productPrices;
+  // @dev A mapping from product ids to Products
+  mapping (uint256 => Product) public products;
 
   /*** internal ***/
+  function _productExists(uint256 _productId) internal view returns (bool) {
+    return products[_productId].id != 0;
+  }
+
+  function _productDoesNotExist(uint256 _productId) internal view returns (bool) {
+    return products[_productId].id == 0;
+  }
 
   function _createProduct(
       uint256 _productId,
       uint256 _initialPrice,
-      uint256 _initialInventoryQuantity
+      uint256 _initialInventoryQuantity,
+      uint256 _supply
     )
     internal
   {
+    require(_productDoesNotExist(_productId));
+    require(_initialInventoryQuantity <= _supply);
 
-    // TODO -- maybe we just keep an array of uint256 and forget about the struct. Does that save us anything? The other solution would go full struct and put quantities and pricing in the struct.
     Product memory _product = Product({
-      productIdentifier: _productId
+      id: _productId,
+      price: _initialPrice,
+      availableInventory: _initialInventoryQuantity,
+      supply: _supply
     });
 
-    products.push(_product);
+    products[_productId] = _product;
+    allProductIds.push(_productId);
 
-    productInventories[_productId] = _initialInventoryQuantity;
-    productPrices[_productId] = _initialPrice;
-
-    ProductCreated(_product.productIdentifier, _initialPrice, _initialInventoryQuantity);
+    ProductCreated(_product.id, _product.price, _product.availableInventory, _product.supply);
   }
 
   function _incrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
   {
-    productInventories[_productId].add(_inventoryAdjustment);
+    require(_productExists(_productId));
+
+    uint256 newInventoryLevel = products[_productId].availableInventory.add(_inventoryAdjustment);
+
+    // A supply of "0" means "unlimited". Otherwise we need to ensure that we're not over-creating this product
+    if(products[_productId].supply > 0) {
+      require(newInventoryLevel <= products[_productId].supply);
+    }
+
+    products[_productId].availableInventory = newInventoryLevel;
   }
 
   function _decrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
   {
-    productInventories[_productId].sub(_inventoryAdjustment);
+    require(_productExists(_productId));
+    uint256 newInventoryLevel = products[_productId].availableInventory.sub(_inventoryAdjustment);
+    // unnecessary because we're using SafeMath and an unsigned int
+    // require(newInventoryLevel >= 0);
+    products[_productId].availableInventory = newInventoryLevel;
+  }
+
+  function _setPrice(uint256 _productId, uint256 _price) internal
+  {
+    require(_productExists(_productId));
+    products[_productId].price = _price;
   }
 
   /*** public ***/
@@ -62,48 +91,45 @@ contract LicenseInventory is LicenseBase {
   function createProduct(
       uint256 _productId,
       uint256 _initialPrice,
-      uint256 _initialInventoryQuantity
-    ) public onlyCLevel {
-      // Hmm, consider collapsing into one
-      _createProduct(_productId, _initialPrice, _initialInventoryQuantity);
-  }
-
-  function setInventory(uint256 _productId, uint256 _inventoryQuantity) public onlyCLevel
-  {
-    // TODO require productId already exists
-    productInventories[_productId] = _inventoryQuantity;
-    ProductInventoryChanged(_productId, _inventoryQuantity);
+      uint256 _initialInventoryQuantity,
+      uint256 _supply
+    ) public onlyCEOOrCOO {
+      _createProduct(_productId, _initialPrice, _initialInventoryQuantity, _supply);
   }
 
   function incrementInventory(uint256 _productId, uint256 _inventoryAdjustment) public onlyCLevel
   {
     _incrementInventory(_productId, _inventoryAdjustment);
-    ProductInventoryChanged(_productId, productInventories[_productId]);
+    ProductInventoryAdjusted(_productId, availableInventoryOf(_productId));
   }
 
   function decrementInventory(uint256 _productId, uint256 _inventoryAdjustment) public onlyCLevel
   {
     _decrementInventory(_productId, _inventoryAdjustment);
-    ProductInventoryChanged(_productId, productInventories[_productId]);
+    ProductInventoryAdjusted(_productId, availableInventoryOf(_productId));
   }
 
   function setPrice(uint256 _productId, uint256 _price) public onlyCLevel
   {
-    productPrices[_productId] = _price;
+    _setPrice(_productId, _price);
     ProductPriceChanged(_productId, _price);
   }
 
   /** anyone **/
 
-  function inventoryOf(uint256 _productId) public view returns (uint256) {
-    return productInventories[_productId];
-  }
-
   function priceOf(uint256 _productId) public view returns (uint256) {
-    return productPrices[_productId];
+    return products[_productId].price;
   }
 
-  function productInfo(uint256 _productId) public view returns (uint256, uint256) {
-    return (priceOf(_productId), inventoryOf(_productId));
+  function availableInventoryOf(uint256 _productId) public view returns (uint256) {
+    return products[_productId].availableInventory;
+  }
+
+  function totalSupplyOf(uint256 _productId) public view returns (uint256) {
+    return products[_productId].supply;
+  }
+
+  function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256) {
+    return (priceOf(_productId), availableInventoryOf(_productId), totalSupplyOf(_productId));
   }
 }

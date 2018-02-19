@@ -6,7 +6,7 @@ contract LicenseSale is LicenseOwnership {
 
   function purchase(uint256 _productId, address _assignee) public payable whenNotPaused {
     // Make sure there is inventory available for this product
-    require(inventoryOf(_productId) > 0);
+    require(availableInventoryOf(_productId) > 0);
 
     // Make sure the price paid is accurate. No more, no less
     require(msg.value == priceOf(_productId));

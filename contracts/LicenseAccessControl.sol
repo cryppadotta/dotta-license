@@ -54,6 +54,17 @@ contract LicenseAccessControl {
   }
 
   /**
+   * @dev Modifier to make a function only callable by CEO or COO
+   */
+  modifier onlyCEOOrCOO() {
+      require(
+          msg.sender == cooAddress ||
+          msg.sender == ceoAddress
+      );
+      _;
+  }
+
+  /**
    * @dev Set a new CEO
    * @param _newCEO - the address of the new CEO
    */
