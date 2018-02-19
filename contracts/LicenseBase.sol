@@ -3,13 +3,20 @@ pragma solidity ^0.4.18;
 import "./LicenseAccessControl.sol";
 
 contract LicenseBase is LicenseAccessControl {
-  event Issued(address indexed owner, uint256 licenseId, uint256 product, uint256 attributes);
+  event Issued(
+    address indexed owner,
+    uint256 licenseId,
+    uint256 product,
+    uint256 attributes,
+    uint64 issuedTime
+  );
 
   event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
 
   struct License {
     uint256 product;
     uint256 attributes;
+    uint64 issuedTime;
   }
 
   /**

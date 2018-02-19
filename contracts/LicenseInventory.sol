@@ -23,6 +23,8 @@ contract LicenseInventory is LicenseBase {
   // @dev A mapping from license IDs to the price
   mapping (uint256 => uint256) public productPrices;
 
+  /*** internal ***/
+
   function _createProduct(
       uint256 _productId,
       uint256 _initialPrice,
@@ -44,16 +46,6 @@ contract LicenseInventory is LicenseBase {
     ProductCreated(_product.productIdentifier, _initialPrice, _initialInventoryQuantity);
   }
 
-  function createProduct(
-      uint256 _productId,
-      uint256 _initialPrice,
-      uint256 _initialInventoryQuantity
-    ) public onlyCLevel {
-      // Hmm, consider collapsing into one
-      _createProduct(_productId, _initialPrice, _initialInventoryQuantity);
-  }
-
-
   function _incrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
   {
     productInventories[_productId].add(_inventoryAdjustment);
@@ -62,6 +54,18 @@ contract LicenseInventory is LicenseBase {
   function _decrementInventory(uint256 _productId, uint256 _inventoryAdjustment) internal
   {
     productInventories[_productId].sub(_inventoryAdjustment);
+  }
+
+  /*** public ***/
+
+  /** executives-only **/
+  function createProduct(
+      uint256 _productId,
+      uint256 _initialPrice,
+      uint256 _initialInventoryQuantity
+    ) public onlyCLevel {
+      // Hmm, consider collapsing into one
+      _createProduct(_productId, _initialPrice, _initialInventoryQuantity);
   }
 
   function setInventory(uint256 _productId, uint256 _inventoryQuantity) public onlyCLevel
@@ -89,11 +93,17 @@ contract LicenseInventory is LicenseBase {
     ProductPriceChanged(_productId, _price);
   }
 
+  /** anyone **/
+
   function inventoryOf(uint256 _productId) public view returns (uint256) {
     return productInventories[_productId];
   }
 
   function priceOf(uint256 _productId) public view returns (uint256) {
     return productPrices[_productId];
+  }
+
+  function productInfo(uint256 _productId) public view returns (uint256, uint256) {
+    return (priceOf(_productId), inventoryOf(_productId));
   }
 }

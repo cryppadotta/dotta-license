@@ -67,7 +67,7 @@ contract('LicenseAccessControl', (accounts: string[]) => {
   });
 
   describe('when withdrawing the balance', async () => {
-    before(async () => {
+    beforeEach(async () => {
       await token.setCFO(cfo);
     });
     it('should not allow the CEO', async () => {
@@ -82,7 +82,7 @@ contract('LicenseAccessControl', (accounts: string[]) => {
   });
 
   describe('when pausing and unpausing', async () => {
-    before(async () => {
+    beforeEach(async () => {
       await token.setCEO(ceo);
     });
     it('should not allow a random person to pause', async () => {
@@ -92,11 +92,12 @@ contract('LicenseAccessControl', (accounts: string[]) => {
       await assertRevert(token.unpause({ from: user1 }));
     });
     it('should allow the CEO', async () => {
-      (await token.paused).should.be.true();
+      (await token.paused()).should.be.true();
       await token.unpause({ from: ceo });
-      (await token.paused).should.be.false();
+
+      (await token.paused()).should.be.false();
       await token.pause({ from: ceo });
-      (await token.paused).should.be.true();
+      (await token.paused()).should.be.true();
     });
   });
 });

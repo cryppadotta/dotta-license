@@ -17,6 +17,10 @@ contract LicenseSale is LicenseOwnership {
     _createLicense(_productId, attributes, _assignee);
   }
 
+  function createPromotionalPurchase() public onlyCLevel {
+    // TODO
+  }
+
   function _createLicense(
       uint256 _product,
       uint256 _attributes,
@@ -28,12 +32,13 @@ contract LicenseSale is LicenseOwnership {
 
     License memory _license = License({
       product: _product,
-      attributes: _attributes
+      attributes: _attributes,
+      issuedTime: uint64(now)
     });
 
     uint256 newLicenseId = licenses.push(_license) - 1;
 
-    Issued(_owner, newLicenseId, _license.product, _license.attributes);
+    Issued(_owner, newLicenseId, _license.product, _license.attributes, _license.issuedTime);
 
     _transfer(0, _owner, newLicenseId);
 
