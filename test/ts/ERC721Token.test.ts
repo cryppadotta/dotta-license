@@ -8,6 +8,7 @@ chaiSetup.configure();
 const expect = chai.expect;
 const { LicenseCoreTest } = new Artifacts(artifacts);
 const LicenseCore = LicenseCoreTest;
+chai.should();
 
 contract('ERC721Token', (accounts: string[]) => {
   let token: any = null;
