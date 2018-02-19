@@ -14,4 +14,8 @@ contract LicenseCoreTest is LicenseCore {
   function timeNow() public constant returns (uint256) {
     return now;
   }
+
+  /* function debugSetSold(uint256 _productId, uint256 _soldAmount) public onlyCLevel {
+    products[_productId].sold = _soldAmount;
+  } */
 }

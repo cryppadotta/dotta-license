@@ -7,7 +7,7 @@ contract LicenseInventory is LicenseBase {
   using SafeMath for uint256;
 
   event ProductCreated(uint256 productId, uint256 price, uint256 available, uint256 supply);
-  event ProductInventoryAdjusted(uint256 product, uint256 quantity);
+  event ProductInventoryAdjusted(uint256 product, uint256 available);
   event ProductPriceChanged(uint256 product, uint256 price);
 
   struct Product {
@@ -15,6 +15,7 @@ contract LicenseInventory is LicenseBase {
     uint256 price;
     uint256 availableInventory;
     uint256 supply;
+    uint256 sold;
   }
 
   // @dev All products in existence
@@ -47,7 +48,8 @@ contract LicenseInventory is LicenseBase {
       id: _productId,
       price: _initialPrice,
       availableInventory: _initialInventoryQuantity,
-      supply: _supply
+      supply: _supply,
+      sold: 0
     });
 
     products[_productId] = _product;
@@ -64,7 +66,8 @@ contract LicenseInventory is LicenseBase {
 
     // A supply of "0" means "unlimited". Otherwise we need to ensure that we're not over-creating this product
     if(products[_productId].supply > 0) {
-      require(newInventoryLevel <= products[_productId].supply);
+      // you have to take already sold into account
+      require(products[_productId].sold + newInventoryLevel <= products[_productId].supply);
     }
 
     products[_productId].availableInventory = newInventoryLevel;
@@ -77,6 +80,12 @@ contract LicenseInventory is LicenseBase {
     // unnecessary because we're using SafeMath and an unsigned int
     // require(newInventoryLevel >= 0);
     products[_productId].availableInventory = newInventoryLevel;
+  }
+
+  function _clearInventory(uint256 _productId) internal
+  {
+    require(_productExists(_productId));
+    products[_productId].availableInventory = 0;
   }
 
   function _setPrice(uint256 _productId, uint256 _price) internal
@@ -109,6 +118,12 @@ contract LicenseInventory is LicenseBase {
     ProductInventoryAdjusted(_productId, availableInventoryOf(_productId));
   }
 
+  function clearInventory(uint256 _productId) public onlyCLevel
+  {
+    _clearInventory(_productId);
+    ProductInventoryAdjusted(_productId, availableInventoryOf(_productId));
+  }
+
   function setPrice(uint256 _productId, uint256 _price) public onlyCLevel
   {
     _setPrice(_productId, _price);
@@ -129,7 +144,15 @@ contract LicenseInventory is LicenseBase {
     return products[_productId].supply;
   }
 
+  function totalSold(uint256 _productId) public view returns (uint256) {
+    return products[_productId].sold;
+  }
+
   function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256) {
     return (priceOf(_productId), availableInventoryOf(_productId), totalSupplyOf(_productId));
+  }
+
+  function getAllProductIds() public view returns (uint256[]) {
+    return allProductIds;
   }
 }
