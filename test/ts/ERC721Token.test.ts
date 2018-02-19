@@ -65,6 +65,13 @@ contract('ERC721Token', (accounts: string[]) => {
       secondProduct.supply,
       { from: ceo }
     );
+
+    await token.unpause({ from: ceo });
+
+    await token.purchase(firstProduct.id, user1, {
+      from: user1,
+      value: firstProduct.price
+    });
     // await token.mint(_creator, _firstTokenId, {
 
     //   from: _creator

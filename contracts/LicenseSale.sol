@@ -9,6 +9,7 @@ contract LicenseSale is LicenseOwnership {
     address _assignee
     )
     public payable whenNotPaused
+    returns (uint)
   {
     // Make sure the price paid is accurate. No more, no less
     // Note that this will pass if the product doesn't exist and the value sent is 0 (because the price will be zero)
@@ -16,7 +17,7 @@ contract LicenseSale is LicenseOwnership {
 
     // this can, of course, be gamed by malicious miners. But it's adequate for our application
     uint256 attributes = uint256(keccak256(block.blockhash(block.number-1)))^_productId;
-    _performPurchase(_productId, _assignee, attributes);
+    return _performPurchase(_productId, _assignee, attributes);
   }
 
   function createPromotionalPurchase(
@@ -25,38 +26,34 @@ contract LicenseSale is LicenseOwnership {
     uint256 _attributes
     )
     public onlyCOO whenNotPaused
+    returns (uint)
   {
-    _performPurchase(_productId, _assignee, _attributes);
+    return _performPurchase(_productId, _assignee, _attributes);
   }
 
-  function _performPurchase(uint256 _productId, address _assignee, uint256 _attributes) internal {
+  function _performPurchase(uint256 _productId, address _assignee, uint256 _attributes) internal returns (uint) {
     _purchaseOneUnitInStock(_productId);
-    _createLicense(_productId, _assignee, _attributes);
+    return _createLicense(_productId, _assignee, _attributes);
   }
 
   function _createLicense(
-      uint256 _product,
-      address _owner,
+      uint256 _productId,
+      address _assignee,
       uint256 _attributes
     )
       internal
       returns (uint)
   {
-
     License memory _license = License({
-      product: _product,
+      productId: _productId,
       attributes: _attributes,
       issuedTime: uint64(now)
     });
 
     uint256 newLicenseId = licenses.push(_license) - 1;
-
-    Issued(_owner, newLicenseId, _license.product, _license.attributes, _license.issuedTime);
-
-    _transfer(0, _owner, newLicenseId);
-
+    _transfer(0, _assignee, newLicenseId);
+    Issued(_assignee, newLicenseId, _license.productId, _license.attributes, _license.issuedTime);
     return newLicenseId;
   }
-
 
 }

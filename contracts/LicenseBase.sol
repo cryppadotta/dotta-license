@@ -6,7 +6,7 @@ contract LicenseBase is LicenseAccessControl {
   event Issued(
     address indexed owner,
     uint256 licenseId,
-    uint256 product,
+    uint256 productId,
     uint256 attributes,
     uint64 issuedTime
   );
@@ -14,7 +14,7 @@ contract LicenseBase is LicenseAccessControl {
   event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
 
   struct License {
-    uint256 product;
+    uint256 productId;
     uint256 attributes;
     uint64 issuedTime;
   }

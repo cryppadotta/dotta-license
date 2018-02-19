@@ -167,8 +167,8 @@ contract('LicenseSale', (accounts: string[]) => {
   });
 
   describe('when creating a promotional purchase', async () => {
-    describe('if a rando is trying', async () => {
-      it('should not allow it', async () => {
+    describe('if a rando is trying it', async () => {
+      it('should not be allowed', async () => {
         await assertRevert(
           token.createPromotionalPurchase(firstProduct.id, user3, 0, {
             from: user3
@@ -199,15 +199,30 @@ contract('LicenseSale', (accounts: string[]) => {
         await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
           from: coo
         });
-
         await assertRevert(
           token.incrementInventory(firstProduct.id, 1, {
             from: coo
           })
         );
       });
-      it('should decrement the inventory');
-      it('should count the amount sold');
+      it('should decrement the inventory', async () => {
+        (await token.availableInventoryOf(
+          firstProduct.id
+        )).should.be.bignumber.equal(2);
+        await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+          from: coo
+        });
+        (await token.availableInventoryOf(
+          firstProduct.id
+        )).should.be.bignumber.equal(1);
+      });
+      it('should count the amount sold', async () => {
+        (await token.totalSold(firstProduct.id)).should.be.bignumber.equal(0);
+        await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+          from: coo
+        });
+        (await token.totalSold(firstProduct.id)).should.be.bignumber.equal(1);
+      });
     });
   });
 });
