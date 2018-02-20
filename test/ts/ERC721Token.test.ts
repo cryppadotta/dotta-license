@@ -25,6 +25,8 @@ contract('ERC721Token', (accounts: string[]) => {
   const ceo = accounts[4];
   const cfo = accounts[5];
   const coo = accounts[6];
+  const user4 = accounts[7];
+  const user5 = accounts[8];
   const _firstTokenId = 1;
   const _secondTokenId = 2;
   const _unknownTokenId = 312389234752;
@@ -122,28 +124,42 @@ contract('ERC721Token', (accounts: string[]) => {
     });
   });
 
-  /*
-  describe('mint', () => {
+  describe('minting', () => {
     describe('when the given token ID was not tracked by this contract', () => {
-      const tokenId = _unknownTokenId;
+      // const tokenId = _unknownTokenId;
 
       describe('when the given address is not the zero address', () => {
-        const to = accounts[1];
+        const to = user1;
 
-        it('mints the given token ID to the given address', async () => {
+        it.only('mints the given token ID to the given address', async () => {
           const previousBalance = await token.balanceOf(to);
 
-          await token.mint(to, tokenId);
+          console.log('going to make a purchase');
+          // await token.purchase(firstProduct.id, to, {
+          //   from: user4,
+          //   value: firstProduct.price
+          // });
 
-          const owner = await token.ownerOf(tokenId);
-          owner.should.be.equal(to);
+          let { logs } = await token.purchase(secondProduct.id, to, {
+            from: to,
+            value: secondProduct.price
+          });
+          // getLog('Transfer') -> last argument is the tokenId
 
-          const balance = await token.balanceOf(to);
-          balance.should.be.bignumber.equal(previousBalance + 1);
+          console.log('tokenId', tokenId);
+
+          // const owner = await token.ownerOf(tokenId);
+          // owner.should.be.equal(to);
+          //
+          // const balance = await token.balanceOf(to);
+          // balance.should.be.bignumber.equal(previousBalance + 1);
         });
 
         it('adds that token to the token list of the owner', async () => {
-          await token.mint(to, tokenId);
+          const tokenId = await token.purchase(secondProduct.id, to, {
+            from: user1,
+            value: secondProduct.price
+          });
 
           const tokens = await token.tokensOf(to);
           tokens.length.should.be.equal(1);
@@ -151,7 +167,10 @@ contract('ERC721Token', (accounts: string[]) => {
         });
 
         it('emits a transfer event', async () => {
-          const { logs } = await token.mint(to, tokenId);
+          const { logs, tokenId } = await token.purchase(secondProduct.id, to, {
+            from: user1,
+            value: secondProduct.price
+          });
 
           logs.length.should.be.equal(1);
           logs[0].event.should.be.eq('Transfer');
@@ -164,14 +183,11 @@ contract('ERC721Token', (accounts: string[]) => {
       describe('when the given address is the zero address', () => {
         const to = ZERO_ADDRESS;
 
-        it('reverts', async () => {
-          await assertRevert(token.mint(to, tokenId));
-        });
+        // it('reverts', async () => {
+        //   await assertRevert(token.mint(to, tokenId));
+        // });
       });
     });
-    */
-
-  /*
 
     describe('when the given token ID was already tracked by this contract', () => {
       const tokenId = _firstTokenId;
@@ -181,86 +197,6 @@ contract('ERC721Token', (accounts: string[]) => {
       });
     });
   });
-  */
-
-  /*
-  describe('burn', () => {
-    describe('when the given token ID was tracked by this contract', () => {
-      const tokenId = _firstTokenId;
-
-      describe('when the msg.sender owns given token', () => {
-        const sender = _creator;
-
-        it('burns the given token ID and adjusts the balance of the owner', async () => {
-          const previousBalance = await token.balanceOf(sender);
-
-          await token.burn(tokenId, { from: sender });
-
-          await assertRevert(token.ownerOf(tokenId));
-          const balance = await token.balanceOf(sender);
-          balance.should.be.bignumber.equal(previousBalance - 1);
-        });
-
-        it('removes that token from the token list of the owner', async () => {
-          await token.burn(tokenId, { from: sender });
-
-          const tokens = await token.tokensOf(sender);
-          tokens.length.should.be.equal(1);
-          tokens[0].should.be.bignumber.equal(_secondTokenId);
-        });
-
-        it('emits a burn event', async () => {
-          const { logs } = await token.burn(tokenId, { from: sender });
-
-          logs.length.should.be.equal(1);
-          logs[0].event.should.be.eq('Transfer');
-          logs[0].args._from.should.be.equal(sender);
-          logs[0].args._to.should.be.equal(ZERO_ADDRESS);
-          logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
-        });
-
-        describe('when there is an approval for the given token ID', () => {
-          beforeEach(async () => {
-            await token.approve(accounts[1], tokenId, { from: sender });
-          });
-
-          it('clears the approval', async () => {
-            await token.burn(tokenId, { from: sender });
-            const approvedAccount = await token.approvedFor(tokenId);
-            approvedAccount.should.be.equal(ZERO_ADDRESS);
-          });
-
-          it('emits an approval event', async () => {
-            const { logs } = await token.burn(tokenId, { from: sender });
-
-            logs.length.should.be.equal(2);
-
-            logs[0].event.should.be.eq('Approval');
-            logs[0].args._owner.should.be.equal(sender);
-            logs[0].args._approved.should.be.equal(ZERO_ADDRESS);
-            logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
-          });
-        });
-      });
-
-      describe('when the msg.sender does not own given token', () => {
-        const sender = accounts[1];
-
-        it('reverts', async () => {
-          await assertRevert(token.burn(tokenId, { from: sender }));
-        });
-      });
-    });
-
-    describe('when the given token ID was not tracked by this contract', () => {
-      const tokenID = _unknownTokenId;
-
-      it('reverts', async () => {
-        await assertRevert(token.burn(tokenID, { from: _creator }));
-      });
-    });
-  });
-  */
 
   describe('transfer', () => {
     describe('when the address to transfer the token to is not the zero address', () => {
@@ -313,7 +249,7 @@ contract('ERC721Token', (accounts: string[]) => {
             const newOwnerBalance = await token.balanceOf(to);
             newOwnerBalance.should.be.bignumber.equal(1);
 
-            const previousOwnerBalance = await token.balanceOf(_creator);
+            const previousOwnerBalance = await token.balanceOf(sender);
             previousOwnerBalance.should.be.bignumber.equal(previousBalance - 1);
           });
 
@@ -336,7 +272,7 @@ contract('ERC721Token', (accounts: string[]) => {
       });
 
       describe('when the given token ID was not tracked by this token', () => {
-        let tokenId = _unknownTokenId;
+        const tokenId = _unknownTokenId;
 
         it('reverts', async () => {
           await assertRevert(token.transfer(to, tokenId, { from: _creator }));
@@ -353,251 +289,265 @@ contract('ERC721Token', (accounts: string[]) => {
     });
   });
 
-  //
-  // describe('approve', () => {
-  //   describe('when the given token ID was already tracked by this contract', () => {
-  //     const tokenId = _firstTokenId;
-  //
-  //     describe('when the sender owns the given token ID', () => {
-  //       const sender = _creator;
-  //
-  //       describe('when the address that receives the approval is the 0 address', () => {
-  //         const to = ZERO_ADDRESS;
-  //
-  //         describe('when there was no approval for the given token ID before', () => {
-  //           it('clears the approval for that token', async () => {
-  //             await token.approve(to, tokenId, { from: sender });
-  //
-  //             const approvedAccount = await token.approvedFor(tokenId);
-  //             approvedAccount.should.be.equal(to);
-  //           });
-  //
-  //           it('does not emit an approval event', async () => {
-  //             const { logs } = await token.approve(to, tokenId, { from: sender });
-  //
-  //             logs.length.should.be.equal(0);
-  //           });
-  //         });
-  //
-  //         describe('when the given token ID was approved for another account', () => {
-  //           beforeEach(async () => {
-  //             await token.approve(accounts[2], tokenId, { from: sender });
-  //           });
-  //
-  //           it('clears the approval for the token ID', async () => {
-  //             await token.approve(to, tokenId, { from: sender });
-  //
-  //             const approvedAccount = await token.approvedFor(tokenId);
-  //             approvedAccount.should.be.equal(to);
-  //           });
-  //
-  //           it('emits an approval event', async () => {
-  //             const { logs } = await token.approve(to, tokenId, { from: sender });
-  //
-  //             logs.length.should.be.equal(1);
-  //             logs[0].event.should.be.eq('Approval');
-  //             logs[0].args._owner.should.be.equal(sender);
-  //             logs[0].args._approved.should.be.equal(to);
-  //             logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
-  //           });
-  //         });
-  //       });
-  //
-  //       describe('when the address that receives the approval is not the 0 address', () => {
-  //         describe('when the address that receives the approval is different than the owner', () => {
-  //           const to = accounts[1];
-  //
-  //           describe('when there was no approval for the given token ID before', () => {
-  //             it('approves the token ID to the given address', async () => {
-  //               await token.approve(to, tokenId, { from: sender });
-  //
-  //               const approvedAccount = await token.approvedFor(tokenId);
-  //               approvedAccount.should.be.equal(to);
-  //             });
-  //
-  //             it('emits an approval event', async () => {
-  //               const { logs } = await token.approve(to, tokenId, { from: sender });
-  //
-  //               logs.length.should.be.equal(1);
-  //               logs[0].event.should.be.eq('Approval');
-  //               logs[0].args._owner.should.be.equal(sender);
-  //               logs[0].args._approved.should.be.equal(to);
-  //               logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
-  //             });
-  //           });
-  //
-  //           describe('when the given token ID was approved for the same account', () => {
-  //             beforeEach(async () => {
-  //               await token.approve(to, tokenId, { from: sender });
-  //             });
-  //
-  //             it('keeps the approval to the given address', async () => {
-  //               await token.approve(to, tokenId, { from: sender });
-  //
-  //               const approvedAccount = await token.approvedFor(tokenId);
-  //               approvedAccount.should.be.equal(to);
-  //             });
-  //
-  //             it('emits an approval event', async () => {
-  //               const { logs } = await token.approve(to, tokenId, { from: sender });
-  //
-  //               logs.length.should.be.equal(1);
-  //               logs[0].event.should.be.eq('Approval');
-  //               logs[0].args._owner.should.be.equal(sender);
-  //               logs[0].args._approved.should.be.equal(to);
-  //               logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
-  //             });
-  //           });
-  //
-  //           describe('when the given token ID was approved for another account', () => {
-  //             beforeEach(async () => {
-  //               await token.approve(accounts[2], tokenId, { from: sender });
-  //             });
-  //
-  //             it('changes the approval to the given address', async () => {
-  //               await token.approve(to, tokenId, { from: sender });
-  //
-  //               const approvedAccount = await token.approvedFor(tokenId);
-  //               approvedAccount.should.be.equal(to);
-  //             });
-  //
-  //             it('emits an approval event', async () => {
-  //               const { logs } = await token.approve(to, tokenId, { from: sender });
-  //
-  //               logs.length.should.be.equal(1);
-  //               logs[0].event.should.be.eq('Approval');
-  //               logs[0].args._owner.should.be.equal(sender);
-  //               logs[0].args._approved.should.be.equal(to);
-  //               logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
-  //             });
-  //           });
-  //         });
-  //
-  //         describe('when the address that receives the approval is the owner', () => {
-  //           const to = _creator;
-  //
-  //           describe('when there was no approval for the given token ID before', () => {
-  //             it('reverts', async () => {
-  //               await assertRevert(token.approve(to, tokenId, { from: sender }));
-  //             });
-  //           });
-  //
-  //           describe('when the given token ID was approved for another account', () => {
-  //             beforeEach(async () => {
-  //               await token.approve(accounts[2], tokenId, { from: sender });
-  //             });
-  //
-  //             it('reverts', async () => {
-  //               await assertRevert(token.approve(to, tokenId, { from: sender }));
-  //             });
-  //           });
-  //         });
-  //       });
-  //     });
-  //
-  //     describe('when the sender does not own the given token ID', () => {
-  //       const sender = accounts[1];
-  //
-  //       it('reverts', async () => {
-  //         await assertRevert(token.approve(accounts[2], tokenId, { from: sender }));
-  //       });
-  //     });
-  //   });
-  //
-  //   describe('when the given token ID was not tracked by the contract before', () => {
-  //     const tokenId = _unknownTokenId;
-  //
-  //     it('reverts', async () => {
-  //       await assertRevert(token.approve(accounts[1], tokenId, { from: _creator }));
-  //     });
-  //   });
-  // });
-  //
-  // describe('takeOwnership', () => {
-  //   describe('when the given token ID was already tracked by this contract', () => {
-  //     const tokenId = _firstTokenId;
-  //
-  //     describe('when the sender has the approval for the token ID', () => {
-  //       const sender = accounts[1];
-  //
-  //       beforeEach(async () => {
-  //         await token.approve(sender, tokenId, { from: _creator });
-  //       });
-  //
-  //       it('transfers the ownership of the given token ID to the given address', async () => {
-  //         await token.takeOwnership(tokenId, { from: sender });
-  //
-  //         const newOwner = await token.ownerOf(tokenId);
-  //         newOwner.should.be.equal(sender);
-  //       });
-  //
-  //       it('clears the approval for the token ID', async () => {
-  //         await token.takeOwnership(tokenId, { from: sender });
-  //
-  //         const approvedAccount = await token.approvedFor(tokenId);
-  //         approvedAccount.should.be.equal(ZERO_ADDRESS);
-  //       });
-  //
-  //       it('emits an approval and transfer events', async () => {
-  //         const { logs } = await token.takeOwnership(tokenId, { from: sender });
-  //
-  //         logs.length.should.be.equal(2);
-  //
-  //         logs[0].event.should.be.eq('Approval');
-  //         logs[0].args._owner.should.be.equal(_creator);
-  //         logs[0].args._approved.should.be.equal(ZERO_ADDRESS);
-  //         logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
-  //
-  //         logs[1].event.should.be.eq('Transfer');
-  //         logs[1].args._from.should.be.equal(_creator);
-  //         logs[1].args._to.should.be.equal(sender);
-  //         logs[1].args._tokenId.should.be.bignumber.equal(tokenId);
-  //       });
-  //
-  //       it('adjusts owners balances', async () => {
-  //         const previousBalance = await token.balanceOf(_creator);
-  //
-  //         await token.takeOwnership(tokenId, { from: sender });
-  //
-  //         const newOwnerBalance = await token.balanceOf(sender);
-  //         newOwnerBalance.should.be.bignumber.equal(1);
-  //
-  //         const previousOwnerBalance = await token.balanceOf(_creator);
-  //         previousOwnerBalance.should.be.bignumber.equal(previousBalance - 1);
-  //       });
-  //
-  //       it('adds the token to the tokens list of the new owner', async () => {
-  //         await token.takeOwnership(tokenId, { from: sender });
-  //
-  //         const tokenIDs = await token.tokensOf(sender);
-  //         tokenIDs.length.should.be.equal(1);
-  //         tokenIDs[0].should.be.bignumber.equal(tokenId);
-  //       });
-  //     });
-  //
-  //     describe('when the sender does not have an approval for the token ID', () => {
-  //       const sender = accounts[1];
-  //
-  //       it('reverts', async () => {
-  //         await assertRevert(token.takeOwnership(tokenId, { from: sender }));
-  //       });
-  //     });
-  //
-  //     describe('when the sender is already the owner of the token', () => {
-  //       const sender = _creator;
-  //
-  //       it('reverts', async () => {
-  //         await assertRevert(token.takeOwnership(tokenId, { from: sender }));
-  //       });
-  //     });
-  //   });
-  //
-  //   describe('when the given token ID was not tracked by the contract before', () => {
-  //     const tokenId = _unknownTokenId;
-  //
-  //     it('reverts', async () => {
-  //       await assertRevert(token.takeOwnership(tokenId, { from: _creator }));
-  //     });
-  //   });
-  // });
+  describe('approve', () => {
+    describe('when the given token ID was already tracked by this contract', () => {
+      const tokenId = _firstTokenId;
+
+      describe('when the sender owns the given token ID', () => {
+        const sender = user1;
+
+        describe('when the address that receives the approval is the 0 address', () => {
+          const to = ZERO_ADDRESS;
+
+          describe('when there was no approval for the given token ID before', () => {
+            it('clears the approval for that token', async () => {
+              await token.approve(to, tokenId, { from: sender });
+
+              const approvedAccount = await token.approvedFor(tokenId);
+              approvedAccount.should.be.equal(to);
+            });
+
+            it('does not emit an approval event', async () => {
+              const { logs } = await token.approve(to, tokenId, {
+                from: sender
+              });
+
+              logs.length.should.be.equal(0);
+            });
+          });
+
+          describe('when the given token ID was approved for another account', () => {
+            beforeEach(async () => {
+              await token.approve(user4, tokenId, { from: sender });
+            });
+
+            it('clears the approval for the token ID', async () => {
+              await token.approve(to, tokenId, { from: sender });
+
+              const approvedAccount = await token.approvedFor(tokenId);
+              approvedAccount.should.be.equal(to);
+            });
+
+            it('emits an approval event', async () => {
+              const { logs } = await token.approve(to, tokenId, {
+                from: sender
+              });
+
+              logs.length.should.be.equal(1);
+              logs[0].event.should.be.eq('Approval');
+              logs[0].args._owner.should.be.equal(sender);
+              logs[0].args._approved.should.be.equal(to);
+              logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
+            });
+          });
+        });
+
+        describe('when the address that receives the approval is not the 0 address', () => {
+          describe('when the address that receives the approval is different than the owner', () => {
+            const to = user3;
+
+            describe('when there was no approval for the given token ID before', () => {
+              it('approves the token ID to the given address', async () => {
+                await token.approve(to, tokenId, { from: sender });
+
+                const approvedAccount = await token.approvedFor(tokenId);
+                approvedAccount.should.be.equal(to);
+              });
+
+              it('emits an approval event', async () => {
+                const { logs } = await token.approve(to, tokenId, {
+                  from: sender
+                });
+
+                logs.length.should.be.equal(1);
+                logs[0].event.should.be.eq('Approval');
+                logs[0].args._owner.should.be.equal(sender);
+                logs[0].args._approved.should.be.equal(to);
+                logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
+              });
+            });
+
+            describe('when the given token ID was approved for the same account', () => {
+              beforeEach(async () => {
+                await token.approve(to, tokenId, { from: sender });
+              });
+
+              it('keeps the approval to the given address', async () => {
+                await token.approve(to, tokenId, { from: sender });
+
+                const approvedAccount = await token.approvedFor(tokenId);
+                approvedAccount.should.be.equal(to);
+              });
+
+              it('emits an approval event', async () => {
+                const { logs } = await token.approve(to, tokenId, {
+                  from: sender
+                });
+
+                logs.length.should.be.equal(1);
+                logs[0].event.should.be.eq('Approval');
+                logs[0].args._owner.should.be.equal(sender);
+                logs[0].args._approved.should.be.equal(to);
+                logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
+              });
+            });
+
+            describe('when the given token ID was approved for another account', () => {
+              beforeEach(async () => {
+                await token.approve(user4, tokenId, { from: sender });
+              });
+
+              it('changes the approval to the given address', async () => {
+                await token.approve(to, tokenId, { from: sender });
+
+                const approvedAccount = await token.approvedFor(tokenId);
+                approvedAccount.should.be.equal(to);
+              });
+
+              it('emits an approval event', async () => {
+                const { logs } = await token.approve(to, tokenId, {
+                  from: sender
+                });
+
+                logs.length.should.be.equal(1);
+                logs[0].event.should.be.eq('Approval');
+                logs[0].args._owner.should.be.equal(sender);
+                logs[0].args._approved.should.be.equal(to);
+                logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
+              });
+            });
+          });
+
+          describe('when the address that receives the approval is the owner', () => {
+            const to = user1;
+
+            describe('when there was no approval for the given token ID before', () => {
+              it('reverts', async () => {
+                await assertRevert(
+                  token.approve(to, tokenId, { from: sender })
+                );
+              });
+            });
+
+            describe('when the given token ID was approved for another account', () => {
+              beforeEach(async () => {
+                await token.approve(user2, tokenId, { from: sender });
+              });
+
+              it('reverts', async () => {
+                // TODO really?
+                await assertRevert(
+                  token.approve(to, tokenId, { from: sender })
+                );
+              });
+            });
+          });
+        });
+      });
+
+      describe('when the sender does not own the given token ID', () => {
+        const sender = user2;
+
+        it('reverts', async () => {
+          await assertRevert(token.approve(user3, tokenId, { from: sender }));
+        });
+      });
+    });
+
+    describe('when the given token ID was not tracked by the contract before', () => {
+      const tokenId = _unknownTokenId;
+
+      it('reverts', async () => {
+        await assertRevert(token.approve(user2, tokenId, { from: _creator }));
+      });
+    });
+  });
+
+  describe('takeOwnership', () => {
+    describe('when the given token ID was already tracked by this contract', () => {
+      const tokenId = _firstTokenId;
+
+      describe('when the sender has the approval for the token ID', () => {
+        const sender = accounts[1];
+
+        beforeEach(async () => {
+          await token.approve(sender, tokenId, { from: _creator });
+        });
+
+        it('transfers the ownership of the given token ID to the given address', async () => {
+          await token.takeOwnership(tokenId, { from: sender });
+
+          const newOwner = await token.ownerOf(tokenId);
+          newOwner.should.be.equal(sender);
+        });
+
+        it('clears the approval for the token ID', async () => {
+          await token.takeOwnership(tokenId, { from: sender });
+
+          const approvedAccount = await token.approvedFor(tokenId);
+          approvedAccount.should.be.equal(ZERO_ADDRESS);
+        });
+
+        it('emits an approval and transfer events', async () => {
+          const { logs } = await token.takeOwnership(tokenId, { from: sender });
+
+          logs.length.should.be.equal(2);
+
+          logs[0].event.should.be.eq('Approval');
+          logs[0].args._owner.should.be.equal(_creator);
+          logs[0].args._approved.should.be.equal(ZERO_ADDRESS);
+          logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
+
+          logs[1].event.should.be.eq('Transfer');
+          logs[1].args._from.should.be.equal(_creator);
+          logs[1].args._to.should.be.equal(sender);
+          logs[1].args._tokenId.should.be.bignumber.equal(tokenId);
+        });
+
+        it('adjusts owners balances', async () => {
+          const previousBalance = await token.balanceOf(_creator);
+
+          await token.takeOwnership(tokenId, { from: sender });
+
+          const newOwnerBalance = await token.balanceOf(sender);
+          newOwnerBalance.should.be.bignumber.equal(1);
+
+          const previousOwnerBalance = await token.balanceOf(_creator);
+          previousOwnerBalance.should.be.bignumber.equal(previousBalance - 1);
+        });
+
+        it('adds the token to the tokens list of the new owner', async () => {
+          await token.takeOwnership(tokenId, { from: sender });
+
+          const tokenIDs = await token.tokensOf(sender);
+          tokenIDs.length.should.be.equal(1);
+          tokenIDs[0].should.be.bignumber.equal(tokenId);
+        });
+      });
+
+      describe('when the sender does not have an approval for the token ID', () => {
+        const sender = user2;
+
+        it('reverts', async () => {
+          await assertRevert(token.takeOwnership(tokenId, { from: sender }));
+        });
+      });
+
+      describe('when the sender is already the owner of the token', () => {
+        const sender = user1;
+
+        it('reverts', async () => {
+          await assertRevert(token.takeOwnership(tokenId, { from: sender }));
+        });
+      });
+    });
+
+    describe('when the given token ID was not tracked by the contract before', () => {
+      const tokenId = _unknownTokenId;
+
+      it('reverts', async () => {
+        await assertRevert(token.takeOwnership(tokenId, { from: user1 }));
+      });
+    });
+  });
 });

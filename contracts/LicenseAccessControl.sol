@@ -9,6 +9,8 @@ contract LicenseAccessControl {
    * @dev ContractUpgrade is the event that will be emitted if we set a new contract address
    */
   event ContractUpgrade(address newContract);
+  event Paused();
+  event Unpaused();
 
   address public ceoAddress;
   address public cfoAddress;
@@ -133,6 +135,7 @@ contract LicenseAccessControl {
    */
   function pause() onlyCLevel whenNotPaused public {
     paused = true;
+    Paused();
   }
 
   /**
@@ -140,5 +143,6 @@ contract LicenseAccessControl {
    */
   function unpause() onlyCEO whenPaused public {
     paused = false;
+    Unpaused();
   }
 }

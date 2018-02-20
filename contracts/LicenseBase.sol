@@ -11,7 +11,8 @@ contract LicenseBase is LicenseAccessControl {
     uint64 issuedTime
   );
 
-  event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+  // TODO remove for production
+  event Debug(uint256 value);
 
   struct License {
     uint256 productId;
@@ -23,13 +24,4 @@ contract LicenseBase is LicenseAccessControl {
    * @dev All licenses in existence. The ID of each license is an index in this array.
    */
   License[] licenses;
-
-  // @dev A mapping from license IDs to the address that owns them
-  mapping (uint256 => address) public licenseIndexToOwner;
-
-  // @dev A mapping from owners address to count of tokens that address owns
-  mapping (address => uint256) ownershipTokenCount;
-
-  // @dev A mapping from license IDs to an address that is approved to call transferFrom()
-  mapping (uint256 => address) public tokenApprovals;
 }
