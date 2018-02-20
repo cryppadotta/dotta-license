@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 
 import "./LicenseInventory.sol";
 import "./ERC721.sol";
@@ -29,16 +29,28 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   string public constant NAME = "Dottabot";
   string public constant SYMBOL = "DOTTA";
 
-  function implementsERC721() public pure returns (bool) {
-    return true;
-  }
-
   function name() public pure returns (string) {
     return NAME;
   }
 
   function symbol() public pure returns (string) {
     return SYMBOL;
+  }
+
+  function implementsERC721() public pure returns (bool) {
+    return true;
+  }
+
+  function supportsInterface(bytes4 interfaceID) external view returns (bool) {
+    return
+          interfaceID == this.supportsInterface.selector || // ERC165
+          interfaceID == this.balanceOf.selector ^
+                          this.ownerOf.selector ^
+                          // this.transfer.selector ^
+                          bytes4(keccak256('transfer(address,uint256)')) ^ // see:
+                          this.transferFrom.selector ^
+                          this.approveAll.selector ^
+                          this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
   }
 
   /**

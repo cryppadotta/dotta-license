@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 
 /**
  * @title ERC721 interface
@@ -13,5 +13,5 @@ contract ERC721 {
   function transfer(address _to, uint256 _tokenId) public;
   function transferFrom(address _from, address _to, uint256 _tokenId) public;
   function approveAll(address _to) public;
-  // TODO supportsInterface http://erc721.org/
+  function supportsInterface(bytes4 interfaceID) external view returns (bool);
 }
