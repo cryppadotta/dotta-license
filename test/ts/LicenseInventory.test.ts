@@ -14,10 +14,6 @@ const LicenseCore = LicenseCoreTest;
 chai.should();
 
 const web3: Web3 = (global as any).web3;
-const ETH_STRING = web3.toWei(1, 'ether');
-const FINNEY_STRING = web3.toWei(1, 'finney');
-const ETH_BN = new BigNumber(ETH_STRING);
-const FINNEY_BN = new BigNumber(FINNEY_STRING);
 
 contract('LicenseInventory', (accounts: string[]) => {
   let token: any = null;

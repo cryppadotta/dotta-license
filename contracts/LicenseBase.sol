@@ -31,5 +31,5 @@ contract LicenseBase is LicenseAccessControl {
   mapping (address => uint256) ownershipTokenCount;
 
   // @dev A mapping from license IDs to an address that is approved to call transferFrom()
-  mapping (uint256 => address) public licenseIndexToApproved;
+  mapping (uint256 => address) public tokenApprovals;
 }

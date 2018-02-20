@@ -34,18 +34,19 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   function ownerOf(uint256 _tokenId)
     public
     view
-    returns (address owner)
+    returns (address)
   {
-    owner = licenseIndexToOwner[_tokenId];
+    address owner = licenseIndexToOwner[_tokenId];
     require(owner != address(0));
+    return owner;
   }
 
   function _owns(address _claimant, uint256 _tokenId) internal view returns (bool) {
     return licenseIndexToOwner[_tokenId] == _claimant;
   }
 
-  function _approvedFor(address _claimant, uint256 _tokenId) internal view returns (bool) {
-    return licenseIndexToApproved[_tokenId] == _claimant;
+  function _isApprovedFor(address _claimant, uint256 _tokenId) internal view returns (bool) {
+    return tokenApprovals[_tokenId] == _claimant;
   }
 
   function _transfer(address _from, address _to, uint256 _tokenId) internal {
@@ -56,13 +57,13 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     if (_from != address(0)) {
         ownershipTokenCount[_from]--;
         // clear any previously approved ownership exchange
-        delete licenseIndexToApproved[_tokenId];
+        delete tokenApprovals[_tokenId];
     }
     Transfer(_from, _to, _tokenId);
   }
 
   function _approve(address _from, address _approved, uint256 _tokenId) internal {
-    licenseIndexToApproved[_tokenId] = _approved;
+    tokenApprovals[_tokenId] = _approved;
     Approval(_from, _approved, _tokenId);
   }
 
@@ -97,9 +98,18 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
       public
       whenNotPaused
   {
-      require(_approvedFor(msg.sender, _tokenId));
+      require(_isApprovedFor(msg.sender, _tokenId));
       require(_owns(_from, _tokenId));
       _transfer(_from, _to, _tokenId);
+  }
+
+  /**
+   * @dev Gets the approved address to take ownership of a given token ID
+   * @param _tokenId uint256 ID of the token to query the approval of
+   * @return address currently approved to take ownership of the given token ID
+   */
+  function approvedFor(uint256 _tokenId) public view returns (address) {
+    return tokenApprovals[_tokenId];
   }
 
   function tokensOfOwner(address _owner) public view returns(uint256[] ownerTokens) {
