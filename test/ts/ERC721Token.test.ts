@@ -6,6 +6,7 @@ import { chaiSetup } from './utils/chai_setup';
 import { Artifacts } from '../../util/artifacts';
 import assertRevert from '../helpers/assertRevert';
 import expectThrow from '../helpers/expectThrow';
+import eventByName from '../helpers/eventByName';
 
 chaiSetup.configure();
 const expect = chai.expect;
@@ -126,74 +127,64 @@ contract('ERC721Token', (accounts: string[]) => {
 
   describe('minting', () => {
     describe('when the given token ID was not tracked by this contract', () => {
-      // const tokenId = _unknownTokenId;
-
       describe('when the given address is not the zero address', () => {
         const to = user1;
 
-        it.only('mints the given token ID to the given address', async () => {
+        it('mints the given token ID to the given address', async () => {
           const previousBalance = await token.balanceOf(to);
 
-          console.log('going to make a purchase');
-          // await token.purchase(firstProduct.id, to, {
-          //   from: user4,
-          //   value: firstProduct.price
-          // });
-
-          let { logs } = await token.purchase(secondProduct.id, to, {
+          const { logs } = await token.purchase(secondProduct.id, to, {
             from: to,
             value: secondProduct.price
           });
-          // getLog('Transfer') -> last argument is the tokenId
+          const transferEvent = eventByName(logs, 'Transfer');
+          const tokenId = transferEvent.args._tokenId;
 
-          console.log('tokenId', tokenId);
+          const owner = await token.ownerOf(tokenId);
 
-          // const owner = await token.ownerOf(tokenId);
-          // owner.should.be.equal(to);
-          //
-          // const balance = await token.balanceOf(to);
-          // balance.should.be.bignumber.equal(previousBalance + 1);
+          owner.should.be.equal(to);
+          const balance = await token.balanceOf(to);
+          balance.should.be.bignumber.equal(previousBalance.toNumber() + 1);
         });
 
         it('adds that token to the token list of the owner', async () => {
-          const tokenId = await token.purchase(secondProduct.id, to, {
+          const { logs } = await token.purchase(secondProduct.id, user3, {
             from: user1,
             value: secondProduct.price
           });
+          const transferEvent = eventByName(logs, 'Transfer');
+          const tokenId = transferEvent.args._tokenId;
 
-          const tokens = await token.tokensOf(to);
+          const tokens = await token.tokensOf(user3);
           tokens.length.should.be.equal(1);
           tokens[0].should.be.bignumber.equal(tokenId);
         });
 
         it('emits a transfer event', async () => {
-          const { logs, tokenId } = await token.purchase(secondProduct.id, to, {
+          const { logs } = await token.purchase(secondProduct.id, to, {
             from: user1,
             value: secondProduct.price
           });
 
-          logs.length.should.be.equal(1);
-          logs[0].event.should.be.eq('Transfer');
-          logs[0].args._from.should.be.equal(ZERO_ADDRESS);
-          logs[0].args._to.should.be.equal(to);
-          logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
+          logs.length.should.be.equal(2);
+          logs[1].event.should.be.eq('Transfer');
+          logs[1].args._from.should.be.equal(ZERO_ADDRESS);
+          logs[1].args._to.should.be.equal(to);
+          // logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
         });
       });
 
       describe('when the given address is the zero address', () => {
         const to = ZERO_ADDRESS;
 
-        // it('reverts', async () => {
-        //   await assertRevert(token.mint(to, tokenId));
-        // });
-      });
-    });
-
-    describe('when the given token ID was already tracked by this contract', () => {
-      const tokenId = _firstTokenId;
-
-      it('reverts', async () => {
-        await assertRevert(token.mint(accounts[1], tokenId));
+        it('reverts', async () => {
+          await assertRevert(
+            token.purchase(secondProduct.id, to, {
+              from: user1,
+              value: secondProduct.price
+            })
+          );
+        });
       });
     });
   });
@@ -468,10 +459,11 @@ contract('ERC721Token', (accounts: string[]) => {
       const tokenId = _firstTokenId;
 
       describe('when the sender has the approval for the token ID', () => {
-        const sender = accounts[1];
+        const sender = user3;
+        const approver = user1;
 
         beforeEach(async () => {
-          await token.approve(sender, tokenId, { from: _creator });
+          await token.approve(sender, tokenId, { from: approver });
         });
 
         it('transfers the ownership of the given token ID to the given address', async () => {
@@ -494,25 +486,25 @@ contract('ERC721Token', (accounts: string[]) => {
           logs.length.should.be.equal(2);
 
           logs[0].event.should.be.eq('Approval');
-          logs[0].args._owner.should.be.equal(_creator);
+          logs[0].args._owner.should.be.equal(approver);
           logs[0].args._approved.should.be.equal(ZERO_ADDRESS);
           logs[0].args._tokenId.should.be.bignumber.equal(tokenId);
 
           logs[1].event.should.be.eq('Transfer');
-          logs[1].args._from.should.be.equal(_creator);
+          logs[1].args._from.should.be.equal(approver);
           logs[1].args._to.should.be.equal(sender);
           logs[1].args._tokenId.should.be.bignumber.equal(tokenId);
         });
 
         it('adjusts owners balances', async () => {
-          const previousBalance = await token.balanceOf(_creator);
+          const previousBalance = await token.balanceOf(approver);
 
           await token.takeOwnership(tokenId, { from: sender });
 
           const newOwnerBalance = await token.balanceOf(sender);
           newOwnerBalance.should.be.bignumber.equal(1);
 
-          const previousOwnerBalance = await token.balanceOf(_creator);
+          const previousOwnerBalance = await token.balanceOf(approver);
           previousOwnerBalance.should.be.bignumber.equal(previousBalance - 1);
         });
 
