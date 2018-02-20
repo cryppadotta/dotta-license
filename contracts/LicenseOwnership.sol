@@ -164,17 +164,6 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     Transfer(_from, _to, _tokenId);
   }
 
-    /**
-  * @dev Internal function to add a token without clearing first -- used for minting new tokens
-  * @param _from address which you want to send tokens from
-  * @param _to address which you want to transfer the token to
-  * @param _tokenId uint256 ID of the token to be transferred
-  */
-  function addTokenAndTransfer(address _from, address _to, uint256 _tokenId) internal {
-    addToken(_to, _tokenId);
-    Transfer(_from, _to, _tokenId);
-  }
-
   /**
   * @dev Internal function to clear current approval of a given token ID
   * @param _tokenId uint256 ID of the token to be transferred

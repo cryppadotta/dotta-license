@@ -52,7 +52,7 @@ contract LicenseSale is LicenseOwnership {
 
     uint256 newLicenseId = licenses.push(_license) - 1;
     Issued(_assignee, newLicenseId, _license.productId, _license.attributes, _license.issuedTime);
-    addTokenAndTransfer(0, _assignee, newLicenseId);
+    _mint(_assignee, newLicenseId);
     return newLicenseId;
   }
 
