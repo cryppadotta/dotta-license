@@ -15,6 +15,9 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   // Mapping from token ID to approved address
   mapping (uint256 => address) private tokenApprovals;
 
+  // Mapping from owner address to operator address to approval
+  mapping (address => mapping (address => bool)) private operatorApprovals;
+
   // Mapping from owner to list of owned token IDs
   mapping (address => uint256[]) private ownedTokens;
 
@@ -24,7 +27,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
 
   /*** Constants ***/
   string public constant NAME = "Dottabot";
-  string public constant SYMBOL = "Dottabot";
+  string public constant SYMBOL = "DOTTA";
 
   function implementsERC721() public pure returns (bool) {
     return true;
@@ -94,11 +97,47 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
+   * @dev Tells whether the msg.sender is approved to transfer the given token ID or not
+   * Checks both for specific approval and operator approval
+   * @param _tokenId uint256 ID of the token to query the approval of
+   * @return bool whether transfer by msg.sender is approved for the given token ID or not
+   */
+  function isSenderApprovedFor(uint256 _tokenId) internal view returns (bool) {
+    return isSpecificallyApprovedFor(msg.sender, _tokenId) ||
+           isOperatorApprovedFor(ownerOf(_tokenId), msg.sender);
+  }
+
+  /**
+   * @dev Tells whether the msg.sender is approved for the given token ID or not
+   * @param _asker address of asking for approval
+   * @param _tokenId uint256 ID of the token to query the approval of
+   * @return bool whether the msg.sender is approved for the given token ID or not
+   */
+  function isSpecificallyApprovedFor(address _asker, uint256 _tokenId) internal view returns (bool) {
+    return approvedFor(_tokenId) == _asker;
+  }
+
+  /**
+   * @dev Tells whether an operator is approved by a given owner
+   * @param _owner owner address which you want to query the approval of
+   * @param _operator operator address which you want to query the approval of
+   * @return bool whether the given operator is approved by the given owner
+   */
+  function isOperatorApprovedFor(address _owner, address _operator) public view returns (bool)
+  {
+    return operatorApprovals[_owner][_operator];
+  }
+
+  /**
   * @dev Transfers the ownership of a given token ID to another address
   * @param _to address to receive the ownership of the given token ID
   * @param _tokenId uint256 ID of the token to be transferred
   */
-  function transfer(address _to, uint256 _tokenId) public onlyOwnerOf(_tokenId) {
+  function transfer(address _to, uint256 _tokenId)
+    public
+    whenNotPaused
+    onlyOwnerOf(_tokenId)
+  {
     clearApprovalAndTransfer(msg.sender, _to, _tokenId);
   }
 
@@ -107,7 +146,11 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @param _to address to be approved for the given token ID
   * @param _tokenId uint256 ID of the token to be approved
   */
-  function approve(address _to, uint256 _tokenId) public onlyOwnerOf(_tokenId) {
+  function approve(address _to, uint256 _tokenId)
+    public
+    whenNotPaused
+    onlyOwnerOf(_tokenId)
+  {
     address owner = ownerOf(_tokenId);
     require(_to != owner);
     if (approvedFor(_tokenId) != 0 || _to != 0) {
@@ -117,12 +160,62 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
+  * @dev Approves another address to claim for the ownership of any tokens owned by this account
+  * @param _to address to be approved for the given token ID
+  */
+  function approveAll(address _to)
+    public
+    whenNotPaused
+  {
+    require(_to != msg.sender);
+    require(_to != address(0));
+    operatorApprovals[msg.sender][_to] = true;
+  }
+
+  /**
+  * @dev Removes approval for another address to claim for the ownership of any
+  *  tokens owned by this account. Note that this only removes the operator approval and
+  *  does not clear any independent, specific approvals of token transfers to this address
+  * @param _to address to be disapproved for the given token ID
+  */
+  function disapproveAll(address _to)
+    public
+    whenNotPaused
+  {
+    require(_to != msg.sender);
+    delete operatorApprovals[msg.sender][_to];
+  }
+
+  /**
   * @dev Claims the ownership of a given token ID
   * @param _tokenId uint256 ID of the token being claimed by the msg.sender
   */
-  function takeOwnership(uint256 _tokenId) public {
-    require(isApprovedFor(msg.sender, _tokenId));
+  function takeOwnership(uint256 _tokenId)
+   public
+   whenNotPaused
+  {
+    require(isSenderApprovedFor(_tokenId));
     clearApprovalAndTransfer(ownerOf(_tokenId), msg.sender, _tokenId);
+  }
+
+  /**
+  * @dev Transfer a token owned by another address, for which the calling address has
+  *  previously been granted transfer approval by the owner.
+  * @param _from The address that owns the token
+  * @param _to The address that will take ownership of the token. Can be any address, including the caller
+  * @param _tokenId The ID of the token to be transferred
+  */
+  function transferFrom(
+    address _from,
+    address _to,
+    uint256 _tokenId
+  )
+    public
+    whenNotPaused
+  {
+    require(isSenderApprovedFor(_tokenId));
+    require(ownerOf(_tokenId) == _from);
+    clearApprovalAndTransfer(ownerOf(_tokenId), _to, _tokenId);
   }
 
   /**
@@ -136,16 +229,6 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     Transfer(0x0, _to, _tokenId);
   }
 
-  /**
-   * @dev Tells whether the msg.sender is approved for the given token ID or not
-   * This function is not private so it can be extended in further implementations like the operatable ERC721
-   * @param _owner address of the owner to query the approval of
-   * @param _tokenId uint256 ID of the token to query the approval of
-   * @return bool whether the msg.sender is approved for the given token ID or not
-   */
-  function isApprovedFor(address _owner, uint256 _tokenId) internal view returns (bool) {
-    return approvedFor(_tokenId) == _owner;
-  }
 
   /**
   * @dev Internal function to clear current approval and transfer the ownership of a given token ID

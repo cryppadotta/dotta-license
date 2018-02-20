@@ -11,6 +11,7 @@ contract ERC721 {
   function balanceOf(address _owner) public view returns (uint256 _balance);
   function ownerOf(uint256 _tokenId) public view returns (address _owner);
   function transfer(address _to, uint256 _tokenId) public;
-  function approve(address _to, uint256 _tokenId) public;
-  function takeOwnership(uint256 _tokenId) public;
+  function transferFrom(address _from, address _to, uint256 _tokenId) public;
+  function approveAll(address _to) public;
+  // TODO supportsInterface http://erc721.org/
 }

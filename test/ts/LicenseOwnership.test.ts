@@ -16,7 +16,7 @@ chai.should();
 
 const web3: Web3 = (global as any).web3;
 
-contract('ERC721Token', (accounts: string[]) => {
+contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
   let token: any = null;
   const creator = accounts[0];
   const _creator = accounts[0];
@@ -28,6 +28,7 @@ contract('ERC721Token', (accounts: string[]) => {
   const coo = accounts[6];
   const user4 = accounts[7];
   const user5 = accounts[8];
+  const operator = accounts[9];
   const _firstTokenId = 1;
   const _secondTokenId = 2;
   const _unknownTokenId = 312389234752;
@@ -84,6 +85,26 @@ contract('ERC721Token', (accounts: string[]) => {
     await token.purchase(secondProduct.id, user2, {
       from: coo,
       value: secondProduct.price
+    });
+  });
+
+  describe('name', async () => {
+    it('it has a name', async () => {
+      const name = await token.name();
+      name.should.be.eq('Dottabot');
+    });
+  });
+
+  describe('symbol', async () => {
+    it('it has a symbol', async () => {
+      const symbol = await token.symbol();
+      symbol.should.be.eq('DOTTA');
+    });
+  });
+
+  describe('when detecting implementations', async () => {
+    it('it implementsERC721', async () => {
+      (await token.implementsERC721()).should.be.true();
     });
   });
 
@@ -251,13 +272,28 @@ contract('ERC721Token', (accounts: string[]) => {
             tokenIDs.length.should.be.equal(1);
             tokenIDs[0].should.be.bignumber.equal(tokenId);
           });
+
+          describe('when it is paused', async () => {
+            beforeEach(async () => {
+              await token.pause({ from: ceo });
+            });
+            it('reverts', async () => {
+              await assertRevert(token.transfer(to, tokenId, { from: sender }));
+            });
+          });
         });
 
         describe('when the msg.sender is not the owner of the given token ID', () => {
-          const sender = accounts[2];
+          const sender = user2;
 
-          it('reverts', async () => {
+          it('reverts when trying to send to someone else', async () => {
             await assertRevert(token.transfer(to, tokenId, { from: sender }));
+          });
+
+          it('reverts when trying to send to itself', async () => {
+            await assertRevert(
+              token.transfer(sender, tokenId, { from: sender })
+            );
           });
         });
       });
@@ -426,7 +462,6 @@ contract('ERC721Token', (accounts: string[]) => {
               });
 
               it('reverts', async () => {
-                // TODO really?
                 await assertRevert(
                   token.approve(to, tokenId, { from: sender })
                 );
@@ -450,6 +485,92 @@ contract('ERC721Token', (accounts: string[]) => {
 
       it('reverts', async () => {
         await assertRevert(token.approve(user2, tokenId, { from: _creator }));
+      });
+    });
+  });
+
+  describe('approveAll', async () => {
+    describe('when the sender approves an operator', async () => {
+      const tokenId = _firstTokenId; // owned by user1
+      beforeEach(async () => {
+        await token.approveAll(operator, { from: user1 });
+      });
+      describe('and the operator is the sender', async () => {
+        const sender = operator;
+        it('should allow the operator to take ownership of a token with takeOwnership', async () => {
+          const originalOwner = await token.ownerOf(tokenId);
+          originalOwner.should.be.equal(user1);
+
+          await token.takeOwnership(tokenId, { from: operator });
+
+          const newOwner = await token.ownerOf(tokenId);
+          newOwner.should.be.equal(operator);
+        });
+        it('should allow the operator to transfer ownership to someone else with transferFrom', async () => {
+          const originalOwner = await token.ownerOf(tokenId);
+          originalOwner.should.be.equal(user1);
+
+          await token.transferFrom(user1, user3, tokenId, { from: operator });
+
+          const newOwner = await token.ownerOf(tokenId);
+          newOwner.should.be.equal(user3);
+        });
+
+        it('should read that the operator is approved', async () => {
+          const isApproved = await token.isOperatorApprovedFor(
+            user1,
+            operator,
+            { from: operator }
+          );
+          isApproved.should.be.true();
+        });
+
+        describe('and the user has subsequently disapproved the operator', async () => {
+          beforeEach(async () => {
+            await token.disapproveAll(operator, { from: user1 });
+          });
+          it('should not allow the operator to takeOwnership', async () => {
+            await assertRevert(
+              token.takeOwnership(tokenId, { from: operator })
+            );
+          });
+          it('should not allow the operator to use transferFrom', async () => {
+            await assertRevert(
+              token.transferFrom(user1, user3, tokenId, { from: operator })
+            );
+          });
+
+          it('should read that the operator is not approved', async () => {
+            const isApproved = await token.isOperatorApprovedFor(
+              user1,
+              operator,
+              { from: operator }
+            );
+            isApproved.should.be.false();
+          });
+          describe('and a rando tries to send too', async () => {
+            it('should not allow a rando to takeOwnership', async () => {
+              await assertRevert(token.takeOwnership(tokenId, { from: user2 }));
+            });
+
+            it('should not allow a rando to transferFrom', async () => {
+              await assertRevert(
+                token.transferFrom(user1, user3, tokenId, { from: user2 })
+              );
+            });
+          });
+        });
+      });
+      describe('and a rando is the sender', async () => {
+        it('should not allow a rando to takeOwnership', async () => {
+          await assertRevert(token.takeOwnership(tokenId, { from: user2 }));
+        });
+
+        it('should not allow a rando to transferFrom', async () => {
+          await assertRevert(
+            token.transferFrom(user1, user3, tokenId, { from: user2 })
+          );
+        });
       });
     });
   });
@@ -515,6 +636,10 @@ contract('ERC721Token', (accounts: string[]) => {
           tokenIDs.length.should.be.equal(1);
           tokenIDs[0].should.be.bignumber.equal(tokenId);
         });
+
+        describe('when the token is being transferred to a third party', async () => {
+          it('should transfer the token');
+        });
       });
 
       describe('when the sender does not have an approval for the token ID', () => {
@@ -522,6 +647,14 @@ contract('ERC721Token', (accounts: string[]) => {
 
         it('reverts', async () => {
           await assertRevert(token.takeOwnership(tokenId, { from: sender }));
+        });
+
+        describe('and the token is being transferred to a third party', async () => {
+          it('reverts', async () => {
+            await assertRevert(
+              token.transferFrom(user1, user2, tokenId, { from: sender })
+            );
+          });
         });
       });
 
@@ -543,3 +676,5 @@ contract('ERC721Token', (accounts: string[]) => {
     });
   });
 });
+
+// TODO test pausing
