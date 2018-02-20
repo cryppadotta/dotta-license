@@ -6,6 +6,7 @@ import { chaiSetup } from './utils/chai_setup';
 import { Artifacts } from '../../util/artifacts';
 import assertRevert from '../helpers/assertRevert';
 import expectThrow from '../helpers/expectThrow';
+import eventByName from '../helpers/eventByName';
 
 chaiSetup.configure();
 const expect = chai.expect;
@@ -141,10 +142,14 @@ contract('LicenseSale', (accounts: string[]) => {
     });
 
     describe('and it succeeds', async () => {
+      let tokenId: any;
+      let issuedEvent: any;
       beforeEach(async () => {
-        await token.purchase(firstProduct.id, user1, {
+        const { logs } = await token.purchase(firstProduct.id, user1, {
           value: firstProduct.price
         });
+        issuedEvent = eventByName(logs, 'Issued');
+        tokenId = issuedEvent.args.licenseId;
       });
       it('should decrement the inventory', async () => {
         (await token.availableInventoryOf(
@@ -155,13 +160,46 @@ contract('LicenseSale', (accounts: string[]) => {
         (await token.totalSold(firstProduct.id)).should.be.bignumber.equal(1);
       });
       describe('the resulting License', async () => {
-        it('should keep track of the license id');
-        it('should store a new License');
-        it('should emit an Issued event');
-        it('should have an issued time');
-        it('should have attributes');
-        it('should allow you to purchase for someone else');
-        it('should transfer the license to the new owner');
+        it('should keep track of the license id', async () => {
+          const owner = await token.ownerOf(tokenId);
+          owner.should.be.equal(user1);
+        });
+        it('should fetch licenseInfo', async () => {
+          const [productId, attributes, issuedTime] = await token.licenseInfo(
+            tokenId
+          );
+          productId.should.be.bignumber.equal(firstProduct.id);
+          attributes.should.not.be.bignumber.equal(0);
+          issuedTime.should.not.be.bignumber.equal(0);
+        });
+        it('should emit an Issued event', async () => {
+          issuedEvent.args.owner.should.be.eq(user1);
+          issuedEvent.args.licenseId.should.be.bignumber.equal(tokenId);
+          issuedEvent.args.productId.should.be.bignumber.equal(firstProduct.id);
+        });
+        it('should have an issued time', async () => {
+          const issuedTime = await token.licenseIssuedTime(tokenId);
+          issuedTime.should.not.be.bignumber.equal(0);
+        });
+        it('should have attributes', async () => {
+          const attributes = await token.licenseAttributes(tokenId);
+          attributes.should.not.be.bignumber.equal(0);
+        });
+        it('should be able to find the product id', async () => {
+          const productId = await token.licenseProductId(tokenId);
+          productId.should.be.bignumber.equal(firstProduct.id);
+        });
+        it('should transfer the license to the new owner', async () => {
+          const originalOwner = await token.ownerOf(tokenId);
+          originalOwner.should.be.equal(user1);
+
+          await token.transfer(user3, tokenId, { from: user1 });
+          const newOwner = await token.ownerOf(tokenId);
+          newOwner.should.be.equal(user3);
+
+          const productId = await token.licenseProductId(tokenId);
+          productId.should.be.bignumber.equal(firstProduct.id);
+        });
       });
     });
   });

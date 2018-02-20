@@ -26,4 +26,6 @@ contract('LicenseCore', function(accounts: string[]) {
     // await LicenseCoreTest.deployed();
     expect(true).to.be.true();
   });
+
+  it('should not accept a fallback function');
 });
