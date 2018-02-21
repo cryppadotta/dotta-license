@@ -8,7 +8,7 @@ contract LicenseBase is LicenseAccessControl {
     uint256 licenseId,
     uint256 productId,
     uint256 attributes,
-    uint64 issuedTime
+    uint256 issuedTime
   );
 
   // TODO remove for production
@@ -17,7 +17,7 @@ contract LicenseBase is LicenseAccessControl {
   struct License {
     uint256 productId;
     uint256 attributes;
-    uint64 issuedTime;
+    uint256 issuedTime;
   }
 
   /**
@@ -34,11 +34,11 @@ contract LicenseBase is LicenseAccessControl {
     return licenses[_licenseId].attributes;
   }
 
-  function licenseIssuedTime(uint256 _licenseId) public view returns (uint64) {
+  function licenseIssuedTime(uint256 _licenseId) public view returns (uint256) {
     return licenses[_licenseId].issuedTime;
   }
 
-  function licenseInfo(uint256 _licenseId) public view returns (uint256, uint256, uint64) {
+  function licenseInfo(uint256 _licenseId) public view returns (uint256, uint256, uint256) {
     return (
       licenseProductId(_licenseId),
       licenseAttributes(_licenseId),

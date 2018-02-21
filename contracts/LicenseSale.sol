@@ -47,7 +47,7 @@ contract LicenseSale is LicenseOwnership {
     License memory _license = License({
       productId: _productId,
       attributes: _attributes,
-      issuedTime: uint64(now)
+      issuedTime: now
     });
 
     uint256 newLicenseId = licenses.push(_license) - 1;
