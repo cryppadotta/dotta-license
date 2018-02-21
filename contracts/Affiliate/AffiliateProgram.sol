@@ -1,6 +1,7 @@
 pragma solidity ^0.4.19;
 
 import '../math/SafeMath.sol';
+import '../math/Math.sol';
 import '../lifecycle/Pausable.sol';
 
 /**
@@ -89,19 +90,51 @@ contract AffiliateProgram is Pausable {
     return true;
   }
 
-
   /**
-   * @dev rateFor
+   * @dev rateFor returns the rate which should be used to calculate the comission
+   *  for this affiliate/sale combination.
+   *  We may want to completely blacklist a particular address (e.g. a known bad actor affilite).
+   *  To that end, if the whitelistRate is exactly 1bp, we use that as a signal for blacklisting
+   *  and return a rate of zero. The upside is that we can completely turn off
+   *  sending transactions to a particular address when this is needed. The
+   *  downside is that you can't issued 1/100th of a percent commission.
+   *  However, since this is such a small amount its an acceptable tradeoff.
+   *
+   * @param affiliate - the address of the affiliate to check for
+   * @param productId - the productId in the sale
+   * @param purchaseId - the purchaseId in the sale
+   * @param purchaseAmount - the purchaseAmount
    */
   function rateFor(
     address affiliate,
-    uint256 purchaseId,
     uint256 productId,
-    uint256 amount
+    uint256 purchaseId,
+    uint256 purchaseAmount
   )
     public view returns (uint256) {
-      // uint256
-      // TODO
+      uint256 whitelistedRate = whitelistRates[affiliate];
+      if(whitelistedRate > 0) {
+        // use 1 bp as a blacklist signal
+        if(whitelistedRate == 1) {
+          return 0;
+        } else {
+          return Math.min256(whitelistedRate, maximumRate);
+        }
+      } else {
+        return Math.min256(baselineRate, maximumRate);
+      }
+  }
+
+  function cutFor(
+    address affiliate,
+    uint256 productId,
+    uint256 purchaseId,
+    uint256 purchaseAmount
+  )
+    public view returns (uint256) {
+      uint256 rate = rateFor(affiliate, productId, purchaseId, purchaseAmount);
+      require(rate <= hardCodedMaximumRate);
+      return (purchaseAmount.mul(rate)).div(10000);
   }
 
   /**
@@ -146,7 +179,11 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
-   * @dev whitelistAffiliate
+   * @dev whitelistAffiliate - white listed affiliates can receive a different
+   *   rate than the general public (whitelisted accounts would generally get a
+   *   better rate).
+   * @param affiliate - the affiliate address to whitelist
+   * @param rate - the rate, in basis-points (1/100th of a percent) to give this affiliate in each sale. NOTE: a rate of exactly 1 is the signal to blacklist this affiliate. That is, a rate of 1 will set the commission to 0.
    */
   function whitelistAffiliate(address affiliate, uint256 rate) onlyStoreOrOwner public {
     require(rate <= hardCodedMaximumRate);
