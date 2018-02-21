@@ -313,113 +313,190 @@ contract('AffiliateProgram', (accounts: string[]) => {
       });
     });
 
-    describe.only('when withdrawing', async () => {
-      describe('when the affiliate is withdrawing', async () => {
-        describe('and the affiliate has a balance', async () => {
-          const valueAf1 = 10000;
-          const valueAf2 = 30000;
-          const purchaseId1 = 1;
-          const purchaseId2 = 2;
-          let affiliateContractBalance: any;
+    describe('when withdrawing', async () => {
+      describe('and the affiliate has a balance', async () => {
+        const valueAf1 = 10000;
+        const valueAf2 = 30000;
+        const purchaseId1 = 1;
+        const purchaseId2 = 2;
+        let affiliateContractBalance: any;
+        let originalAccountBalance1: any;
+        let originalAccountBalance2: any;
+        beforeEach(async () => {
+          await affiliate.credit(affiliate1, purchaseId1, {
+            from: creator,
+            value: valueAf1
+          });
+
+          await affiliate.credit(affiliate2, purchaseId2, {
+            from: creator,
+            value: valueAf2
+          });
+
+          // the affiliate balances are credited
+          (await affiliate.balances(affiliate1)).should.be.bignumber.equal(
+            valueAf1
+          );
+          (await affiliate.balances(affiliate2)).should.be.bignumber.equal(
+            valueAf2
+          );
+
+          // and the contract actually holds the ETH balance
+          affiliateContractBalance = await web3Eth.getBalanceAsync(
+            affiliate.address
+          );
+
+          affiliateContractBalance.should.be.bignumber.equal(
+            valueAf1 + valueAf2
+          );
+
+          originalAccountBalance1 = await web3Eth.getBalanceAsync(affiliate1);
+          originalAccountBalance2 = await web3Eth.getBalanceAsync(affiliate2);
+        });
+        describe('and the affiliate withdraws', async () => {
           beforeEach(async () => {
-            await affiliate.credit(affiliate1, purchaseId1, {
-              from: creator,
-              value: valueAf1
+            await affiliate.withdraw({
+              from: affiliate1,
+              gasPrice: 0
             });
-
-            await affiliate.credit(affiliate2, purchaseId2, {
-              from: creator,
-              value: valueAf2
-            });
-
-            // the affiliate balances are credited
-            (await affiliate.balances(affiliate1)).should.be.bignumber.equal(
-              valueAf1
+          });
+          it('should clear the balance', async () => {
+            (await affiliate.balances(affiliate1)).should.be.bignumber.equal(0);
+          });
+          it('should give the affiliate ETH', async () => {
+            const newBalance = await web3Eth.getBalanceAsync(affiliate1);
+            newBalance.should.be.bignumber.equal(
+              originalAccountBalance1.plus(valueAf1)
             );
+          });
+          it('should deduct the amount from the affiliate contract balance', async () => {
+            const newAffiliateContractBalance = await web3Eth.getBalanceAsync(
+              affiliate.address
+            );
+
+            newAffiliateContractBalance.should.be.bignumber.equal(
+              affiliateContractBalance.minus(valueAf1)
+            );
+          });
+          it('should not affect another account', async () => {
             (await affiliate.balances(affiliate2)).should.be.bignumber.equal(
               valueAf2
             );
 
-            // and the contract actually holds the ETH balance
-            affiliateContractBalance = await web3Eth.getBalanceAsync(
-              affiliate.address
-            );
-
-            affiliateContractBalance.should.be.bignumber.equal(
-              valueAf1 + valueAf2
+            (await web3Eth.getBalanceAsync(
+              affiliate2
+            )).should.be.bignumber.equal(originalAccountBalance2);
+          });
+          it('should not allow a withdraw when there is a zero balance', async () => {
+            await assertRevert(
+              affiliate.withdraw({
+                from: affiliate1
+              })
             );
           });
-          describe('and the affiliate withdraws', async () => {
-            let originalAccountBalance1: any;
-            let originalAccountBalance2: any;
+        });
+
+        describe('and it is paused', async () => {
+          beforeEach(async () => {
+            await affiliate.pause({ from: creator });
+          });
+          it('should not work', async () => {
+            await assertRevert(
+              affiliate.withdraw({
+                from: affiliate1
+              })
+            );
+          });
+        });
+
+        describe('when the owner is withdrawing', async () => {
+          it('should not be allowed before the expiry time', async () => {
+            await assertRevert(
+              affiliate.withdrawFrom(affiliate1, creator, { from: creator })
+            );
+          });
+
+          describe('and the expiry time has passed', async () => {
             beforeEach(async () => {
-              originalAccountBalance1 = await web3Eth.getBalanceAsync(
-                affiliate1
-              );
-              originalAccountBalance2 = await web3Eth.getBalanceAsync(
-                affiliate2
-              );
-              await affiliate.withdraw({
-                from: affiliate1,
-                gasPrice: 0
+              await increaseTime(60 * 60 * 24 * 31);
+            });
+
+            describe('and the creator withdraws', async () => {
+              let creatorBalance: any;
+              beforeEach(async () => {
+                creatorBalance = await web3Eth.getBalanceAsync(creator);
+                await affiliate.withdrawFrom(affiliate1, creator, {
+                  from: creator,
+                  gasPrice: 0
+                });
+              });
+
+              it('should clear the balance', async () => {
+                (await affiliate.balances(
+                  affiliate1
+                )).should.be.bignumber.equal(0);
+              });
+              it('should give the creator ETH', async () => {
+                const newBalance = await web3Eth.getBalanceAsync(creator);
+                newBalance.should.be.bignumber.equal(
+                  creatorBalance.plus(valueAf1)
+                );
+              });
+              it('should deduct the amount from the affiliate contract balance', async () => {
+                const newAffiliateContractBalance = await web3Eth.getBalanceAsync(
+                  affiliate.address
+                );
+
+                newAffiliateContractBalance.should.be.bignumber.equal(
+                  affiliateContractBalance.minus(valueAf1)
+                );
               });
             });
-            it('should clear the balance', async () => {
-              (await affiliate.balances(affiliate1)).should.be.bignumber.equal(
-                0
-              );
-            });
-            it('should give the affiliate ETH', async () => {
-              const newBalance = await web3Eth.getBalanceAsync(affiliate1);
-              newBalance.should.be.bignumber.equal(
-                originalAccountBalance1.plus(valueAf1)
-              );
-            });
-            it('should deduct the amount from the affiliate contract balance', async () => {
-              const newAffiliateContractBalance = await web3Eth.getBalanceAsync(
-                affiliate.address
-              );
-
-              newAffiliateContractBalance.should.be.bignumber.equal(
-                affiliateContractBalance.minus(valueAf1)
-              );
-            });
-            it('should not affect another account', async () => {
-              (await affiliate.balances(affiliate2)).should.be.bignumber.equal(
-                valueAf2
-              );
-
-              (await web3Eth.getBalanceAsync(
-                affiliate2
-              )).should.be.bignumber.equal(originalAccountBalance2);
-            });
           });
         });
-        it('should not allow a withdraw when there is a zero balance');
-        describe('and it is paused', async () => {
-          it('should not work');
+
+        describe('when a rando is withdrawing', async () => {
+          it('should not work to withdraw', async () => {
+            await assertRevert(affiliate.withdraw({ from: user1 }));
+          });
+          it('should not work to withdrawFrom', async () => {
+            await assertRevert(
+              affiliate.withdrawFrom(affiliate1, user1, { from: user1 })
+            );
+          });
         });
       });
+    });
+  });
 
-      describe('when the owner is withdrawing', async () => {
-        it('should not be allowed before the expiry time');
-        it(
-          'should not be allowed to shutdown the contract before the expiry time'
-        );
-        it(
-          'should withdraw from a particular affiliate contract after the expiry time'
-        );
+  describe('when shutting down', async () => {
+    describe('and it is before the expiry time', async () => {
+      it('should not allow the creator to shutdown', async () => {
+        await assertRevert(affiliate.shutdown(creator, { from: creator }));
       });
-
-      describe('when a rando is withdrawing', async () => {
-        it('should not work');
+      it('should not allow the a rando to shutdown', async () => {
+        await assertRevert(affiliate.shutdown(user1, { from: user1 }));
       });
     });
+    describe('and it is after the expiry time', async () => {
+      beforeEach(async () => {
+        await increaseTime(60 * 60 * 24 * 31);
+      });
 
-    describe('when shutting down', async () => {
-      it(
-        'should allow the owner to shutdown the contract after the expiry time'
-      );
+      it('should allow the creator to shutdown', async () => {
+        const creatorBalance = await web3Eth.getBalanceAsync(creator);
+        const affiliateBalance = await web3Eth.getBalanceAsync(
+          affiliate.address
+        );
+        await affiliate.shutdown(creator, { from: creator, gasPrice: 0 });
+        const newCreatorBalance = await web3Eth.getBalanceAsync(creator);
+        newCreatorBalance.should.be.bignumber.equal(
+          creatorBalance.plus(affiliateBalance)
+        );
+      });
+      it('should not allow the a rando to shutdown', async () => {
+        await assertRevert(affiliate.shutdown(user1, { from: user1 }));
+      });
     });
   });
 
