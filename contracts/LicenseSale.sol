@@ -87,7 +87,7 @@ contract LicenseSale is LicenseOwnership {
     uint256 affiliateCut = affiliateProgram.cutFor(_affiliate, _productId, _licenseId, _purchaseAmount);
     if(affiliateCut > 0) {
       require(affiliateCut < _purchaseAmount);
-      affiliateProgram.credit(_affiliate, _licenseId).value(affiliateCut);
+      affiliateProgram.credit.value(affiliateCut)(_affiliate, _licenseId);
     }
   }
 
