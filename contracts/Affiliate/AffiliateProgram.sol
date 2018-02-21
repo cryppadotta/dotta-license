@@ -17,11 +17,11 @@ import '../lifecycle/Pausable.sol';
 contract AffiliateProgram is Pausable {
   using SafeMath for uint256;
 
-  struct AffilateSale {
+  struct AffiliateSale {
     // The address of the affiliate
     address affiliate;
-    // The tokenId that was sold
-    uint256 tokenId;
+    // The store's ID of what was sold (e.g. a tokenId)
+    uint256 purchaseId;
     // The time when this sale was made
     uint64 createdAt;
     // The amount owed this affiliate
@@ -30,9 +30,32 @@ contract AffiliateProgram is Pausable {
     bool withdrawn;
   }
 
-  uint256 baselineRate;
+  // A list of all AffiliateSales
+  AffiliateSale[] sales;
 
+  // The baseline affiliate rate (in basis points) for non-whitelisted referrals
+  uint256 private baselineRate;
+
+  // The maximum rate for any affiliate -- overrides individual rates
+  uint256 private maximumRate;
+
+  // A mapping from whitelisted referrals to their individual rates
   mapping (address => uint256) private whitelistRates;
+
+  // The address of the store selling products
+  address private storeAddress;
+
+
+  function AffiliateProgram(address _storeAddress) {
+    storeAddress = _storeAddress;
+    paused = true;
+  }
+
+  function isAffiliateProgram() public view returns (bool) {
+    return true;
+  }
+
+
 
 
 
