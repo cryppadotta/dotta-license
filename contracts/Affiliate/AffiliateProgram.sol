@@ -34,7 +34,7 @@ withdraw it
 contract AffiliateProgram is Pausable {
   using SafeMath for uint256;
 
-  event AffiliateSale(
+  event AffiliateCredit(
     // The address of the affiliate
     address affiliate,
     // The store's ID of what was sold (e.g. a tokenId)
@@ -51,10 +51,10 @@ contract AffiliateProgram is Pausable {
   mapping (address => uint256) public balances;
 
   // A mapping from affiliate address to the time of last deposit
-  mapping (address => uint256) public lastDeposits;
+  mapping (address => uint256) public lastDepositTimes;
 
   // The last deposit globally
-  uint256 public lastDeposit;
+  uint256 public lastDepositTime;
 
   // The hard-coded maximum affiliate rate (in basis points)
   // All rates are measured in basis points (1/100 of a percent)
@@ -143,17 +143,18 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
-   * @dev depositFor
+   * @dev credit
    */
-  function depositFor(
+  function credit(
     address affiliate,
     uint256 purchaseId
     ) public onlyStoreOrOwner whenNotPaused payable {
     require(msg.value > 0);
     require(affiliate != address(0));
     balances[affiliate] += msg.value;
-    lastDeposits[affiliate] = now;
-    AffiliateSale(affiliate, purchaseId, msg.value);
+    lastDepositTimes[affiliate] = now;
+    lastDepositTime = now;
+    AffiliateCredit(affiliate, purchaseId, msg.value);
   }
 
   /**
@@ -179,12 +180,12 @@ contract AffiliateProgram is Pausable {
    * This function can be called even if the contract is paused
    */
   function withdrawFrom(address affiliate, address to) onlyOwner public {
-    require(now > lastDeposits[affiliate] + commissionExpiryTime);
+    require(now > lastDepositTimes[affiliate] + commissionExpiryTime);
     _performWithdraw(affiliate, to);
   }
 
   function shutdown(address to) onlyOwner whenPaused public {
-    require(now > lastDeposit + commissionExpiryTime);
+    require(now > lastDepositTime + commissionExpiryTime);
     selfdestruct(to);
   }
 

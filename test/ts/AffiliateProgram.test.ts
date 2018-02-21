@@ -7,6 +7,9 @@ import { Artifacts } from '../../util/artifacts';
 import assertRevert from '../helpers/assertRevert';
 import expectThrow from '../helpers/expectThrow';
 import eventByName from '../helpers/eventByName';
+import latestTime from '../helpers/latestTime';
+import increaseTime from '../helpers/increaseTime';
+import * as Bluebird from 'bluebird';
 
 chaiSetup.configure();
 const expect = chai.expect;
@@ -15,6 +18,7 @@ const LicenseCore = LicenseCoreTest;
 chai.should();
 
 const web3: Web3 = (global as any).web3;
+const web3Eth: any = Bluebird.promisifyAll(web3.eth);
 const ETH_STRING = web3.toWei(1, 'ether');
 const FINNEY_STRING = web3.toWei(1, 'finney');
 const ETH_BN = new BigNumber(ETH_STRING);
@@ -239,13 +243,13 @@ contract('AffiliateProgram', (accounts: string[]) => {
     });
 
     describe('when making deposits for affiliates', async () => {
+      const purchaseId = 1;
+      const valueAmount = 12345;
       describe('in a valid way', async () => {
-        const purchaseId = 1;
-        const valueAmount = 12345;
         let logs;
 
         beforeEach(async () => {
-          const result = await affiliate.depositFor(affiliate1, purchaseId, {
+          const result = await affiliate.credit(affiliate1, purchaseId, {
             from: creator,
             value: valueAmount
           });
@@ -255,7 +259,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
           (await affiliate.balances(affiliate1)).should.be.bignumber.equal(
             valueAmount
           );
-          await affiliate.depositFor(affiliate1, purchaseId, {
+          await affiliate.credit(affiliate1, purchaseId, {
             from: creator,
             value: valueAmount
           });
@@ -263,12 +267,28 @@ contract('AffiliateProgram', (accounts: string[]) => {
             valueAmount * 2
           );
         });
-        it('should record the lastDeposit for that affiliate');
-        it('should record the lastDeposit for the contract overall');
-        it('record an AffiliateSale');
+        it('should record the lastDeposit for that affiliate', async () => {
+          const block = await web3Eth.getBlockAsync('latest');
+          const lastDepositTime = await affiliate.lastDepositTimes(affiliate1);
+          lastDepositTime.should.be.bignumber.equal(block.timestamp);
+        });
+        it('should record the lastDeposit for the contract overall', async () => {
+          const block = await web3Eth.getBlockAsync('latest');
+          const lastDepositTime = await affiliate.lastDeposit;
+          lastDepositTime.should.be.bignumber.equal(block.timestamp);
+        });
+        it('emit an AffiliateCredit');
       });
 
-      it('should not allow deposits when paused');
+      it('should not allow deposits when paused', async () => {
+        await affiliate.pause({ from: creator });
+        await assertRevert(
+          affiliate.credit(affiliate1, purchaseId, {
+            from: creator,
+            value: valueAmount
+          })
+        );
+      });
       it('should not allow deposits from a rando');
       it('should not allow deposits without a value');
       it('should not allow deposits to an affiliate with a zero address');
