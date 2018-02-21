@@ -72,17 +72,17 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
     await token.unpause({ from: ceo });
 
-    await token.purchase(firstProduct.id, user1, {
+    await token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
       from: user1,
       value: firstProduct.price
     });
 
-    await token.purchase(firstProduct.id, user1, {
+    await token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
       from: coo,
       value: firstProduct.price
     });
 
-    await token.purchase(secondProduct.id, user2, {
+    await token.purchase(secondProduct.id, user2, ZERO_ADDRESS, {
       from: coo,
       value: secondProduct.price
     });
@@ -154,10 +154,15 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         it('mints the given token ID to the given address', async () => {
           const previousBalance = await token.balanceOf(to);
 
-          const { logs } = await token.purchase(secondProduct.id, to, {
-            from: to,
-            value: secondProduct.price
-          });
+          const { logs } = await token.purchase(
+            secondProduct.id,
+            to,
+            ZERO_ADDRESS,
+            {
+              from: to,
+              value: secondProduct.price
+            }
+          );
           const transferEvent = eventByName(logs, 'Transfer');
           const tokenId = transferEvent.args._tokenId;
 
@@ -169,10 +174,15 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         });
 
         it('adds that token to the token list of the owner', async () => {
-          const { logs } = await token.purchase(secondProduct.id, user3, {
-            from: user1,
-            value: secondProduct.price
-          });
+          const { logs } = await token.purchase(
+            secondProduct.id,
+            user3,
+            ZERO_ADDRESS,
+            {
+              from: user1,
+              value: secondProduct.price
+            }
+          );
           const transferEvent = eventByName(logs, 'Transfer');
           const tokenId = transferEvent.args._tokenId;
 
@@ -182,10 +192,15 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         });
 
         it('emits a transfer event', async () => {
-          const { logs } = await token.purchase(secondProduct.id, to, {
-            from: user1,
-            value: secondProduct.price
-          });
+          const { logs } = await token.purchase(
+            secondProduct.id,
+            to,
+            ZERO_ADDRESS,
+            {
+              from: user1,
+              value: secondProduct.price
+            }
+          );
 
           logs.length.should.be.equal(2);
           logs[1].event.should.be.eq('Transfer');
@@ -200,7 +215,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
         it('reverts', async () => {
           await assertRevert(
-            token.purchase(secondProduct.id, to, {
+            token.purchase(secondProduct.id, to, ZERO_ADDRESS, {
               from: user1,
               value: secondProduct.price
             })

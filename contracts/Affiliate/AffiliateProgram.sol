@@ -45,19 +45,24 @@ contract AffiliateProgram is Pausable {
 
   event Withdraw(address affiliate, address to, uint256 amount);
   event Whitelisted(address affiliate, uint256 rate);
-  event BaselineRate(uint256 rate);
-  event MaximumRate(uint256 rate);
+  event RateChanged(uint256 rate, uint256 amount);
 
   // A mapping from affiliate address to their balance
   mapping (address => uint256) public balances;
 
   // A mapping from affiliate address to the time of last deposit
-  mapping (address => uint256) public lastDeposit;
+  mapping (address => uint256) public lastDeposits;
+
+  // The last deposit globally
+  uint256 public lastDeposit;
 
   // The hard-coded maximum affiliate rate (in basis points)
   // All rates are measured in basis points (1/100 of a percent)
   // Values 0-10,000 map to 0%-100%
   uint256 private constant hardCodedMaximumRate = 5000;
+
+  // Affiliate commissions expire if they are unclaimed after this amount of time
+  uint256 private constant commissionExpiryTime = 30 days;
 
   // The baseline affiliate rate (in basis points) for non-whitelisted referrals
   uint256 public baselineRate = 0;
@@ -147,7 +152,7 @@ contract AffiliateProgram is Pausable {
     require(msg.value > 0);
     require(affiliate != address(0));
     balances[affiliate] += msg.value;
-    lastDeposit[affiliate] = now;
+    lastDeposits[affiliate] = now;
     AffiliateSale(affiliate, purchaseId, msg.value);
   }
 
@@ -173,19 +178,24 @@ contract AffiliateProgram is Pausable {
    * @dev withdrawFrom
    * This function can be called even if the contract is paused
    */
-  function withdrawFrom(address affiliate, address to) onlyStoreOrOwner public {
-    require(now > lastDeposit[affiliate] + 30 days);
+  function withdrawFrom(address affiliate, address to) onlyOwner public {
+    require(now > lastDeposits[affiliate] + commissionExpiryTime);
     _performWithdraw(affiliate, to);
   }
 
+  function shutdown(address to) onlyOwner whenPaused public {
+    require(now > lastDeposit + commissionExpiryTime);
+    selfdestruct(to);
+  }
+
   /**
-   * @dev whitelistAffiliate - white listed affiliates can receive a different
+   * @dev whitelist - white listed affiliates can receive a different
    *   rate than the general public (whitelisted accounts would generally get a
    *   better rate).
    * @param affiliate - the affiliate address to whitelist
    * @param rate - the rate, in basis-points (1/100th of a percent) to give this affiliate in each sale. NOTE: a rate of exactly 1 is the signal to blacklist this affiliate. That is, a rate of 1 will set the commission to 0.
    */
-  function whitelistAffiliate(address affiliate, uint256 rate) onlyStoreOrOwner public {
+  function whitelist(address affiliate, uint256 rate) onlyOwner public {
     require(rate <= hardCodedMaximumRate);
     whitelistRates[affiliate] = rate;
     Whitelisted(affiliate, rate);
@@ -194,20 +204,20 @@ contract AffiliateProgram is Pausable {
   /**
    * @dev setBaselineRate
    */
-  function setBaselineRate(uint256 newRate) onlyStoreOrOwner public {
+  function setBaselineRate(uint256 newRate) onlyOwner public {
     require(newRate <= hardCodedMaximumRate);
     baselineRate = newRate;
-    BaselineRate(newRate);
+    RateChanged(0, newRate);
   }
 
   /**
    * @dev setMaximumRate
    */
   // The maximum rate for any affiliate -- overrides individual rates
-  function setMaximumRate(uint256 newRate) onlyStoreOrOwner public {
+  function setMaximumRate(uint256 newRate) onlyOwner public {
     require(newRate <= hardCodedMaximumRate);
     maximumRate = newRate;
-    MaximumRate(newRate);
+    RateChanged(1, newRate);
   }
 
 }

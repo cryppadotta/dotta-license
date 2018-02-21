@@ -11,18 +11,19 @@ const {
   LicenseBase,
   LicenseAccessControl,
   ERC721,
-  SafeMath
+  SafeMath,
+  AffiliateProgram
 } = new Artifacts(artifacts);
 
-module.exports = function(deployer: any, network: string) {
+module.exports = (deployer: any, network: string) => {
   deployer.deploy(ConvertLib);
 
   deployer.link(ConvertLib, MetaCoin);
   deployer.deploy(MetaCoin);
 
-  if (network === 'test') {
-    deployer.deploy(LicenseCoreTest);
-  } else {
-    deployer.deploy(LicenseCore);
-  }
+  const licenseContract = network === 'test' ? LicenseCoreTest : LicenseCore;
+
+  deployer.deploy(licenseContract).then(() => {
+    deployer.deploy(AffiliateProgram, licenseContract.address);
+  });
 };

@@ -1,12 +1,21 @@
 pragma solidity ^0.4.19;
 
 import "./LicenseOwnership.sol";
+import "./Affiliate/AffiliateProgram.sol";
 
 contract LicenseSale is LicenseOwnership {
+  AffiliateProgram public affiliateProgram;
+
+  function setAffiliateProgramAddress(address _address) public onlyCEO {
+    AffiliateProgram candidateContract = AffiliateProgram(_address);
+    require(candidateContract.isAffiliateProgram());
+    affiliateProgram = candidateContract;
+  }
 
   function purchase(
     uint256 _productId,
-    address _assignee
+    address _assignee,
+    address _affiliate
     )
     public payable whenNotPaused
     returns (uint)
@@ -16,8 +25,21 @@ contract LicenseSale is LicenseOwnership {
     require(msg.value == priceOf(_productId));
 
     // this can, of course, be gamed by malicious miners. But it's adequate for our application
-    uint256 attributes = uint256(keccak256(block.blockhash(block.number-1)))^_productId;
-    return _performPurchase(_productId, _assignee, attributes);
+    // TODO -- if two purchases for the same product are in the same block they will have
+    // the same attributes -- we need to individualize it
+    uint256 attributes = uint256(keccak256(block.blockhash(block.number-1)))^_productId^(uint256(_assignee));
+    uint256 licenseId = _performPurchase(_productId, _assignee, attributes);
+
+    if(
+      priceOf(_productId) > 0 &&
+      _affiliate != address(0) &&
+      affiliateProgram != address(0) &&
+      !affiliateProgram.paused()
+    ) {
+      _handleAffiliate(_affiliate, _productId, licenseId, msg.value);
+    }
+
+    return licenseId;
   }
 
   function createPromotionalPurchase(
@@ -54,6 +76,15 @@ contract LicenseSale is LicenseOwnership {
     Issued(_assignee, newLicenseId, _license.productId, _license.attributes, _license.issuedTime);
     _mint(_assignee, newLicenseId);
     return newLicenseId;
+  }
+
+  function _handleAffiliate(
+    address _affiliate,
+    uint256 _productId,
+    uint256 _licenseId,
+    uint256 _purchaseAmount
+  ) {
+
   }
 
 }

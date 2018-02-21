@@ -30,6 +30,7 @@ contract('LicenseSale', (accounts: string[]) => {
   const cfo = accounts[5];
   const coo = accounts[6];
   let p1Created: any;
+  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
   const firstProduct = {
     id: 1,
@@ -82,23 +83,23 @@ contract('LicenseSale', (accounts: string[]) => {
       it('should not sell a product that has no inventory', async () => {
         await token.clearInventory(firstProduct.id, { from: ceo });
         await assertRevert(
-          token.purchase(firstProduct.id, user1, {
+          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
             from: user1,
             value: firstProduct.price
           })
         );
       });
       it('should not sell a product that was sold out', async () => {
-        await token.purchase(firstProduct.id, user1, {
+        await token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
           from: user1,
           value: firstProduct.price
         });
-        await token.purchase(firstProduct.id, user2, {
+        await token.purchase(firstProduct.id, user2, ZERO_ADDRESS, {
           from: user2,
           value: firstProduct.price
         });
         await assertRevert(
-          token.purchase(firstProduct.id, user3, {
+          token.purchase(firstProduct.id, user3, ZERO_ADDRESS, {
             from: user3,
             value: firstProduct.price
           })
@@ -110,13 +111,13 @@ contract('LicenseSale', (accounts: string[]) => {
       });
       it('should not sell at a price too low', async () => {
         await assertRevert(
-          token.purchase(firstProduct.id, user1, {
+          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
             from: user1,
             value: firstProduct.price - 1
           })
         );
         await assertRevert(
-          token.purchase(firstProduct.id, user1, {
+          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
             from: user1,
             value: 0
           })
@@ -124,7 +125,7 @@ contract('LicenseSale', (accounts: string[]) => {
       });
       it('should not sell at a price too high', async () => {
         await assertRevert(
-          token.purchase(firstProduct.id, user1, {
+          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
             from: user1,
             value: firstProduct.price + 1
           })
@@ -133,7 +134,7 @@ contract('LicenseSale', (accounts: string[]) => {
       it('should not sell if the contract is paused', async () => {
         await token.pause({ from: ceo });
         await assertRevert(
-          token.purchase(firstProduct.id, user1, {
+          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
             from: user1,
             value: firstProduct.price + 1
           })
@@ -145,9 +146,14 @@ contract('LicenseSale', (accounts: string[]) => {
       let tokenId: any;
       let issuedEvent: any;
       beforeEach(async () => {
-        const { logs } = await token.purchase(firstProduct.id, user1, {
-          value: firstProduct.price
-        });
+        const { logs } = await token.purchase(
+          firstProduct.id,
+          user1,
+          ZERO_ADDRESS,
+          {
+            value: firstProduct.price
+          }
+        );
         issuedEvent = eventByName(logs, 'Issued');
         tokenId = issuedEvent.args.licenseId;
       });
@@ -216,7 +222,7 @@ contract('LicenseSale', (accounts: string[]) => {
     });
     describe('if the COO is creating it', async () => {
       it('should not allow violation of the total inventory', async () => {
-        await token.purchase(firstProduct.id, user3, {
+        await token.purchase(firstProduct.id, user3, ZERO_ADDRESS, {
           from: user3,
           value: firstProduct.price
         });
@@ -230,7 +236,7 @@ contract('LicenseSale', (accounts: string[]) => {
         );
       });
       it('should not allow violation of the total supply', async () => {
-        await token.purchase(firstProduct.id, user3, {
+        await token.purchase(firstProduct.id, user3, ZERO_ADDRESS, {
           from: user3,
           value: firstProduct.price
         });
