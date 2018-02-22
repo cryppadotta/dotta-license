@@ -77,6 +77,11 @@ contract AffiliateProgram is Pausable {
   // The address of the store selling products
   address public storeAddress;
 
+  // If we decide to retire this program, this value will be set to true
+  // and then the contract cannot be unpaused
+  bool public retired = false;
+
+
   /**
    * @dev Modifier to make a function only callable by the store or the owner
    */
@@ -184,9 +189,15 @@ contract AffiliateProgram is Pausable {
     _performWithdraw(affiliate, to);
   }
 
-  function shutdown(address to) onlyOwner whenPaused public {
+  /**
+   * @dev withdrawAll
+   * If no new comissions have been deposited, then the owner may pause the
+   * program and retire this program. This may only be performed once
+   */
+  function retire(address to) onlyOwner whenPaused public {
     require(now > lastDepositTime + commissionExpiryTime);
-    selfdestruct(to);
+    to.transfer(this.balance);
+    retired = true;
   }
 
   /**
@@ -219,6 +230,16 @@ contract AffiliateProgram is Pausable {
     require(newRate <= hardCodedMaximumRate);
     maximumRate = newRate;
     RateChanged(1, newRate);
+  }
+
+  /**
+   * @dev called by the owner to unpause, returns to normal state. Will not
+   * unpause if the contract is retired.
+   */
+  function unpause() onlyOwner whenPaused public {
+    require(!retired);
+    paused = false;
+    Unpause();
   }
 
 }

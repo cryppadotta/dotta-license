@@ -472,11 +472,11 @@ contract('AffiliateProgram', (accounts: string[]) => {
 
   describe('when shutting down', async () => {
     describe('and it is before the expiry time', async () => {
-      it('should not allow the creator to shutdown', async () => {
-        await assertRevert(affiliate.shutdown(creator, { from: creator }));
+      it('should not allow the creator to retire', async () => {
+        await assertRevert(affiliate.retire(creator, { from: creator }));
       });
-      it('should not allow the a rando to shutdown', async () => {
-        await assertRevert(affiliate.shutdown(user1, { from: user1 }));
+      it('should not allow the a rando to retire', async () => {
+        await assertRevert(affiliate.retire(user1, { from: user1 }));
       });
     });
     describe('and it is after the expiry time', async () => {
@@ -484,20 +484,21 @@ contract('AffiliateProgram', (accounts: string[]) => {
         await increaseTime(60 * 60 * 24 * 31);
       });
 
-      it('should allow the creator to shutdown', async () => {
+      it('should allow the creator to retire', async () => {
         const creatorBalance = await web3Eth.getBalanceAsync(creator);
         const affiliateBalance = await web3Eth.getBalanceAsync(
           affiliate.address
         );
         await affiliate.pause({ from: creator, gasPrice: 0 });
-        await affiliate.shutdown(creator, { from: creator, gasPrice: 0 });
+        await affiliate.retire(creator, { from: creator, gasPrice: 0 });
         const newCreatorBalance = await web3Eth.getBalanceAsync(creator);
         newCreatorBalance.should.be.bignumber.equal(
           creatorBalance.plus(affiliateBalance)
         );
+        await assertRevert(affiliate.unpause({ from: creator }));
       });
-      it('should not allow the a rando to shutdown', async () => {
-        await assertRevert(affiliate.shutdown(user1, { from: user1 }));
+      it('should not allow the a rando to retire', async () => {
+        await assertRevert(affiliate.retire(user1, { from: user1 }));
       });
     });
   });
@@ -523,12 +524,13 @@ contract('AffiliateProgram', (accounts: string[]) => {
     (matchingId || false).should.be.false();
   };
 
-  describe.only('when making a sale', async () => {
+  describe('when making a sale', async () => {
     const assertPurchaseWorks = async () => {
       const originalLicenseBalance = await web3Eth.getBalanceAsync(
         token.address
       );
       await assertDoesNotOwn(user3, secondProduct.id);
+
       await token.purchase(secondProduct.id, user3, affiliate1, {
         from: user3,
         value: secondProduct.price,
@@ -541,13 +543,13 @@ contract('AffiliateProgram', (accounts: string[]) => {
       await assertOwns(user3, secondProduct.id);
     };
     describe('and the affiliate program is inoperational because', async () => {
-      describe('and the affiliate program was shutdown', async () => {
+      describe('and the affiliate program was retired', async () => {
         beforeEach(async () => {
           await increaseTime(60 * 60 * 24 * 31);
           await affiliate.pause({ from: creator, gasPrice: 0 });
-          await affiliate.shutdown(creator, { from: creator });
+          await affiliate.retire(creator, { from: creator });
         });
-        it.only('should work just fine', assertPurchaseWorks);
+        it('should work just fine', assertPurchaseWorks);
       });
       describe('and the affiliate program is paused', async () => {
         beforeEach(async () => {

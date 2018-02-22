@@ -33,6 +33,7 @@ contract LicenseSale is LicenseOwnership {
       priceOf(_productId) > 0 &&
       _affiliate != address(0) &&
       affiliateProgram != address(0) &&
+      affiliateProgram.storeAddress() == address(this) &&
       !affiliateProgram.paused()
     ) {
       _handleAffiliate(_affiliate, _productId, licenseId, msg.value);
