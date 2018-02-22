@@ -25,8 +25,7 @@ contract LicenseSale is LicenseOwnership {
     require(msg.value == priceOf(_productId));
 
     // this can, of course, be gamed by malicious miners. But it's adequate for our application
-    // TODO -- if two purchases for the same product are in the same block they will have
-    // the same attributes -- we need to individualize it
+    // Feel free to add your own strategies for product attributes
     uint256 attributes = uint256(keccak256(block.blockhash(block.number-1)))^_productId^(uint256(_assignee));
     uint256 licenseId = _performPurchase(_productId, _assignee, attributes);
 
