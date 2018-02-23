@@ -97,6 +97,7 @@ contract AffiliateProgram is Pausable {
    * and pauses the contract
    */
   function AffiliateProgram(address _storeAddress) public {
+    require(_storeAddress != address(0));
     storeAddress = _storeAddress;
     paused = true;
   }
@@ -104,7 +105,7 @@ contract AffiliateProgram is Pausable {
   /**
    * @dev Exposes that this contract thinks it is an AffiliateProgram
    */
-  function isAffiliateProgram() public view returns (bool) {
+  function isAffiliateProgram() public pure returns (bool) {
     return true;
   }
 
@@ -120,16 +121,15 @@ contract AffiliateProgram is Pausable {
    *  However, since this is such a small amount its an acceptable tradeoff.
    *
    * @param _affiliate - the address of the affiliate to check for
-   * @param _productId - the productId in the sale
-   * @param _purchaseId - the purchaseId in the sale
-   * @param _purchaseAmount - the purchaseAmount
    */
   function rateFor(
     address _affiliate,
-    uint256 _productId,
-    uint256 _purchaseId,
-    uint256 _purchaseAmount)
-    public view returns (uint256)
+    uint256 /*_productId*/,
+    uint256 /*_purchaseId*/,
+    uint256 /*_purchaseAmount*/)
+    public
+    view
+    returns (uint256)
   {
     uint256 whitelistedRate = whitelistRates[_affiliate];
     if(whitelistedRate > 0) {
@@ -157,7 +157,9 @@ contract AffiliateProgram is Pausable {
     uint256 _productId,
     uint256 _purchaseId,
     uint256 _purchaseAmount)
-    public view returns (uint256)
+    public
+    view
+    returns (uint256)
   {
     uint256 rate = rateFor(
       _affiliate,
@@ -177,7 +179,10 @@ contract AffiliateProgram is Pausable {
   function credit(
     address _affiliate,
     uint256 _purchaseId)
-    public onlyStoreOrOwner whenNotPaused payable
+    public
+    onlyStoreOrOwner
+    whenNotPaused
+    payable
   {
     require(msg.value > 0);
     require(_affiliate != address(0));
