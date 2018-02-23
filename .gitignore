@@ -1,10 +1,3 @@
-node_modules
-.floo
-.flooignore
-.soliumignore
-.soliumrc.json
-transpiled
-
 # Created by https://www.gitignore.io/api/node
 
 ### Node ###
@@ -67,8 +60,10 @@ typings/
 # dotenv environment variables file
 .env
 
-
-
-# End of https://www.gitignore.io/api/node
 .\#*
+node_modules
+.floo
+.flooignore
+transpiled
+
 

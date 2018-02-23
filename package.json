@@ -56,6 +56,7 @@
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.4",
     "request": "^2.81.0",
+    "solium": "^1.1.5",
     "tslint": "^4.5.1",
     "tslint-config-0xproject": "^0.0.2"
   }
