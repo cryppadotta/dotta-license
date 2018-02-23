@@ -40,7 +40,10 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     return true;
   }
 
-  function supportsInterface(bytes4 interfaceID) external view returns (bool) {
+  function supportsInterface(
+    bytes4 interfaceID) // solium-disable-line dotta/underscore-function-arguments
+    external view returns (bool)
+  {
     return
       // ERC165
       interfaceID == this.supportsInterface.selector ||
