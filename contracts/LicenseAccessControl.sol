@@ -56,6 +56,17 @@ contract LicenseAccessControl {
   }
 
   /**
+   * @dev Modifier to make a function only callable by CEO or CFO
+   */
+  modifier onlyCEOOrCFO() {
+    require(
+      msg.sender == cfoAddress ||
+      msg.sender == ceoAddress
+    );
+    _;
+  }
+
+  /**
    * @dev Modifier to make a function only callable by CEO or COO
    */
   modifier onlyCEOOrCOO() {
@@ -107,7 +118,7 @@ contract LicenseAccessControl {
    *
    * We set a withdrawal address seperate from the CFO because this allows us to withdraw to a cold wallet.
    */
-  function withdrawBalance() external onlyCFO {
+  function withdrawBalance() external onlyCEOOrCFO {
     require(withdrawalAddress != address(0));
     withdrawalAddress.transfer(this.balance);
   }
