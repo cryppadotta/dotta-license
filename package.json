@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "transpile": "rm -rf ./transpiled; copyfiles ./build/**/* ./transpiled; tsc",
+    "transpile":
+      "rm -rf ./transpiled; copyfiles ./build/**/* ./transpiled; tsc",
     "test": "npm run transpile; truffle test --network test",
     "watchtest": "tsc-watch --onSuccess 'env truffle test --network test'",
     "compile": "rm -rf build/contracts; truffle compile",
@@ -21,7 +22,7 @@
     "url": "https://gitlab.com/cryppadotta/dotta-license.git"
   },
   "author": "Dotta",
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://dottabot.com",
   "devDependencies": {
     "@types/bignumber.js": "^4.0.2",
