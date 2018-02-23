@@ -28,7 +28,7 @@ contract('LicenseAccessControl', (accounts: string[]) => {
     token = await LicenseCore.new({ from: creator });
   });
 
-  describe.only('when setting addresses', async () => {
+  describe('when setting addresses', async () => {
     it('should setCEO', async () => {
       (await token.ceoAddress()).should.be.equal(creator);
       await token.setCEO(ceo);
