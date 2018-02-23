@@ -97,7 +97,7 @@ contract LicenseAccessControl {
    * @dev Sets a new withdrawalAddress
    * @param _newWithdrawalAddress - the address where we'll send the funds
    */
-  function setWithdrawalAddress(address _newWithdrawalAddress) public onlyCFO {
+  function setWithdrawalAddress(address _newWithdrawalAddress) public onlyCEO {
     require(_newWithdrawalAddress != address(0));
     withdrawalAddress = _newWithdrawalAddress;
   }

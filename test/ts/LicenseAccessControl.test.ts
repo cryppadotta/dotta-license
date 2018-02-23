@@ -28,30 +28,60 @@ contract('LicenseAccessControl', (accounts: string[]) => {
     token = await LicenseCore.new({ from: creator });
   });
 
-  describe('when setting addresses', async () => {
+  describe.only('when setting addresses', async () => {
     it('should setCEO', async () => {
       (await token.ceoAddress()).should.be.equal(creator);
       await token.setCEO(ceo);
       (await token.ceoAddress()).should.be.equal(ceo);
     });
 
-    it('should setCFO', async () => {
-      (await token.cfoAddress()).should.be.equal(creator);
+    describe('when a CEO is set', async () => {
+      beforeEach(async () => {
+        await token.setCEO(ceo);
+      });
 
-      await token.setCFO(cfo);
-      (await token.cfoAddress()).should.be.equal(cfo);
+      it('should setCFO', async () => {
+        (await token.cfoAddress()).should.be.equal(creator);
+        await token.setCFO(cfo, { from: ceo });
+        (await token.cfoAddress()).should.be.equal(cfo);
+      });
+
+      it('should setCOO', async () => {
+        (await token.cooAddress()).should.be.equal(creator);
+        await token.setCOO(coo, { from: ceo });
+        (await token.cooAddress()).should.be.equal(coo);
+      });
+
+      it('should setWithdrawalAddress', async () => {
+        (await token.withdrawalAddress()).should.be.equal(creator);
+        await token.setWithdrawalAddress(cfo, { from: ceo });
+        (await token.withdrawalAddress()).should.be.equal(cfo);
+      });
     });
 
-    it('should setCOO', async () => {
-      (await token.cooAddress()).should.be.equal(creator);
-      await token.setCOO(coo);
-      (await token.cooAddress()).should.be.equal(coo);
-    });
+    describe('when a rando is sending', async () => {
+      const sender = user1;
+      beforeEach(async () => {
+        await token.setCEO(ceo);
+      });
 
-    it('should setWithdrawalAddress', async () => {
-      (await token.withdrawalAddress()).should.be.equal(creator);
-      await token.setWithdrawalAddress(cfo);
-      (await token.withdrawalAddress()).should.be.equal(cfo);
+      it('should not setCEO', async () => {
+        await assertRevert(token.setCEO(ceo, { from: sender }));
+      });
+
+      it('should not setCFO', async () => {
+        await assertRevert(token.setCFO(cfo, { from: sender }));
+      });
+
+      it('should not setCOO', async () => {
+        await assertRevert(token.setCOO(coo, { from: sender }));
+      });
+
+      it('should not setWithdrawalAddress', async () => {
+        await assertRevert(
+          token.setWithdrawalAddress(sender, { from: sender })
+        );
+      });
     });
   });
 
@@ -59,10 +89,10 @@ contract('LicenseAccessControl', (accounts: string[]) => {
     it('should not allow a rando', async () => {
       await assertRevert(token.setWithdrawalAddress(user1, { from: user1 }));
     });
-    it('should not allow the CEO', async () => {
+    it('should not allow the CFO', async () => {
       (await token.cfoAddress()).should.be.equal(creator);
       await token.setCFO(cfo);
-      await assertRevert(token.setWithdrawalAddress(ceo, { from: ceo }));
+      await assertRevert(token.setWithdrawalAddress(cfo, { from: cfo }));
     });
   });
 
