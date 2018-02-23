@@ -13,11 +13,25 @@ module.exports = {
       port: 7545,
       network_id: '*' // Match any network id
     },
+    geth: {
+      host: 'localhost',
+      port: 8545,
+      from: 'ff369c07c8e365aa8fabe5e40a320d35cc350ba2',
+      network_id: '*', // Match any network id
+      gas: 4700000, // Gas limit used for deploys
+      gasPrice: 10000000000 // 10 gwei
+    },
     kovan: {
       host: 'localhost',
       port: 8546,
       network_id: '42',
       gas: 4612388
+    }
+  },
+  solc: {
+    optimizer: {
+      enabled: true,
+      runs: 200
     }
   },
   test_directory: 'transpiled/test',

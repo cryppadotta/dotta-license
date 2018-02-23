@@ -66,4 +66,5 @@ node_modules
 .flooignore
 transpiled
 
+build/
 
