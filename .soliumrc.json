@@ -5,7 +5,6 @@
     "quotes": ["error", "double"],
     "indentation": ["error", 2],
     "arg-overflow": "warning",
-    "function-order": "warning",
     "dotta/underscore-function-arguments": "warning",
     "zeppelin/constant-candidates": ["warning"],
     "zeppelin/highlight-comments": ["warning"],

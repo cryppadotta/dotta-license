@@ -42,14 +42,15 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
 
   function supportsInterface(bytes4 interfaceID) external view returns (bool) {
     return
-          interfaceID == this.supportsInterface.selector || // ERC165
-          interfaceID == this.balanceOf.selector ^
-                          this.ownerOf.selector ^
-                          // this.transfer.selector ^
-                          bytes4(keccak256('transfer(address,uint256)')) ^ // see:
-                          this.transferFrom.selector ^
-                          this.approveAll.selector ^
-                          this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
+      // ERC165
+      interfaceID == this.supportsInterface.selector ||
+      interfaceID == this.balanceOf.selector ^
+      this.ownerOf.selector ^
+      // this.transfer.selector^
+      bytes4(keccak256("transfer(address,uint256)")) ^// see:
+      this.transferFrom.selector ^
+      this.approveAll.selector ^
+      this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
   }
 
   /**
@@ -114,8 +115,9 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
    * @return bool whether transfer by msg.sender is approved for the given token ID or not
    */
   function isSenderApprovedFor(uint256 _tokenId) internal view returns (bool) {
-    return isSpecificallyApprovedFor(msg.sender, _tokenId) ||
-           isOperatorApprovedFor(ownerOf(_tokenId), msg.sender);
+    return
+      isSpecificallyApprovedFor(msg.sender, _tokenId) ||
+      isOperatorApprovedFor(ownerOf(_tokenId), msg.sender);
   }
 
   /**
