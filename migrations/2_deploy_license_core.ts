@@ -14,8 +14,5 @@ const {
 
 module.exports = (deployer: any, network: string) => {
   const licenseContract = network === 'test' ? LicenseCoreTest : LicenseCore;
-
-  deployer.deploy(licenseContract).then(() => {
-    deployer.deploy(AffiliateProgram, licenseContract.address);
-  });
+  deployer.deploy(licenseContract);
 };
