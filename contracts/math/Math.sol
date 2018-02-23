@@ -1,5 +1,5 @@
 pragma solidity ^0.4.19;
-
+// solium-disable
 
 /**
  * @title Math
