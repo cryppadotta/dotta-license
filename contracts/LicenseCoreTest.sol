@@ -3,19 +3,6 @@ pragma solidity ^0.4.19;
 import "./LicenseCore.sol";
 
 contract LicenseCoreTest is LicenseCore {
-
   function LicenseTest() public {
   }
-
-  function fund() public payable returns (bool) {
-    return true;
-  }
-
-  function timeNow() public constant returns (uint256) {
-    return now;
-  }
-
-  /* function debugSetSold(uint256 _productId, uint256 _soldAmount) public onlyCLevel {
-    products[_productId].sold = _soldAmount;
-  } */
 }

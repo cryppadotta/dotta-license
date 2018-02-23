@@ -2,7 +2,14 @@ pragma solidity ^0.4.19;
 
 import "./LicenseAccessControl.sol";
 
+/**
+ * @title LicenseBase
+ * @dev This contract defines the License data structure and how to read from it
+ */
 contract LicenseBase is LicenseAccessControl {
+  /**
+   * @dev Issued is emitted when a new license is issued
+   */
   event Issued(
     address indexed owner,
     uint256 licenseId,
@@ -10,9 +17,6 @@ contract LicenseBase is LicenseAccessControl {
     uint256 attributes,
     uint256 issuedTime
   );
-
-  // TODO remove for production
-  event Debug(uint256 value);
 
   struct License {
     uint256 productId;
@@ -38,7 +42,9 @@ contract LicenseBase is LicenseAccessControl {
     return licenses[_licenseId].issuedTime;
   }
 
-  function licenseInfo(uint256 _licenseId) public view returns (uint256, uint256, uint256) {
+  function licenseInfo(uint256 _licenseId)
+    public view returns (uint256, uint256, uint256)
+  {
     return (
       licenseProductId(_licenseId),
       licenseAttributes(_licenseId),

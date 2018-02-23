@@ -27,5 +27,9 @@ contract('LicenseCore', function(accounts: string[]) {
     expect(true).to.be.true();
   });
 
-  it('should not accept a fallback function');
+  it('should not accept a value in the fallback function');
+  describe('when upgrading the contract', async () => {
+    it('should set a new address');
+    it('should not allow an unpause');
+  });
 });
