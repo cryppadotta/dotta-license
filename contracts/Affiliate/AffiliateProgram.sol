@@ -1,8 +1,8 @@
 pragma solidity ^0.4.19;
 
-import '../math/SafeMath.sol';
-import '../math/Math.sol';
-import '../lifecycle/Pausable.sol';
+import "../math/SafeMath.sol";
+import "../math/Math.sol";
+import "../lifecycle/Pausable.sol";
 
 /**
 
@@ -86,23 +86,32 @@ contract AffiliateProgram is Pausable {
    * @dev Modifier to make a function only callable by the store or the owner
    */
   modifier onlyStoreOrOwner() {
-    require(msg.sender == storeAddress ||
-            msg.sender == owner);
+    require(
+      msg.sender == storeAddress ||
+      msg.sender == owner);
     _;
   }
 
-  function AffiliateProgram(address _storeAddress) {
+  /**
+   * @dev AffiliateProgram constructor - keeps the address of it's parent store
+   * and pauses the contract
+   */
+  function AffiliateProgram(address _storeAddress) public {
     storeAddress = _storeAddress;
     paused = true;
   }
 
+  /**
+   * @dev Exposes that this contract thinks it is an AffiliateProgram
+   */
   function isAffiliateProgram() public view returns (bool) {
     return true;
   }
 
   /**
    * @dev rateFor returns the rate which should be used to calculate the comission
-   *  for this affiliate/sale combination.
+   *  for this affiliate/sale combination, in basis points (1/100th of a percent).
+   *
    *  We may want to completely blacklist a particular address (e.g. a known bad actor affilite).
    *  To that end, if the whitelistRate is exactly 1bp, we use that as a signal for blacklisting
    *  and return a rate of zero. The upside is that we can completely turn off
@@ -110,93 +119,128 @@ contract AffiliateProgram is Pausable {
    *  downside is that you can't issued 1/100th of a percent commission.
    *  However, since this is such a small amount its an acceptable tradeoff.
    *
-   * @param affiliate - the address of the affiliate to check for
-   * @param productId - the productId in the sale
-   * @param purchaseId - the purchaseId in the sale
-   * @param purchaseAmount - the purchaseAmount
+   * @param _affiliate - the address of the affiliate to check for
+   * @param _productId - the productId in the sale
+   * @param _purchaseId - the purchaseId in the sale
+   * @param _purchaseAmount - the purchaseAmount
    */
   function rateFor(
-    address affiliate,
-    uint256 productId,
-    uint256 purchaseId,
-    uint256 purchaseAmount
-  )
-    public view returns (uint256) {
-      uint256 whitelistedRate = whitelistRates[affiliate];
-      if(whitelistedRate > 0) {
-        // use 1 bp as a blacklist signal
-        if(whitelistedRate == 1) {
-          return 0;
-        } else {
-          return Math.min256(whitelistedRate, maximumRate);
-        }
+    address _affiliate,
+    uint256 _productId,
+    uint256 _purchaseId,
+    uint256 _purchaseAmount)
+    public view returns (uint256)
+  {
+    uint256 whitelistedRate = whitelistRates[_affiliate];
+    if(whitelistedRate > 0) {
+      // use 1 bp as a blacklist signal
+      if(whitelistedRate == 1) {
+        return 0;
       } else {
-        return Math.min256(baselineRate, maximumRate);
+        return Math.min256(whitelistedRate, maximumRate);
       }
-  }
-
-  function cutFor(
-    address affiliate,
-    uint256 productId,
-    uint256 purchaseId,
-    uint256 purchaseAmount
-  )
-    public view returns (uint256) {
-      uint256 rate = rateFor(affiliate, productId, purchaseId, purchaseAmount);
-      require(rate <= hardCodedMaximumRate);
-      return (purchaseAmount.mul(rate)).div(10000);
+    } else {
+      return Math.min256(baselineRate, maximumRate);
+    }
   }
 
   /**
-   * @dev credit
+   * @dev cutFor returns the cut (amount in wei) to give in comission to the affiliate
+   *
+   * @param _affiliate - the address of the affiliate to check for
+   * @param _productId - the productId in the sale
+   * @param _purchaseId - the purchaseId in the sale
+   * @param _purchaseAmount - the purchaseAmount
+   */
+  function cutFor(
+    address _affiliate,
+    uint256 _productId,
+    uint256 _purchaseId,
+    uint256 _purchaseAmount)
+    public view returns (uint256)
+  {
+    uint256 rate = rateFor(
+      _affiliate,
+      _productId,
+      _purchaseId,
+      _purchaseAmount);
+    require(rate <= hardCodedMaximumRate);
+    return (_purchaseAmount.mul(rate)).div(10000);
+  }
+
+  /**
+   * @dev credit accepts eth and credits the affiliate's balance for the amount
+   *
+   * @param _affiliate - the address of the affiliate to credit
+   * @param _purchaseId - the purchaseId of the sale
    */
   function credit(
-    address affiliate,
-    uint256 purchaseId
-    ) public onlyStoreOrOwner whenNotPaused payable {
+    address _affiliate,
+    uint256 _purchaseId)
+    public onlyStoreOrOwner whenNotPaused payable
+  {
     require(msg.value > 0);
-    require(affiliate != address(0));
-    balances[affiliate] += msg.value;
-    lastDepositTimes[affiliate] = now;
-    lastDepositTime = now;
-    AffiliateCredit(affiliate, purchaseId, msg.value);
+    require(_affiliate != address(0));
+    balances[_affiliate] += msg.value;
+    lastDepositTimes[_affiliate] = now; // solium-disable-line security/no-block-members
+    lastDepositTime = now; // solium-disable-line security/no-block-members
+    AffiliateCredit(_affiliate, _purchaseId, msg.value);
   }
 
   /**
-   * @dev _performWithdraw
+   * @dev _performWithdraw performs a withdrawal from address _from and
+   * transfers it to _to. This can be different because we allow the owner
+   * to withdraw unclaimed funds after a period of time.
+   *
+   * @param _from - the address to subtract balance from
+   * @param _to - the address to transfer ETH to
    */
-  function _performWithdraw(address from, address to) private {
-    require(balances[from] > 0);
-    uint256 balanceValue = balances[from];
-    balances[from] = 0;
-    to.transfer(balanceValue);
-    Withdraw(from, to, balanceValue);
+  function _performWithdraw(address _from, address _to) private {
+    require(balances[_from] > 0);
+    uint256 balanceValue = balances[_from];
+    balances[_from] = 0;
+    _to.transfer(balanceValue);
+    Withdraw(_from, _to, balanceValue);
   }
 
   /**
-   * @dev withdraw
+   * @dev withdraw the msg.sender's balance
    */
   function withdraw() public whenNotPaused {
     _performWithdraw(msg.sender, msg.sender);
   }
 
   /**
-   * @dev withdrawFrom
+   * @dev withdrawFrom allows the owner to withdraw an affiliate's unclaimed
+   * ETH, after the alotted time.
+   *
    * This function can be called even if the contract is paused
+   *
+   * @param _affiliate - the address of the affiliate
+   * @param _to - the address to send ETH to
    */
-  function withdrawFrom(address affiliate, address to) onlyOwner public {
-    require(now > lastDepositTimes[affiliate] + commissionExpiryTime);
-    _performWithdraw(affiliate, to);
+  function withdrawFrom(address _affiliate, address _to) onlyOwner public {
+    // solium-disable-next-line security/no-block-members
+    require(now > lastDepositTimes[_affiliate].add(commissionExpiryTime));
+    _performWithdraw(_affiliate, _to);
   }
 
   /**
-   * @dev withdrawAll
-   * If no new comissions have been deposited, then the owner may pause the
-   * program and retire this program. This may only be performed once
+   * @dev retire - withdraws the entire balance and marks the contract as retired, which
+   * prevents unpausing.
+   *
+   * If no new comissions have been deposited for the alotted time,
+   * then the owner may pause the program and retire this contract.
+   * This may only be performed once as the contract cannot be unpaused.
+   *
+   * We do this as an alternative to selfdestruct, because certain operations
+   * can still be performed after the contract has been selfdestructed, such as
+   * the owner withdrawing ETH accidentally sent here.
    */
-  function retire(address to) onlyOwner whenPaused public {
-    require(now > lastDepositTime + commissionExpiryTime);
-    to.transfer(this.balance);
+  function retire(address _to) onlyOwner whenPaused public {
+    // solium-disable-next-line security/no-block-members
+    require(now > lastDepositTime.add(commissionExpiryTime));
+    _to.transfer(this.balance);
     retired = true;
   }
 
@@ -204,32 +248,33 @@ contract AffiliateProgram is Pausable {
    * @dev whitelist - white listed affiliates can receive a different
    *   rate than the general public (whitelisted accounts would generally get a
    *   better rate).
-   * @param affiliate - the affiliate address to whitelist
-   * @param rate - the rate, in basis-points (1/100th of a percent) to give this affiliate in each sale. NOTE: a rate of exactly 1 is the signal to blacklist this affiliate. That is, a rate of 1 will set the commission to 0.
+   * @param _affiliate - the affiliate address to whitelist
+   * @param _rate - the rate, in basis-points (1/100th of a percent) to give this affiliate in each sale. NOTE: a rate of exactly 1 is the signal to blacklist this affiliate. That is, a rate of 1 will set the commission to 0.
    */
-  function whitelist(address affiliate, uint256 rate) onlyOwner public {
-    require(rate <= hardCodedMaximumRate);
-    whitelistRates[affiliate] = rate;
-    Whitelisted(affiliate, rate);
+  function whitelist(address _affiliate, uint256 _rate) onlyOwner public {
+    require(_rate <= hardCodedMaximumRate);
+    whitelistRates[_affiliate] = _rate;
+    Whitelisted(_affiliate, _rate);
   }
 
   /**
-   * @dev setBaselineRate
+   * @dev setBaselineRate - sets the baseline rate for any affiliate that is not whitelisted
+   * @param _newRate - the rate, in bp (1/100th of a percent) to give any non-whitelisted affiliate. Set to zero to "turn off"
    */
-  function setBaselineRate(uint256 newRate) onlyOwner public {
-    require(newRate <= hardCodedMaximumRate);
-    baselineRate = newRate;
-    RateChanged(0, newRate);
+  function setBaselineRate(uint256 _newRate) onlyOwner public {
+    require(_newRate <= hardCodedMaximumRate);
+    baselineRate = _newRate;
+    RateChanged(0, _newRate);
   }
 
   /**
-   * @dev setMaximumRate
+   * @dev setMaximumRate - Set the maximum rate for any affiliate, including whitelists. That is, this overrides individual rates.
+   * @param _newRate - the rate, in bp (1/100th of a percent)
    */
-  // The maximum rate for any affiliate -- overrides individual rates
-  function setMaximumRate(uint256 newRate) onlyOwner public {
-    require(newRate <= hardCodedMaximumRate);
-    maximumRate = newRate;
-    RateChanged(1, newRate);
+  function setMaximumRate(uint256 _newRate) onlyOwner public {
+    require(_newRate <= hardCodedMaximumRate);
+    maximumRate = _newRate;
+    RateChanged(1, _newRate);
   }
 
   /**
