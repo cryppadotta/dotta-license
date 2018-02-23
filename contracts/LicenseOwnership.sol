@@ -245,7 +245,6 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     Transfer(0x0, _to, _tokenId);
   }
 
-
   /**
   * @dev Internal function to clear current approval and transfer the ownership of a given token ID
   * @param _from address which you want to send tokens from

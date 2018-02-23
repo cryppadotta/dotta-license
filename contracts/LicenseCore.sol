@@ -2,6 +2,11 @@ pragma solidity ^0.4.19;
 
 import "./LicenseSale.sol";
 
+/**
+ * @title LicenseCore is the entry point of the contract
+ * @dev LicenseCore is the entry point and it controls the ability to set a new
+ * contract address, in the case where an upgrade is required
+ */
 contract LicenseCore is LicenseSale {
   address public newContractAddress;
 
@@ -19,7 +24,7 @@ contract LicenseCore is LicenseSale {
     ContractUpgrade(_v2Address);
   }
 
-  function() external payable {
+  function() external {
     assert(false);
   }
 

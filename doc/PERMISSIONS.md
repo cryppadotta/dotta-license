@@ -7,7 +7,7 @@
 | `setCFO`                      | ✔   |     |     |        |
 | `setCOO`                      | ✔   |     |     |        |
 | `setWithdrawalAddress`        | ✔   |     |     |        |
-| `withdrawBalance`             |     | ✔   |     |        |
+| `withdrawBalance`             | ✔   | ✔   |     |        |
 | `pause`                       | ✔   | ✔   | ✔   |        |
 | `unpause`                     | ✔   |     |     |        |
 |                               |     |     |     |        |
