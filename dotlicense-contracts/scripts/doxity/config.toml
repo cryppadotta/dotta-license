@@ -1,0 +1,14 @@
+name = "dotta-license"
+license = "MIT"
+version = "0.0.1"
+description = ""
+homepage = "https://dottabot.com"
+author = "Dotta"
+buildTime = 2018-02-24T15:44:54.133Z
+target = "scripts/doxity"
+src = "contracts/*"
+dir = "pages/docs"
+source = "https://github.com/DigixGlobal/doxity-gatsby-starter-project/archive/a4886b7a7a04c018ac04fed3125d7d4785e74bed.tar.gz"
+out = "docs"
+
+[interaction]
