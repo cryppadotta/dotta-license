@@ -168,7 +168,7 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
-  * @notice decrementInventory - removes inventory levels for a product
+  * @notice decrementInventory removes inventory levels for a product
   * @param _productId - the product id
   * @param _inventoryAdjustment - the amount to decrement
   */
@@ -183,12 +183,13 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
-  * @notice clearInventory - clears the inventory of a product. decrementInventory
-  * verifies inventory levels, whereas this method simply sets the inventory to
-  * zero. This is useful, for example, if an executive wants to take a product
-  * off the market quickly. There could be a race condition with
-  * decrementInventory where a product is sold, which could cause the admins
-  * decrement to fail (because it may try to decrement more than available).
+  * @notice clearInventory clears the inventory of a product.
+  * @dev decrementInventory verifies inventory levels, whereas this method
+  * simply sets the inventory to zero. This is useful, for example, if an
+  * executive wants to take a product off the market quickly. There could be a
+  * race condition with decrementInventory where a product is sold, which could
+  * cause the admins decrement to fail (because it may try to decrement more
+  * than available).
   *
   * @param _productId - the product id
   */

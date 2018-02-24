@@ -190,7 +190,8 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
 
   /**
   * @notice Removes approval for another address to claim for the ownership of any
-  *  tokens owned by this account. Note that this only removes the operator approval and
+  *  tokens owned by this account.
+  * @dev Note that this only removes the operator approval and
   *  does not clear any independent, specific approvals of token transfers to this address
   * @param _to address to be disapproved for the given token ID
   */

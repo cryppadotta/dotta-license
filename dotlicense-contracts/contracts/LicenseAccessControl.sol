@@ -20,7 +20,7 @@ contract LicenseAccessControl {
   bool public paused = false;
 
   /**
-   * @notice Modifier to make a function only callable by the CEO
+   * @dev Modifier to make a function only callable by the CEO
    */
   modifier onlyCEO() {
     require(msg.sender == ceoAddress);
@@ -28,7 +28,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @notice Modifier to make a function only callable by the CFO
+   * @dev Modifier to make a function only callable by the CFO
    */
   modifier onlyCFO() {
     require(msg.sender == cfoAddress);
@@ -36,7 +36,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @notice Modifier to make a function only callable by the COO
+   * @dev Modifier to make a function only callable by the COO
    */
   modifier onlyCOO() {
     require(msg.sender == cooAddress);
@@ -44,7 +44,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @notice Modifier to make a function only callable by C-level execs
+   * @dev Modifier to make a function only callable by C-level execs
    */
   modifier onlyCLevel() {
     require(
@@ -56,7 +56,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @notice Modifier to make a function only callable by CEO or CFO
+   * @dev Modifier to make a function only callable by CEO or CFO
    */
   modifier onlyCEOOrCFO() {
     require(
@@ -67,7 +67,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @notice Modifier to make a function only callable by CEO or COO
+   * @dev Modifier to make a function only callable by CEO or COO
    */
   modifier onlyCEOOrCOO() {
     require(
@@ -115,8 +115,7 @@ contract LicenseAccessControl {
 
   /**
    * @notice Withdraw the balance to the withdrawalAddress
-   *
-   * We set a withdrawal address seperate from the CFO because this allows us to withdraw to a cold wallet.
+   * @dev We set a withdrawal address seperate from the CFO because this allows us to withdraw to a cold wallet.
    */
   function withdrawBalance() external onlyCEOOrCFO {
     require(withdrawalAddress != address(0));
@@ -126,7 +125,7 @@ contract LicenseAccessControl {
   /** Pausable functionality adapted from OpenZeppelin **/
 
   /**
-   * @notice Modifier to make a function callable only when the contract is not paused.
+   * @dev Modifier to make a function callable only when the contract is not paused.
    */
   modifier whenNotPaused() {
     require(!paused);
@@ -134,7 +133,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @notice Modifier to make a function callable only when the contract is paused.
+   * @dev Modifier to make a function callable only when the contract is paused.
    */
   modifier whenPaused() {
     require(paused);
