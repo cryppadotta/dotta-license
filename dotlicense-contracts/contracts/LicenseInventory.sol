@@ -5,7 +5,7 @@ import "./math/SafeMath.sol";
 
 /**
  * @title LicenseInventory
- * @dev LicenseInventory controls the products and inventory for those products
+ * @notice LicenseInventory controls the products and inventory for those products
  **/
 contract LicenseInventory is LicenseBase {
   using SafeMath for uint256;
@@ -27,16 +27,16 @@ contract LicenseInventory is LicenseBase {
     uint256 sold;
   }
 
-  // @dev All products in existence
+  // @notice All products in existence
   uint256[] public allProductIds;
 
-  // @dev A mapping from product ids to Products
+  // @notice A mapping from product ids to Products
   mapping (uint256 => Product) public products;
 
   /*** internal ***/
 
   /**
-   * @dev _productExists checks to see if a product exists
+   * @notice _productExists checks to see if a product exists
    */
   function _productExists(uint256 _productId) internal view returns (bool) {
     return products[_productId].id != 0;
@@ -131,7 +131,7 @@ contract LicenseInventory is LicenseBase {
   /** executives-only **/
 
   /**
-   * @dev createProduct creates a new product in the system
+   * @notice createProduct creates a new product in the system
    * @param _productId - the id of the product to use (cannot be changed)
    * @param _initialPrice - the starting price (price can be changed)
    * @param _initialInventoryQuantity - the initial inventory (inventory can be changed)
@@ -153,7 +153,7 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
-   * @dev incrementInventory - increments the inventory of a product
+   * @notice incrementInventory - increments the inventory of a product
    * @param _productId - the product id
    * @param _inventoryAdjustment - the amount to increment
    */
@@ -168,7 +168,7 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
-  * @dev decrementInventory - removes inventory levels for a product
+  * @notice decrementInventory - removes inventory levels for a product
   * @param _productId - the product id
   * @param _inventoryAdjustment - the amount to decrement
   */
@@ -183,7 +183,7 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
-  * @dev clearInventory - clears the inventory of a product. decrementInventory
+  * @notice clearInventory - clears the inventory of a product. decrementInventory
   * verifies inventory levels, whereas this method simply sets the inventory to
   * zero. This is useful, for example, if an executive wants to take a product
   * off the market quickly. There could be a race condition with
@@ -201,7 +201,7 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
-  * @dev setPrice - sets the price of a product
+  * @notice setPrice - sets the price of a product
   * @param _productId - the product id
   * @param _price - the product price
   */

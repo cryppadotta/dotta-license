@@ -57,7 +57,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Guarantees msg.sender is owner of the given token
+  * @notice Guarantees msg.sender is owner of the given token
   * @param _tokenId uint256 ID of the token to validate its ownership belongs to msg.sender
   */
   modifier onlyOwnerOf(uint256 _tokenId) {
@@ -66,7 +66,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Gets the total amount of tokens stored by the contract
+  * @notice Gets the total amount of tokens stored by the contract
   * @return uint256 representing the total amount of tokens
   */
   function totalSupply() public view returns (uint256) {
@@ -74,7 +74,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Gets the balance of the specified address
+  * @notice Gets the balance of the specified address
   * @param _owner address to query the balance of
   * @return uint256 representing the amount owned by the passed address
   */
@@ -83,7 +83,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Gets the list of tokens owned by a given address
+  * @notice Gets the list of tokens owned by a given address
   * @param _owner address to query the tokens of
   * @return uint256[] representing the list of tokens owned by the passed address
   */
@@ -92,7 +92,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Gets the owner of the specified token ID
+  * @notice Gets the owner of the specified token ID
   * @param _tokenId uint256 ID of the token to query the owner of
   * @return owner address currently marked as the owner of the given token ID
   */
@@ -103,7 +103,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-   * @dev Gets the approved address to take ownership of a given token ID
+   * @notice Gets the approved address to take ownership of a given token ID
    * @param _tokenId uint256 ID of the token to query the approval of
    * @return address currently approved to take ownership of the given token ID
    */
@@ -112,7 +112,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-   * @dev Tells whether the msg.sender is approved to transfer the given token ID or not
+   * @notice Tells whether the msg.sender is approved to transfer the given token ID or not
    * Checks both for specific approval and operator approval
    * @param _tokenId uint256 ID of the token to query the approval of
    * @return bool whether transfer by msg.sender is approved for the given token ID or not
@@ -124,7 +124,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-   * @dev Tells whether the msg.sender is approved for the given token ID or not
+   * @notice Tells whether the msg.sender is approved for the given token ID or not
    * @param _asker address of asking for approval
    * @param _tokenId uint256 ID of the token to query the approval of
    * @return bool whether the msg.sender is approved for the given token ID or not
@@ -134,7 +134,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-   * @dev Tells whether an operator is approved by a given owner
+   * @notice Tells whether an operator is approved by a given owner
    * @param _owner owner address which you want to query the approval of
    * @param _operator operator address which you want to query the approval of
    * @return bool whether the given operator is approved by the given owner
@@ -145,7 +145,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Transfers the ownership of a given token ID to another address
+  * @notice Transfers the ownership of a given token ID to another address
   * @param _to address to receive the ownership of the given token ID
   * @param _tokenId uint256 ID of the token to be transferred
   */
@@ -158,7 +158,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Approves another address to claim for the ownership of the given token ID
+  * @notice Approves another address to claim for the ownership of the given token ID
   * @param _to address to be approved for the given token ID
   * @param _tokenId uint256 ID of the token to be approved
   */
@@ -176,7 +176,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Approves another address to claim for the ownership of any tokens owned by this account
+  * @notice Approves another address to claim for the ownership of any tokens owned by this account
   * @param _to address to be approved for the given token ID
   */
   function approveAll(address _to)
@@ -189,7 +189,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Removes approval for another address to claim for the ownership of any
+  * @notice Removes approval for another address to claim for the ownership of any
   *  tokens owned by this account. Note that this only removes the operator approval and
   *  does not clear any independent, specific approvals of token transfers to this address
   * @param _to address to be disapproved for the given token ID
@@ -203,7 +203,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Claims the ownership of a given token ID
+  * @notice Claims the ownership of a given token ID
   * @param _tokenId uint256 ID of the token being claimed by the msg.sender
   */
   function takeOwnership(uint256 _tokenId)
@@ -215,7 +215,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Transfer a token owned by another address, for which the calling address has
+  * @notice Transfer a token owned by another address, for which the calling address has
   *  previously been granted transfer approval by the owner.
   * @param _from The address that owns the token
   * @param _to The address that will take ownership of the token. Can be any address, including the caller
@@ -235,7 +235,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Mint token function
+  * @notice Mint token function
   * @param _to The address that will own the minted token
   * @param _tokenId uint256 ID of the token to be minted by the msg.sender
   */
@@ -246,7 +246,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Internal function to clear current approval and transfer the ownership of a given token ID
+  * @notice Internal function to clear current approval and transfer the ownership of a given token ID
   * @param _from address which you want to send tokens from
   * @param _to address which you want to transfer the token to
   * @param _tokenId uint256 ID of the token to be transferred
@@ -263,7 +263,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Internal function to clear current approval of a given token ID
+  * @notice Internal function to clear current approval of a given token ID
   * @param _tokenId uint256 ID of the token to be transferred
   */
   function clearApproval(address _owner, uint256 _tokenId) private {
@@ -273,7 +273,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Internal function to add a token ID to the list of a given address
+  * @notice Internal function to add a token ID to the list of a given address
   * @param _to address representing the new owner of the given token ID
   * @param _tokenId uint256 ID of the token to be added to the tokens list of the given address
   */
@@ -287,7 +287,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
-  * @dev Internal function to remove a token ID from the list of a given address
+  * @notice Internal function to remove a token ID from the list of a given address
   * @param _from address representing the previous owner of the given token ID
   * @param _tokenId uint256 ID of the token to be removed from the tokens list of the given address
   */

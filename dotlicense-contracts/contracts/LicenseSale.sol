@@ -82,7 +82,7 @@ contract LicenseSale is LicenseOwnership {
   /** anyone **/
 
   /**
-  * @dev Purchase - makes a purchase of a product. Requires that the value sent is exactly the price of the product
+  * @notice Purchase - makes a purchase of a product. Requires that the value sent is exactly the price of the product
   * @param _productId - the product to purchase
   * @param _assignee - the address to assign the purchase to (doesn't have to be msg.sender)
   * @param _affiliate - the address to of the affiliate - use address(0) if none

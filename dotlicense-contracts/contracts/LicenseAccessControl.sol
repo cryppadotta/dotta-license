@@ -2,11 +2,11 @@ pragma solidity ^0.4.19;
 
 /**
  * @title LicenseAccessControl
- * @dev This contract defines organizational roles and permissions.
+ * @notice This contract defines organizational roles and permissions.
  */
 contract LicenseAccessControl {
   /**
-   * @dev ContractUpgrade is the event that will be emitted if we set a new contract address
+   * @notice ContractUpgrade is the event that will be emitted if we set a new contract address
    */
   event ContractUpgrade(address newContract);
   event Paused();
@@ -20,7 +20,7 @@ contract LicenseAccessControl {
   bool public paused = false;
 
   /**
-   * @dev Modifier to make a function only callable by the CEO
+   * @notice Modifier to make a function only callable by the CEO
    */
   modifier onlyCEO() {
     require(msg.sender == ceoAddress);
@@ -28,7 +28,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Modifier to make a function only callable by the CFO
+   * @notice Modifier to make a function only callable by the CFO
    */
   modifier onlyCFO() {
     require(msg.sender == cfoAddress);
@@ -36,7 +36,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Modifier to make a function only callable by the COO
+   * @notice Modifier to make a function only callable by the COO
    */
   modifier onlyCOO() {
     require(msg.sender == cooAddress);
@@ -44,7 +44,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Modifier to make a function only callable by C-level execs
+   * @notice Modifier to make a function only callable by C-level execs
    */
   modifier onlyCLevel() {
     require(
@@ -56,7 +56,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Modifier to make a function only callable by CEO or CFO
+   * @notice Modifier to make a function only callable by CEO or CFO
    */
   modifier onlyCEOOrCFO() {
     require(
@@ -67,7 +67,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Modifier to make a function only callable by CEO or COO
+   * @notice Modifier to make a function only callable by CEO or COO
    */
   modifier onlyCEOOrCOO() {
     require(
@@ -78,7 +78,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Sets a new CEO
+   * @notice Sets a new CEO
    * @param _newCEO - the address of the new CEO
    */
   function setCEO(address _newCEO) public onlyCEO {
@@ -87,7 +87,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Sets a new CFO
+   * @notice Sets a new CFO
    * @param _newCFO - the address of the new CFO
    */
   function setCFO(address _newCFO) public onlyCEO {
@@ -96,7 +96,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Sets a new COO
+   * @notice Sets a new COO
    * @param _newCOO - the address of the new COO
    */
   function setCOO(address _newCOO) public onlyCEO {
@@ -105,7 +105,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Sets a new withdrawalAddress
+   * @notice Sets a new withdrawalAddress
    * @param _newWithdrawalAddress - the address where we'll send the funds
    */
   function setWithdrawalAddress(address _newWithdrawalAddress) public onlyCEO {
@@ -114,7 +114,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Withdraw the balance to the withdrawalAddress
+   * @notice Withdraw the balance to the withdrawalAddress
    *
    * We set a withdrawal address seperate from the CFO because this allows us to withdraw to a cold wallet.
    */
@@ -126,7 +126,7 @@ contract LicenseAccessControl {
   /** Pausable functionality adapted from OpenZeppelin **/
 
   /**
-   * @dev Modifier to make a function callable only when the contract is not paused.
+   * @notice Modifier to make a function callable only when the contract is not paused.
    */
   modifier whenNotPaused() {
     require(!paused);
@@ -134,7 +134,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev Modifier to make a function callable only when the contract is paused.
+   * @notice Modifier to make a function callable only when the contract is paused.
    */
   modifier whenPaused() {
     require(paused);
@@ -142,7 +142,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev called by any C-level to pause, triggers stopped state
+   * @notice called by any C-level to pause, triggers stopped state
    */
   function pause() onlyCLevel whenNotPaused public {
     paused = true;
@@ -150,7 +150,7 @@ contract LicenseAccessControl {
   }
 
   /**
-   * @dev called by the CEO to unpause, returns to normal state
+   * @notice called by the CEO to unpause, returns to normal state
    */
   function unpause() onlyCEO whenPaused public {
     paused = false;

@@ -4,7 +4,7 @@ import "./LicenseSale.sol";
 
 /**
  * @title LicenseCore is the entry point of the contract
- * @dev LicenseCore is the entry point and it controls the ability to set a new
+ * @notice LicenseCore is the entry point and it controls the ability to set a new
  * contract address, in the case where an upgrade is required
  */
 contract LicenseCore is LicenseSale {
