@@ -9,6 +9,7 @@
   "author": "Dotta <cryppadotta@protonmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@ledgerhq/hw-app-eth": "^4.2.0",
     "bluebird": "^3.5.1",
     "chalk": "^2.3.1",
     "dotenv": "^5.0.0",
@@ -16,5 +17,8 @@
     "truffle-hdwallet-provider": "^0.0.3",
     "web3": "1.0.0-beta.30",
     "yargs": "^11.0.0"
+  },
+  "devDependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^4.2.0"
   }
 }
