@@ -67,4 +67,4 @@ node_modules
 transpiled
 
 build/
-
+scripts/doxity-tmp* 
