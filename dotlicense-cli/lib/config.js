@@ -10,6 +10,7 @@ require('dotenv').config({
 const fs = require('fs');
 const _ = require('lodash');
 
+// TODO -- get rid of this
 function getConfig(argv) {
   const Web3 = require('web3');
   const web3 = new Web3();

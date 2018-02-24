@@ -1,14 +1,16 @@
 const path = require('path');
-const contractsDir = path.join(__dirname, '..', '..', 'dotlicense-contracts');
-
-const buildAbiCommands = require('../lib/buildAbiCommands');
 const yargs = require('yargs');
+const buildAbiCommands = require('../lib/buildAbiCommands');
+const getConfig = require('../lib/config');
 
 let builder = yargs
   .usage('Usage: $0 <command> [options]')
   .describe('web3', 'web3 provider url')
-  .default('web3', 'http://localhost:8545')
-  // .commandDir(path.join('..', 'lib', 'cmds'))
+  .default('web3', process.env.WEB3_PROVIDER_URL || 'http://localhost:8545')
+  .describe('license-core-address', 'address to LicenseCore')
+  .alias('license-core-address', 'contract-address')
+  .default('license-core-address', process.env.LICENSE_CORE_ADDRESS)
+  .demand('license-core-address')
   .demandCommand()
   .help()
   .version()

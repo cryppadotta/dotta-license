@@ -1,7 +1,37 @@
 const fs = require('fs');
 const Bluebird = require('bluebird');
 const _ = require('lodash');
-const getConfig = require('./config');
+const Web3 = require('web3');
+const web3 = new Web3();
+
+const initialize = (argv, abi, functionAbi) => {
+  let web3URL = argv.web3;
+  web3.setProvider(new web3.providers.HttpProvider(web3URL));
+};
+
+const handleResponse = (response, argv, abi, functionAbi) => {
+  response
+    .once('transactionHash', function(hash) {
+      console.log('transactionHash', hash);
+    })
+    .once('receipt', function(receipt) {
+      console.log('receipt once', receipt);
+    })
+    .once('confirmation', function(confNumber, receipt) {
+      console.log('confirmation', confNumber, receipt);
+    })
+    .on('error', function(error) {
+      console.log('error', error);
+    });
+};
+
+const handleRead = async (argv, abi, functionAbi) => {
+  // console.log(argv);
+  const contract = new web3.eth.Contract(abi, argv.contractAddress);
+  const response = await contract.methods[functionAbi.name]().call();
+  console.log(response);
+  // handleResponse(response);
+};
 
 const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
   let combined = JSON.parse(fs.readFileSync(pathToFile));
@@ -45,7 +75,10 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
       let positionalArgumentsString = _.keys(devdoc.params)
         .map(p => `<${sp(p)}>`)
         .join(' ');
-      let commandString = [iface.name, positionalArgumentsString].join(' ');
+      let commandString = _.compact([
+        iface.name,
+        positionalArgumentsString
+      ]).join(' ');
 
       yargs.command(
         commandString,
@@ -59,8 +92,14 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
             yargs.demand(sp(input.name));
           });
         },
-        argv => {
-          handler(argv, { contract, abi: iface });
+        async argv => {
+          await initialize(argv, contract.abi, iface);
+          console.log(iface);
+          if (iface.constant) {
+            await handleRead(argv, contract.abi, iface);
+          } else {
+            // handleWrite
+          }
         }
       );
     });
