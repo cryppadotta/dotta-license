@@ -32,23 +32,6 @@ module.exports = {
     optimizer: {
       enabled: true,
       runs: 200
-    },
-    outputSelection: {
-      '*': {
-        '': ['ast'],
-        '*': [
-          'abi',
-          'evm.bytecode.object',
-          'evm.bytecode.sourceMap',
-          'evm.deployedBytecode.object',
-          'evm.deployedBytecode.sourceMap',
-          'devdoc',
-          'userdoc',
-          'metadata',
-          'evm.methodIdentifiers',
-          'evm.gasEstimates'
-        ]
-      }
     }
   },
   test_directory: 'transpiled/test',
