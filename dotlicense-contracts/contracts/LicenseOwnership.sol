@@ -28,10 +28,16 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   string public constant NAME = "Dottabot";
   string public constant SYMBOL = "DOTTA";
 
+  /**
+   * @notice token's name
+   */
   function name() public pure returns (string) {
     return NAME;
   }
 
+  /**
+   * @notice symbols's name
+   */
   function symbol() public pure returns (string) {
     return SYMBOL;
   }

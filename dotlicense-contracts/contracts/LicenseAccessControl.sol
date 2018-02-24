@@ -12,9 +12,24 @@ contract LicenseAccessControl {
   event Paused();
   event Unpaused();
 
+  /**
+   * @notice CEO's address
+   */
   address public ceoAddress;
+
+  /**
+   * @notice CFO's address
+   */
   address public cfoAddress;
+
+  /**
+   * @notice COO's address
+   */
   address public cooAddress;
+
+  /**
+   * @notice withdrawal address
+   */
   address public withdrawalAddress;
 
   bool public paused = false;
