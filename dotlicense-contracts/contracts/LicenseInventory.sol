@@ -215,26 +215,50 @@ contract LicenseInventory is LicenseBase {
   }
 
   /** anyone **/
+
+  /**
+  * @notice The price of a product
+  * @param _productId - the product id
+  */
   function priceOf(uint256 _productId) public view returns (uint256) {
     return products[_productId].price;
   }
 
+  /**
+  * @notice The available inventory of a product
+  * @param _productId - the product id
+  */
   function availableInventoryOf(uint256 _productId) public view returns (uint256) {
     return products[_productId].available;
   }
 
+  /**
+  * @notice The total supply of a product
+  * @param _productId - the product id
+  */
   function totalSupplyOf(uint256 _productId) public view returns (uint256) {
     return products[_productId].supply;
   }
 
+  /**
+  * @notice The total sold of a product
+  * @param _productId - the product id
+  */
   function totalSold(uint256 _productId) public view returns (uint256) {
     return products[_productId].sold;
   }
 
+  /**
+  * @notice The product info for a product
+  * @param _productId - the product id
+  */
   function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256) {
     return (priceOf(_productId), availableInventoryOf(_productId), totalSupplyOf(_productId));
   }
 
+  /**
+  * @notice Get all product ids
+  */
   function getAllProductIds() public view returns (uint256[]) {
     return allProductIds;
   }
