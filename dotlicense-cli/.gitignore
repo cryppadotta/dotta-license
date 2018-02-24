@@ -60,7 +60,9 @@ typings/
 
 # dotenv environment variables file
 .env
-
-
+.env.dev
+.env.staging
+.env.production
 
 # End of https://www.gitignore.io/api/node
+#
