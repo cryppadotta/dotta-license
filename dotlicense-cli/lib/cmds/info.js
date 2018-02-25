@@ -8,6 +8,9 @@ const configureWeb3 = require('dot-abi-cli').configureWeb3;
 exports.command = 'info';
 exports.desc = 'Describe contract info';
 exports.builder = function(yargs) {
+  yargs.option('inventory', {
+    type: 'boolean'
+  });
   return yargs;
 };
 exports.handler = async function(argv) {
@@ -70,5 +73,26 @@ exports.handler = async function(argv) {
     },
     {}
   );
+
+  if (
+    argv.inventory &&
+    info.getAllProductIds &&
+    info.getAllProductIds.length > 0
+  ) {
+    info.productInfo = await Bluebird.map(
+      info.getAllProductIds,
+      async productId => {
+        // let [price, inventory, totalSupply] = await license.methods
+        let results = await license.methods.productInfo(productId).call();
+        return {
+          productId,
+          price: results['0'],
+          inventory: results['1'],
+          totalSupply: results['2']
+        };
+      }
+    );
+  }
+
   console.log(info);
 };

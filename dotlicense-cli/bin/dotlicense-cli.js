@@ -10,12 +10,12 @@ let builder = dotAbiCli(
     contracts: ['LicenseCore'],
     methods: {
       'setCEO(address)': {
-        // TODO add "warn" or "warn flag"
         // skip: true
         dangerous: true
       },
       'setNewAddress(address)': {
-        skip: true
+        // skip: true
+        dangerous: true
       },
       'ceoAddress()': {
         userdoc: {

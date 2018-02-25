@@ -20,6 +20,10 @@ const handleResponse = (response, argv, abi, functionAbi) => {
       console.log('Blockhash', receipt.blockHash);
       console.log('Receipt', receipt);
 
+      if (_.get(receipt, ['events'])) {
+        console.log('Events', JSON.stringify(receipt.events, null, 2));
+      }
+
       // TODO, bubble this up
       process.exit(0);
     })
@@ -106,7 +110,7 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
       .filter(iface => iface.type === 'function')
       .filter(iface => !_.get(opts, ['methods', docName(iface), 'skip']));
 
-    abiFunctions.forEach(iface => {
+    _.sortBy(abiFunctions, 'name').forEach(iface => {
       const userdoc =
         _.get(contract.userdoc, ['methods', docName(iface)]) ||
         _.get(opts, ['methods', docName(iface), 'userdoc']);
@@ -148,7 +152,7 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
           if (iface.payable) {
             yargs.demand('value');
           }
-          if (commandConfigurationOpts.dangerous) {
+          if (_.get(commandConfigurationOpts, 'dangerous')) {
             const confirmationOptionName = `yes-im-sure-${iface.name}`;
             yargs.option(confirmationOptionName, {
               type: 'boolean',
