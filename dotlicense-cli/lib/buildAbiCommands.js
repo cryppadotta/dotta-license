@@ -1,10 +1,16 @@
+const debug = require('debug')('dotcli');
 const fs = require('fs');
 const Bluebird = require('bluebird');
 const _ = require('lodash');
+const chalk = require('chalk');
 const Web3 = require('web3');
 const web3 = new Web3();
-const debug = require('debug')('dotcli');
+web3.eth = Bluebird.promisifyAll(web3.eth);
+const FauxSubscriptionSubprovider = require('./FauxSubscriptionSubprovider');
+let _engine;
 
+// TODO - move the ledger provider to its own file
+// and allow someone to configure their own provider
 const configureLedger = async argv => {
   const ProviderEngine = require('web3-provider-engine');
   const LedgerWalletSubproviderFactory = require('ledger-wallet-provider')
@@ -15,13 +21,13 @@ const configureLedger = async argv => {
   web3.setProvider(engine);
 
   const ledgerWalletSubProvider = await LedgerWalletSubproviderFactory(
-    null,
+    () => argv.networkId,
     argv.hdPath,
     argv.hardwareConfirm
   );
   const httpProvider = new web3.providers.HttpProvider(argv.web3);
 
-  ledgerWalletSubProvider.setEngine = () => true;
+  // ledgerWalletSubProvider.setEngine = () => true;
   engine.addProvider(ledgerWalletSubProvider);
 
   const httpSubprovider = new Web3SubProvider(httpProvider);
@@ -35,15 +41,21 @@ const configureLedger = async argv => {
     });
   };
 
+  // faux subscriptions. See FauxSubscriptionSubprovider for details
+  const fauxSubSub = new FauxSubscriptionSubprovider();
+  engine.addProvider(fauxSubSub);
+
   engine.addProvider(httpSubprovider);
   engine.start();
+  _engine = engine;
 
-  let accounts = await web3.eth.getAccounts();
+  let accounts = await web3.eth.getAccountsAsync();
   debug('accounts are:', JSON.stringify(accounts));
+  return engine;
 };
 
 const initialize = async (argv, abi, functionAbi) => {
-  console.log('argv', argv);
+  debug(JSON.stringify(argv, null, 2));
   if (argv.ledger) {
     await configureLedger(argv);
   } else {
@@ -52,7 +64,7 @@ const initialize = async (argv, abi, functionAbi) => {
 };
 
 const handleResponse = (response, argv, abi, functionAbi) => {
-  response
+  return response
     .once('transactionHash', function(hash) {
       console.log('transactionHash', hash);
     })
@@ -71,6 +83,46 @@ const handleRead = async (argv, abi, functionAbi) => {
   const contract = new web3.eth.Contract(abi, argv.contractAddress);
   const response = await contract.methods[functionAbi.name]().call();
   console.log(response);
+};
+
+const handleWrite = async (argv, abi, functionAbi) => {
+  const contract = new web3.eth.Contract(abi, argv.contractAddress);
+
+  const accounts = await web3.eth.getAccountsAsync();
+  const from = argv.from || accounts[0];
+  const transactionArguments = (functionAbi.inputs || []).map(
+    input => argv[input.name]
+  );
+
+  // build sendOpts
+  const sendOpts = {
+    from
+  };
+
+  if (argv.gasPrice) sendOpts.gasPrice = argv.gasPrice;
+  if (argv.gasLimit) sendOpts.gas = argv.gasLimit;
+  if (argv.value) sendOpts.value = argv.value;
+
+  if (argv.ledger) {
+    console.log(
+      chalk.yellow('Please confirm transaction on device:'),
+      JSON.stringify(
+        _.merge(
+          {
+            method: functionAbi.name,
+            args: transactionArguments
+          },
+          sendOpts
+        ),
+        null,
+        2
+      )
+    );
+  }
+  const response = contract.methods[functionAbi.name](
+    ...transactionArguments
+  ).send(sendOpts);
+  return handleResponse(response);
 };
 
 const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
@@ -135,17 +187,26 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
               describe: description
             });
             yargs.demand(sp(input.name));
+            if (input.name != sp(input.name)) {
+              yargs.alias(sp(input.name), input.name);
+            }
+            // TODO add:
+            // * type parsing
+            // * input validation (addresses)
           });
+          if (iface.payable) {
+            yargs.demand('value');
+          }
         },
         async argv => {
-          console.log('running command');
           await initialize(argv, contract.abi, iface);
-          console.log(iface);
+          debug(JSON.stringify(iface, null, 2));
           if (iface.constant) {
             await handleRead(argv, contract.abi, iface);
           } else {
-            // handleWrite
+            await handleWrite(argv, contract.abi, iface);
           }
+          _engine.stop();
         }
       );
     });
