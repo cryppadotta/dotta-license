@@ -3,9 +3,9 @@ const fs = require('fs');
 const Bluebird = require('bluebird');
 const _ = require('lodash');
 const chalk = require('chalk');
-const FauxSubscriptionSubprovider = require('./FauxSubscriptionSubprovider');
+const FauxSubscriptionSubprovider = require('./lib/FauxSubscriptionSubprovider');
 let _engine;
-const configure = require('./config');
+const configure = require('./lib/config');
 
 const handleResponse = (response, argv, abi, functionAbi) => {
   return response
@@ -165,6 +165,56 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
     ? _.values(_.pick(contracts, opts.contracts))
     : _.values(contracts);
   buildCommandsFor.forEach(c => buildCommands(c));
+
+  return yargs;
 };
 
-module.exports = buildAbiCommands;
+function buildDefaultOptions(yargs, pathToCombinedAbiFile, opts) {
+  return (
+    yargs
+      .usage('Usage: $0 <command> [options]')
+      .describe('web3', 'web3 provider url')
+      .default('web3', process.env.WEB3_PROVIDER_URL || 'http://localhost:8545')
+      .option('from', { description: 'from address' })
+      .option('gasPrice', {
+        description: 'gas price in wei to use for this transaction',
+        default: process.env.GAS_PRICE
+      })
+      .option('gasLimit', {
+        description: 'maximum gas provided for this transaction',
+        default: process.env.GAS_LIMIT
+      })
+      .option('value', {
+        description: 'The value transferred for the transaction in wei'
+      })
+      .describe('contract-address', 'address to contract')
+      // .demand('contract-addresss') // hmm this is demanded, but the ordering is difficult
+      .option('network-id', {
+        description: 'The network ID',
+        default: process.env.NETWORK_ID
+      })
+      .option('ledger', {
+        description: 'use a ledger'
+      })
+      .boolean('ledger')
+      .option('hd-path', {
+        description: 'hd-path (used for hardware wallets)',
+        default: "44'/60'/0'/0"
+      })
+      // .option('hardware-confirm', {
+      //   description: 'when using a hardware wallet, ask for on-device confirmation',
+      //   default: true
+      // })
+      // .boolean('hardware-confirm')
+      .demandCommand()
+      .help()
+      .version()
+  );
+}
+
+const dotAbiCli = (yargs, pathToCombinedAbiFile, opts, handler) => {
+  let builder = buildDefaultOptions(yargs, pathToCombinedAbiFile, opts);
+  return buildAbiCommands(builder, pathToCombinedAbiFile, opts, handler);
+};
+
+module.exports = dotAbiCli;
