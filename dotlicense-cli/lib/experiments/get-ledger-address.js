@@ -7,7 +7,9 @@ const getAddress = async () => {
   console.log(await Transport.list());
   const transport = await Transport.create();
   const eth = new AppEth(transport);
-  const result = await eth.getAddress("44'/60'/0'");
+
+  // note: this path matches MEWs: m/44'/60'/0'
+  const result = await eth.getAddress("m/44'/60'/0'/0");
   return result;
 };
 getAddress().then(a => console.log(a));

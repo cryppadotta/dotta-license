@@ -6,19 +6,19 @@ const web3 = new Web3();
 const debug = require('debug')('dotcli');
 
 const configureLedger = async argv => {
-  console.log('configuring ledger');
   const ProviderEngine = require('web3-provider-engine');
-  const RpcSubprovider = require('web3-provider-engine/subproviders/rpc');
   const LedgerWalletSubproviderFactory = require('ledger-wallet-provider')
     .default;
   const Web3SubProvider = require('web3-provider-engine/subproviders/web3');
-  console.log(Web3SubProvider);
 
   const engine = new ProviderEngine();
-  // web3 = new Web3(engine);
   web3.setProvider(engine);
 
-  const ledgerWalletSubProvider = await LedgerWalletSubproviderFactory();
+  const ledgerWalletSubProvider = await LedgerWalletSubproviderFactory(
+    null,
+    argv.hdPath,
+    argv.hardwareConfirm
+  );
   const httpProvider = new web3.providers.HttpProvider(argv.web3);
 
   ledgerWalletSubProvider.setEngine = () => true;
@@ -39,7 +39,7 @@ const configureLedger = async argv => {
   engine.start();
 
   let accounts = await web3.eth.getAccounts();
-  console.log('accounts are:', accounts);
+  debug('accounts are:', JSON.stringify(accounts));
 };
 
 const initialize = async (argv, abi, functionAbi) => {
