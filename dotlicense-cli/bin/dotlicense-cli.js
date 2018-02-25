@@ -35,11 +35,11 @@ let builder = yargs
     description: 'hd-path (used for hardware wallets)',
     default: "44'/60'/0'/0"
   })
-  .option('hardware-confirm', {
-    description: 'when using a hardware wallet, ask for on-device confirmation',
-    default: true
-  })
-  .boolean('hardware-confirm')
+  // .option('hardware-confirm', {
+  //   description: 'when using a hardware wallet, ask for on-device confirmation',
+  //   default: true
+  // })
+  // .boolean('hardware-confirm')
   .demandCommand()
   .help()
   .version()

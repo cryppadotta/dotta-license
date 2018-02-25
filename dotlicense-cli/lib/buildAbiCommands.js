@@ -3,65 +3,9 @@ const fs = require('fs');
 const Bluebird = require('bluebird');
 const _ = require('lodash');
 const chalk = require('chalk');
-const Web3 = require('web3');
-const web3 = new Web3();
-web3.eth = Bluebird.promisifyAll(web3.eth);
 const FauxSubscriptionSubprovider = require('./FauxSubscriptionSubprovider');
 let _engine;
-
-// TODO - move the ledger provider to its own file
-// and allow someone to configure their own provider
-const configureLedger = async argv => {
-  const ProviderEngine = require('web3-provider-engine');
-  const LedgerWalletSubproviderFactory = require('ledger-wallet-provider')
-    .default;
-  const Web3SubProvider = require('web3-provider-engine/subproviders/web3');
-
-  const engine = new ProviderEngine();
-  web3.setProvider(engine);
-
-  const ledgerWalletSubProvider = await LedgerWalletSubproviderFactory(
-    () => argv.networkId,
-    argv.hdPath,
-    argv.hardwareConfirm
-  );
-  const httpProvider = new web3.providers.HttpProvider(argv.web3);
-
-  // ledgerWalletSubProvider.setEngine = () => true;
-  engine.addProvider(ledgerWalletSubProvider);
-
-  const httpSubprovider = new Web3SubProvider(httpProvider);
-
-  // shim until web3-provider-engine supports the new API
-  httpSubprovider.handleRequest = function(payload, next, end) {
-    this.provider.send(payload, function(err, response) {
-      if (err != null) return end(err);
-      if (response.error != null) return end(new Error(response.error.message));
-      end(null, response.result);
-    });
-  };
-
-  // faux subscriptions. See FauxSubscriptionSubprovider for details
-  const fauxSubSub = new FauxSubscriptionSubprovider();
-  engine.addProvider(fauxSubSub);
-
-  engine.addProvider(httpSubprovider);
-  engine.start();
-  _engine = engine;
-
-  let accounts = await web3.eth.getAccountsAsync();
-  debug('accounts are:', JSON.stringify(accounts));
-  return engine;
-};
-
-const initialize = async (argv, abi, functionAbi) => {
-  debug(JSON.stringify(argv, null, 2));
-  if (argv.ledger) {
-    await configureLedger(argv);
-  } else {
-    web3.setProvider(new web3.providers.HttpProvider(argv.web3));
-  }
-};
+const configure = require('./config');
 
 const handleResponse = (response, argv, abi, functionAbi) => {
   return response
@@ -72,20 +16,25 @@ const handleResponse = (response, argv, abi, functionAbi) => {
       console.log('receipt once', receipt);
     })
     .once('confirmation', function(confNumber, receipt) {
-      console.log('confirmation', confNumber, receipt);
+      console.log('Confirmation', confNumber);
+      console.log('Blockhash', receipt.blockHash);
+      console.log('Receipt', receipt);
+
+      // TODO, bubble this up
+      process.exit(0);
     })
     .on('error', function(error) {
       console.log('error', error);
     });
 };
 
-const handleRead = async (argv, abi, functionAbi) => {
+const handleRead = async (argv, abi, functionAbi, web3) => {
   const contract = new web3.eth.Contract(abi, argv.contractAddress);
   const response = await contract.methods[functionAbi.name]().call();
   console.log(response);
 };
 
-const handleWrite = async (argv, abi, functionAbi) => {
+const handleWrite = async (argv, abi, functionAbi, web3) => {
   const contract = new web3.eth.Contract(abi, argv.contractAddress);
 
   const accounts = await web3.eth.getAccountsAsync();
@@ -199,14 +148,14 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
           }
         },
         async argv => {
-          await initialize(argv, contract.abi, iface);
+          let web3 = await configure(argv);
           debug(JSON.stringify(iface, null, 2));
           if (iface.constant) {
-            await handleRead(argv, contract.abi, iface);
+            await handleRead(argv, contract.abi, iface, web3);
           } else {
-            await handleWrite(argv, contract.abi, iface);
+            await handleWrite(argv, contract.abi, iface, web3);
           }
-          _engine.stop();
+          // _engine.stop();
         }
       );
     });
