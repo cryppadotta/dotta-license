@@ -124,8 +124,8 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
 
       let commandConfigurationOpts = _.get(opts, ['methods', docName(iface)]);
 
-      let positionalArgumentsString = _.keys(devdoc.params)
-        .map(p => `<${sp(p)}>`)
+      let positionalArgumentsString = iface.inputs
+        .map(p => `<${sp(p.name)}>`)
         .join(' ');
       let commandString = _.compact([
         iface.name,
