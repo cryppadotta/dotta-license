@@ -118,6 +118,8 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
         return;
       }
 
+      let commandConfigurationOpts = _.get(opts, ['methods', docName(iface)]);
+
       let positionalArgumentsString = _.keys(devdoc.params)
         .map(p => `<${sp(p)}>`)
         .join(' ');
@@ -146,8 +148,23 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
           if (iface.payable) {
             yargs.demand('value');
           }
+          if (commandConfigurationOpts.dangerous) {
+            const confirmationOptionName = `yes-im-sure-${iface.name}`;
+            yargs.option(confirmationOptionName, {
+              type: 'boolean',
+              demandOption: true,
+              default: undefined
+            });
+            yargs.demandOption(
+              confirmationOptionName,
+              `${
+                iface.name
+              } is dangerous, pass --${confirmationOptionName} if you're absolutely sure you want to do this`
+            );
+          }
         },
         async argv => {
+          console.log(argv);
           const { web3 } = await configure(argv);
           debug(JSON.stringify(iface, null, 2));
           if (iface.constant) {
