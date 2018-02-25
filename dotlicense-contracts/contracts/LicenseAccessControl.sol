@@ -13,7 +13,7 @@ contract LicenseAccessControl {
   event Unpaused();
 
   /**
-   * @notice CEO's address
+   * @notice CEO's address FOOBAR
    */
   address public ceoAddress;
 

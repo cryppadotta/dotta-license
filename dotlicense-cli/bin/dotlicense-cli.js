@@ -11,6 +11,10 @@ let builder = yargs
   .alias('license-core-address', 'contract-address')
   .default('license-core-address', process.env.LICENSE_CORE_ADDRESS)
   .demand('license-core-address')
+  .option('ledger', {
+    description: 'use a ledger'
+  })
+  .boolean('ledger')
   .demandCommand()
   .help()
   .version()
@@ -21,7 +25,33 @@ buildAbiCommands(
   path.join(__dirname, '..', 'lib', 'Dotlicense.abi.json'),
   {
     contracts: ['LicenseCore'],
-    skipFunction: ['setCEO']
+    methods: {
+      'setCEO(address)': {
+        skip: true
+      },
+      'setNewAddress(address)': {
+        skip: true
+      },
+      'ceoAddress()': {
+        userdoc: {
+          notice: "Get the CEO's Address"
+        }
+      },
+      'cfoAddress()': {
+        userdoc: {
+          notice: "Get the CFO's Address"
+        }
+      }
+      // unpause
+      // paused
+      // newContractAddress
+      // setNewAddress
+      // products
+      // cooAddress
+      // affiliateProgram
+      // allProductIds
+      // withdrawalAddress
+    }
   },
   (argv, { contract, abi }) => {}
 );
