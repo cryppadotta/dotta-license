@@ -1,5 +1,5 @@
 {
-  "name": "dotl-abi-cli",
+  "name": "dot-abi-cli",
   "version": "0.0.1",
   "description": "CLI Scaffold Generator from Web3 ABIs",
   "main": "index.js",
