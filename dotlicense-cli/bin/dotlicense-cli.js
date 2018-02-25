@@ -40,6 +40,7 @@ let builder = yargs
   //   default: true
   // })
   // .boolean('hardware-confirm')
+  .commandDir(path.join(__dirname, '..', 'lib', 'cmds'))
   .demandCommand()
   .help()
   .version()

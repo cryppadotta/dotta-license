@@ -1,5 +1,8 @@
+const path = require('path');
+const fs = require('fs');
+const _ = require('lodash');
 const Bluebird = require('bluebird');
-const getConfig = require('../config');
+const configure = require('../config');
 
 exports.command = 'info';
 exports.desc = 'Describe contract info';
@@ -7,12 +10,31 @@ exports.builder = function(yargs) {
   return yargs;
 };
 exports.handler = async function(argv) {
-  const { web3, abis } = getConfig(argv);
-  // console.log('Info', abis);
+  const { web3 } = await configure(argv);
+  console.log('Info');
+
+  // TODO -- we do this a lot, abstract out
+  const combinedAbiFle = path.join(__dirname, '..', 'Dotlicense.abi.json');
+  const combined = JSON.parse(fs.readFileSync(combinedAbiFle));
+  let contracts = _.reduce(
+    combined.contracts,
+    (acc, attributes, rawName) => {
+      if (attributes.abi) {
+        let name = rawName.split(':')[1];
+        acc[name] = {
+          abi: JSON.parse(attributes.abi),
+          devdoc: JSON.parse(attributes.devdoc),
+          userdoc: JSON.parse(attributes.userdoc)
+        };
+      }
+      return acc;
+    },
+    {}
+  );
 
   const license = new web3.eth.Contract(
-    abis.LicenseCore,
-    process.env.LICENSE_CORE_ADDRESS
+    contracts.LicenseCore.abi,
+    argv.licenseCoreAddress
   );
 
   const getters = [

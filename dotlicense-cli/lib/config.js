@@ -72,7 +72,8 @@ async function configureProvider(argv) {
 
 async function configure(argv) {
   debug(JSON.stringify(argv, null, 2));
-  return await configureProvider(argv);
+  const web3 = await configureProvider(argv);
+  return { web3 };
 }
 
 module.exports = configure;

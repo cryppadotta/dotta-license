@@ -148,7 +148,7 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
           }
         },
         async argv => {
-          let web3 = await configure(argv);
+          const { web3 } = await configure(argv);
           debug(JSON.stringify(iface, null, 2));
           if (iface.constant) {
             await handleRead(argv, contract.abi, iface, web3);

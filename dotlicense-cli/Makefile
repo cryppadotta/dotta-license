@@ -1,2 +1,2 @@
 info:
-	node bin/dotlicense-manage.js info
+	node bin/dotlicense-cli.js info
