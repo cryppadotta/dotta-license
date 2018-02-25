@@ -2,7 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
 const Bluebird = require('bluebird');
-const configure = require('../config');
+
+const configureWeb3 = require('dot-abi-cli').configureWeb3;
 
 exports.command = 'info';
 exports.desc = 'Describe contract info';
@@ -10,7 +11,7 @@ exports.builder = function(yargs) {
   return yargs;
 };
 exports.handler = async function(argv) {
-  const { web3 } = await configure(argv);
+  const { web3 } = await configureWeb3(argv);
   console.log('Info');
 
   // TODO -- we do this a lot, abstract out
@@ -34,7 +35,7 @@ exports.handler = async function(argv) {
 
   const license = new web3.eth.Contract(
     contracts.LicenseCore.abi,
-    argv.licenseCoreAddress
+    argv.contractAddress
   );
 
   const getters = [

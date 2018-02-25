@@ -217,4 +217,6 @@ const dotAbiCli = (yargs, pathToCombinedAbiFile, opts, handler) => {
   return buildAbiCommands(builder, pathToCombinedAbiFile, opts, handler);
 };
 
+dotAbiCli.configureWeb3 = configure;
+
 module.exports = dotAbiCli;
