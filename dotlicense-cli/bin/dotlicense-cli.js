@@ -26,16 +26,25 @@ let builder = dotAbiCli(
         userdoc: {
           notice: "Get the CFO's Address"
         }
+      },
+      'unpause()': { userdoc: { notice: 'Unpause the contract' } },
+      'paused()': { userdoc: { notice: 'Checks if the contract is paused' } },
+      'newContractAddress()': {
+        userdoc: { notice: 'Gets the new contract address' }
+      },
+      'setNewAddress(address)': {
+        userdoc: { notice: 'Sets a new contract address' },
+        dangerous: true
+      },
+      'products()': { userdoc: { notice: 'Gets the products' } },
+      'cooAddress()': { userdoc: { notice: 'Get the COOs address' } },
+      'affiliateProgram()': {
+        userdoc: { notice: 'Get the affiliate program address' }
+      },
+      'allProductIds()': { userdoc: { notice: 'Get all product ids' } },
+      'withdrawalAddress()': {
+        userdoc: { notice: 'Get the withdrawal address' }
       }
-      // unpause
-      // paused
-      // newContractAddress
-      // setNewAddress
-      // products
-      // cooAddress
-      // affiliateProgram
-      // allProductIds
-      // withdrawalAddress
     }
   },
   (argv, { contract, abi }) => {}

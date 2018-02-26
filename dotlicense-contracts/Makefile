@@ -8,3 +8,6 @@ watchtest:
 
 build-abi:
 	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --combined-json abi,devdoc,userdoc --pretty-json /contracts/LicenseCore.sol /contracts/Affiliate/AffiliateProgram.sol > ../dotlicense-cli/lib/Dotlicense.abi.json
+
+gas-estimates:
+	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --gas /contracts/LicenseCore.sol /contracts/Affiliate/AffiliateProgram.sol
