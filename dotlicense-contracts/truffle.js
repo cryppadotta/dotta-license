@@ -1,4 +1,15 @@
+var path = require('path');
 var ganache = require('ganache-cli');
+var HDWalletProvider = require('truffle-hdwallet-provider');
+
+// Load environment-specific configs
+const suffix =
+  process.env.NODE_ENV === 'production'
+    ? '.production'
+    : process.env.NODE_ENV === 'ropsten' ? '.ropsten' : '';
+require('dotenv').config({
+  path: path.resolve(process.cwd(), `.env${suffix}`)
+});
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
@@ -26,6 +37,15 @@ module.exports = {
       port: 8546,
       network_id: '42',
       gas: 4612388
+    },
+    ropsten: {
+      provider: new HDWalletProvider(
+        process.env.KEY_MNEMONIC,
+        process.env.WALLET_PROVIDER_URL
+      ),
+      network_id: 3,
+      gas: 4700000, // Gas limit used for deploys
+      gasPrice: 30000000000 // 30 gwei
     }
   },
   solc: {

@@ -11,3 +11,11 @@ build-abi:
 
 gas-estimates:
 	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --gas /contracts/LicenseCore.sol /contracts/Affiliate/AffiliateProgram.sol
+
+transpile:
+	npm run transpile
+
+migrate-ropsten: transpile
+	NODE_ENV=ropsten truffle migrate --network ropsten
+
+# note: use --reset if you want to start migrate from the beginning
