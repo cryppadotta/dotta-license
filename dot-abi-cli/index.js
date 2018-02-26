@@ -105,7 +105,7 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
     return iface.name + '(' + argumentTypes.join(',') + ')';
   };
 
-  const buildCommands = contract => {
+  const buildCommands = (contract, opts = {}) => {
     let abiFunctions = contract.abi
       .filter(iface => iface.type === 'function')
       .filter(iface => !_.get(opts, ['methods', docName(iface), 'skip']));
@@ -168,8 +168,8 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
           }
         },
         async argv => {
-          console.log(argv);
-          const { web3 } = await configure(argv);
+          debug(JSON.stringify(argv, null, 2));
+          const { web3 } = await configure(argv, opts);
           debug(JSON.stringify(iface, null, 2));
           if (iface.constant) {
             await handleRead(argv, contract.abi, iface, web3);
@@ -185,7 +185,7 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
   const buildCommandsFor = opts.contracts
     ? _.values(_.pick(contracts, opts.contracts))
     : _.values(contracts);
-  buildCommandsFor.forEach(c => buildCommands(c));
+  buildCommandsFor.forEach(c => buildCommands(c, opts));
 
   return yargs;
 };

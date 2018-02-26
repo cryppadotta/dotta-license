@@ -15,7 +15,6 @@ exports.builder = function(yargs) {
 };
 exports.handler = async function(argv) {
   const { web3 } = await configureWeb3(argv);
-  console.log('Info');
 
   // TODO -- we do this a lot, abstract out
   const combinedAbiFle = path.join(__dirname, '..', 'Dotlicense.abi.json');

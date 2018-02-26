@@ -54,8 +54,11 @@ const configureLedger = async argv => {
   return engine;
 };
 
-async function configureProvider(argv) {
-  if (argv.ledger) {
+async function configureProvider(argv, opts = {}) {
+  if (opts.provider) {
+    let provider = await opts.provider(argv);
+    web3.setProvider(provider);
+  } else if (argv.ledger) {
     await configureLedger(argv);
   } else {
     web3.setProvider(new web3.providers.HttpProvider(argv.web3));
@@ -63,9 +66,9 @@ async function configureProvider(argv) {
   return web3;
 }
 
-async function configure(argv) {
+async function configure(argv, opts = {}) {
   debug(JSON.stringify(argv, null, 2));
-  const web3 = await configureProvider(argv);
+  const web3 = await configureProvider(argv, opts);
   return { web3 };
 }
 

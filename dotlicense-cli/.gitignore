@@ -63,6 +63,7 @@ typings/
 .env.dev
 .env.staging
 .env.production
+.env.*
 
 # End of https://www.gitignore.io/api/node
 #
