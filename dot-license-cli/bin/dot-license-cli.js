@@ -69,7 +69,8 @@ if (process.env.NODE_ENV == 'ropsten') {
       'provider',
       new HDWalletProvider(
         process.env.KEY_MNEMONIC,
-        process.env.WALLET_PROVIDER_URL
+        process.env.WALLET_PROVIDER_URL,
+        process.env.HD_KEY_IDX ? parseInt(process.env.HD_KEY_IDX) : 0
       ),
       '(provider)'
     );
