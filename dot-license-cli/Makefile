@@ -1,2 +1,2 @@
 info:
-	node bin/dotlicense-cli.js info --inventory
+	node bin/dot-license-cli.js info --inventory
