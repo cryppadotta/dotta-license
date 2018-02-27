@@ -119,7 +119,7 @@ const buildAbiCommands = (yargs, pathToFile, opts) => {
 
       // doc required
       if (!userdoc) {
-        debug('no userdoc for' + iface.name);
+        debug('no userdoc for ' + iface.name);
         return;
       }
 
