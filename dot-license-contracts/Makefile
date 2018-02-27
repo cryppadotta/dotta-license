@@ -21,5 +21,8 @@ migrate-ropsten: transpile
 remixd:
 	remixd -s contracts/
 
+# flatten_source:
+# 	source $HOME/anaconda/bin/activate py27 cd contracts && solidity_flattener LicenseCore.sol
+
 # note: use --reset if you want to start migrate from the beginning
 
