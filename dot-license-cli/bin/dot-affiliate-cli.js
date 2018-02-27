@@ -40,6 +40,7 @@ builder = builder
   .usage('Usage: $0 <command> [options]')
   .default('contract-address', process.env.AFFILIATE_PROGRAM_ADDRESS)
   .demand('contract-address')
+  .commandDir(path.join(__dirname, '..', 'lib', 'cmds', 'affiliate'))
   .wrap(yargs.terminalWidth());
 
 if (process.env.NODE_ENV == 'ropsten') {

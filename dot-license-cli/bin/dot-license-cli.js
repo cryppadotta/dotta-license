@@ -58,7 +58,7 @@ builder = builder
   .usage('Usage: $0 <command> [options]')
   .default('contract-address', process.env.LICENSE_CORE_ADDRESS)
   .demand('contract-address')
-  .commandDir(path.join(__dirname, '..', 'lib', 'cmds'))
+  .commandDir(path.join(__dirname, '..', 'lib', 'cmds', 'license'))
   .wrap(yargs.terminalWidth());
 
 if (process.env.NODE_ENV == 'ropsten') {

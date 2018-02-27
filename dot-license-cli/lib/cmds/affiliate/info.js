@@ -2,22 +2,25 @@ const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
 const Bluebird = require('bluebird');
+const web3Util = require('web3-utils');
 
 const configureWeb3 = require('dot-abi-cli').configureWeb3;
 
 exports.command = 'info';
-exports.desc = 'Describe contract info';
+exports.desc = 'Describe affiliate contract info';
 exports.builder = function(yargs) {
-  yargs.option('inventory', {
-    type: 'boolean'
-  });
   return yargs;
 };
 exports.handler = async function(argv) {
   const { web3 } = await configureWeb3(argv);
 
   // TODO -- we do this a lot, abstract out
-  const combinedAbiFle = path.join(__dirname, '..', 'Dotlicense.abi.json');
+  const combinedAbiFle = path.join(
+    __dirname,
+    '..',
+    '..',
+    'Dotlicense.abi.json'
+  );
   const combined = JSON.parse(fs.readFileSync(combinedAbiFle));
   let contracts = _.reduce(
     combined.contracts,
@@ -35,30 +38,19 @@ exports.handler = async function(argv) {
     {}
   );
 
-  const license = new web3.eth.Contract(
-    contracts.LicenseCore.abi,
+  const affiliate = new web3.eth.Contract(
+    contracts.AffiliateProgram.abi,
     argv.contractAddress
   );
 
   const getters = [
-    // LicenseAccessControl
-    'ceoAddress',
-    'cfoAddress',
-    'cooAddress',
-    'withdrawalAddress',
+    'storeAddress',
+    'lastDepositTime',
+    'maximumRate',
+    'baselineRate',
+    'owner',
     'paused',
-
-    // LicenseInventory
-    'getAllProductIds',
-    // 'products'
-
-    // LicenseOwnership
-    'name',
-    'symbol',
-    'totalSupply',
-
-    // LicenseSale
-    'affiliateProgram'
+    'retired'
   ];
 
   // const cfoAddress = await license.methods.cfoAddress().call();
@@ -67,31 +59,14 @@ exports.handler = async function(argv) {
   let info = await Bluebird.reduce(
     getters,
     async (acc, name) => {
-      acc[name] = await license.methods[name]().call();
+      acc[name] = await affiliate.methods[name]().call();
       return acc;
     },
     {}
   );
 
-  if (
-    argv.inventory &&
-    info.getAllProductIds &&
-    info.getAllProductIds.length > 0
-  ) {
-    info.productInfo = await Bluebird.map(
-      info.getAllProductIds,
-      async productId => {
-        // let [price, inventory, totalSupply] = await license.methods
-        let results = await license.methods.productInfo(productId).call();
-        return {
-          productId,
-          price: results['0'],
-          inventory: results['1'],
-          totalSupply: results['2']
-        };
-      }
-    );
-  }
+  info['balance'] = await web3.eth.getBalance(argv.contractAddress);
+  info['balance (eth)'] = web3Util.fromWei(info['balance'], 'ether');
 
   console.log(info);
 };
