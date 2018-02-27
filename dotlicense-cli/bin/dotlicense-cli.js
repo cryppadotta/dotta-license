@@ -47,15 +47,6 @@ let dotAbiCliConfig = {
   }
 };
 
-// if (process.env.NODE_ENV == 'ropsten') {
-//   dotAbiCliConfig.provider = argv => {
-//     return new HDWalletProvider(
-//       process.env.KEY_MNEMONIC,
-//       process.env.WALLET_PROVIDER_URL
-//     );
-//   };
-// }
-
 let builder = dotAbiCli(
   yargs,
   path.join(__dirname, '..', 'lib', 'Dotlicense.abi.json'),
