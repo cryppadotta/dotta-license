@@ -5,31 +5,41 @@ import "../math/Math.sol";
 import "../lifecycle/Pausable.sol";
 
 /**
-
-* Affiliate whitelisting
-* Affilite base-rate - will go to any address, if they withdraw
-* Track affiliate sales
-* Track soldAt date -- because we can withdraw their funds after 30 days
-* Set individual affiliate rates, whitelisting and blacklisting
-* pause the program
-* set the licensing
-
-How about this, instead of requiring a withdraw for every sale
-
-the goal is that no money is sitting in the contract unclaimed for longer
-than 30 days
-
-so instead, let's create a withdraw and a withdrawFrom method
-and withdrawFrom has a conditon that 30 days must have passed
-
-also, we require that the comission paid is greater than zero to change
-the date. this means, we're only able to withdraw a dormant link
-
-e.g. if someone has a link that is actively driving traffic, then there's
-nothing we can do. but if their link has not driven any traffic for 30 days
-and they have not withdrawn the data for 30 days, then we have the right to
-withdraw it
-
+ * @title AffiliateProrgam
+ * @notice Affiliate program manages referral comissions on sales.
+ *
+ * There are two tiers of affiliates: whitelistd and non-whitelisted.
+ * Non-whitelisted are paid the baseline rate. Whitelisted rates are individualized.
+ *
+ * This contract holds the Ether for the affiliate and it can be withdrawn by that affiliate.
+ *
+ * However, there is a deadline: The goal is that no money is sitting in the
+ * contract unclaimed for longer than 30 days.
+ *
+ * After 30 days, the funds are forfitted and the owner may withdraw the funds
+ * credited to that affiliate.
+ *
+ * Rates are encoded in basis points (1/100th of a percent). For example, 1050
+ * means 10.5%.
+ *
+ * There is a hardcoded maximum affiliate rate of 50%. Also, there is a
+ * configurable maximum rate that caps the rate given to any affiliate,
+ * including whitelisted. The maximumRate has precedence over any whitelisted rate.
+ *
+ * Setting a maximumRate of 0 effectively disables new credits to all affiliates.
+ *
+ * The contract can be paused by the owner.
+ *
+ * If there have been no deposits for 30 days, the owner can choose to retire
+ * the contract and withdraw all remaining funds. This is final and the contract
+ * cannot be unpaused after this event.
+ *
+ * Our store is built to support upgradable AffiliatePrograms - this is
+ * recommended.
+ *
+ * Also, your store must be designed to operate normally when the affiliate program
+ * is paused or missing.
+ *
  */
 contract AffiliateProgram is Pausable {
   using SafeMath for uint256;
@@ -47,37 +57,40 @@ contract AffiliateProgram is Pausable {
   event Whitelisted(address affiliate, uint256 rate);
   event RateChanged(uint256 rate, uint256 amount);
 
-  // A mapping from affiliate address to their balance
+  // @notice A mapping from affiliate address to their balance
   mapping (address => uint256) public balances;
 
-  // A mapping from affiliate address to the time of last deposit
+  // @notice A mapping from affiliate address to the time of last deposit
   mapping (address => uint256) public lastDepositTimes;
 
-  // The last deposit globally
+  // @notice The last deposit globally
   uint256 public lastDepositTime;
 
-  // The hard-coded maximum affiliate rate (in basis points)
+  // @notice The maximum rate for any affiliate
+  // @dev The hard-coded maximum affiliate rate (in basis points)
   // All rates are measured in basis points (1/100 of a percent)
   // Values 0-10,000 map to 0%-100%
   uint256 private constant hardCodedMaximumRate = 5000;
 
-  // Affiliate commissions expire if they are unclaimed after this amount of time
+  // @notice The commission exiration time
+  // @dev Affiliate commissions expire if they are unclaimed after this amount of time
   uint256 private constant commissionExpiryTime = 30 days;
 
-  // The baseline affiliate rate (in basis points) for non-whitelisted referrals
+  // @notice The baseline affiliate rate (in basis points) for non-whitelisted referrals
   uint256 public baselineRate = 0;
 
-  // A mapping from whitelisted referrals to their individual rates
+  // @notice A mapping from whitelisted referrals to their individual rates
   mapping (address => uint256) public whitelistRates;
 
-  // The maximum rate for any affiliate -- overrides individual rates
-  // This can be used to clip the rate used in bulk, if necessary
+  // @notice The maximum rate for any affiliate
+  // @dev overrides individual rates. This can be used to clip the rate used in bulk, if necessary
   uint256 public maximumRate = 5000;
 
-  // The address of the store selling products
+  // @notice The address of the store selling products
   address public storeAddress;
 
-  // If we decide to retire this program, this value will be set to true
+  // @notice The contract is retired
+  // @dev If we decide to retire this program, this value will be set to true
   // and then the contract cannot be unpaused
   bool public retired = false;
 
@@ -103,13 +116,15 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
-   * @dev Exposes that this contract thinks it is an AffiliateProgram
+   * @notice Exposes that this contract thinks it is an AffiliateProgram
    */
   function isAffiliateProgram() public pure returns (bool) {
     return true;
   }
 
   /**
+   * @notice returns the commission rate for a sale
+   *
    * @dev rateFor returns the rate which should be used to calculate the comission
    *  for this affiliate/sale combination, in basis points (1/100th of a percent).
    *
@@ -119,6 +134,10 @@ contract AffiliateProgram is Pausable {
    *  sending transactions to a particular address when this is needed. The
    *  downside is that you can't issued 1/100th of a percent commission.
    *  However, since this is such a small amount its an acceptable tradeoff.
+   *
+   *  This implementation does not use the _productId, _pruchaseId,
+   *  _purchaseAmount, but we include them here as part of the protocol, because
+   *  they could be useful in more advanced affiliate programs.
    *
    * @param _affiliate - the address of the affiliate to check for
    */
@@ -145,6 +164,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice cutFor returns the affiliate cut for a sale
    * @dev cutFor returns the cut (amount in wei) to give in comission to the affiliate
    *
    * @param _affiliate - the address of the affiliate to check for
@@ -171,6 +191,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice credit an affiliate for a purchase
    * @dev credit accepts eth and credits the affiliate's balance for the amount
    *
    * @param _affiliate - the address of the affiliate to credit
@@ -209,6 +230,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice withdraw
    * @dev withdraw the msg.sender's balance
    */
   function withdraw() public whenNotPaused {
@@ -216,6 +238,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice withdraw from a specific account
    * @dev withdrawFrom allows the owner to withdraw an affiliate's unclaimed
    * ETH, after the alotted time.
    *
@@ -231,6 +254,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice retire the contract (dangerous)
    * @dev retire - withdraws the entire balance and marks the contract as retired, which
    * prevents unpausing.
    *
@@ -250,6 +274,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice whitelist an affiliate address
    * @dev whitelist - white listed affiliates can receive a different
    *   rate than the general public (whitelisted accounts would generally get a
    *   better rate).
@@ -263,6 +288,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice set the rate for non-whitelisted affiliates
    * @dev setBaselineRate - sets the baseline rate for any affiliate that is not whitelisted
    * @param _newRate - the rate, in bp (1/100th of a percent) to give any non-whitelisted affiliate. Set to zero to "turn off"
    */
@@ -273,6 +299,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice set the maximum rate for any affiliate
    * @dev setMaximumRate - Set the maximum rate for any affiliate, including whitelists. That is, this overrides individual rates.
    * @param _newRate - the rate, in bp (1/100th of a percent)
    */
@@ -283,6 +310,7 @@ contract AffiliateProgram is Pausable {
   }
 
   /**
+   * @notice unpause the contract
    * @dev called by the owner to unpause, returns to normal state. Will not
    * unpause if the contract is retired.
    */
