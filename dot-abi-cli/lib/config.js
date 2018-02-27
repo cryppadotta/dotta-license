@@ -17,9 +17,11 @@ const configureLedger = async argv => {
   const LedgerWalletSubproviderFactory = require('ledger-wallet-provider')
     .default;
   const Web3SubProvider = require('web3-provider-engine/subproviders/web3');
+  const NonceTrackerSubprovider = require('web3-provider-engine/subproviders/nonce-tracker');
 
   const engine = new ProviderEngine();
   web3.setProvider(engine);
+  engine.addProvider(new NonceTrackerSubprovider());
 
   const ledgerWalletSubProvider = await LedgerWalletSubproviderFactory(
     () => argv.networkId,
