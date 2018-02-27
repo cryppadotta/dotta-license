@@ -2,6 +2,7 @@ const path = require('path');
 const yargs = require('yargs');
 const dotAbiCli = require('dot-abi-cli');
 const HDWalletProvider = require('truffle-hdwallet-provider');
+const NonceTrackerSubprovider = require('web3-provider-engine/subproviders/nonce-tracker');
 
 require('../lib/config');
 
@@ -42,19 +43,17 @@ builder = builder
   .wrap(yargs.terminalWidth());
 
 if (process.env.NODE_ENV == 'ropsten') {
+  let provider = new HDWalletProvider(
+    process.env.KEY_MNEMONIC,
+    process.env.WALLET_PROVIDER_URL,
+    process.env.HD_KEY_IDX ? parseInt(process.env.HD_KEY_IDX) : 0
+  );
+  provider.engine.addProvider(new NonceTrackerSubprovider());
   builder
     .option('provider', {
       hidden: true
     })
-    .default(
-      'provider',
-      new HDWalletProvider(
-        process.env.KEY_MNEMONIC,
-        process.env.WALLET_PROVIDER_URL,
-        process.env.HD_KEY_IDX ? parseInt(process.env.HD_KEY_IDX) : 0
-      ),
-      '(provider)'
-    );
+    .default('provider', provider, '(provider)');
 }
 
 process.on('unhandledRejection', (reason, p) => {
