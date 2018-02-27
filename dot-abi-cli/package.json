@@ -15,6 +15,7 @@
     "chalk": "^2.3.1",
     "debug": "^3.1.0",
     "dotenv": "^5.0.0",
+    "fast-safe-stringify": "^2.0.3",
     "ledger-wallet-provider": "^2.0.1-beta.2",
     "lodash": "^4.17.5",
     "truffle-hdwallet-provider": "^0.0.3",

@@ -2,6 +2,7 @@ const debug = require('debug')('dotcli');
 const fs = require('fs');
 const Bluebird = require('bluebird');
 const _ = require('lodash');
+const stringify = require('fast-safe-stringify');
 const chalk = require('chalk');
 const FauxSubscriptionSubprovider = require('./lib/FauxSubscriptionSubprovider');
 let _engine;
@@ -21,7 +22,7 @@ const handleResponse = (response, argv, abi, functionAbi) => {
       console.log('Receipt', receipt);
 
       if (_.get(receipt, ['events'])) {
-        console.log('Events', JSON.stringify(receipt.events, null, 2));
+        console.log('Events', stringify(receipt.events, null, 2));
       }
 
       // TODO, bubble this up
@@ -59,7 +60,7 @@ const handleWrite = async (argv, abi, functionAbi, web3) => {
   if (argv.ledger) {
     console.log(
       chalk.yellow('Please confirm transaction on device:'),
-      JSON.stringify(
+      stringify(
         _.merge(
           {
             method: functionAbi.name,
@@ -78,7 +79,7 @@ const handleWrite = async (argv, abi, functionAbi, web3) => {
   return handleResponse(response);
 };
 
-const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
+const buildAbiCommands = (yargs, pathToFile, opts) => {
   let combined = JSON.parse(fs.readFileSync(pathToFile));
 
   let contracts = _.reduce(
@@ -168,9 +169,11 @@ const buildAbiCommands = (yargs, pathToFile, opts, handler) => {
           }
         },
         async argv => {
-          debug(JSON.stringify(argv, null, 2));
+          debug(stringify(argv, null, 2));
+          debug(stringify(iface, null, 2));
+
           const { web3 } = await configure(argv, opts);
-          debug(JSON.stringify(iface, null, 2));
+
           if (iface.constant) {
             await handleRead(argv, contract.abi, iface, web3);
           } else {
@@ -233,9 +236,9 @@ function buildDefaultOptions(yargs, pathToCombinedAbiFile, opts) {
   );
 }
 
-const dotAbiCli = (yargs, pathToCombinedAbiFile, opts, handler) => {
+const dotAbiCli = (yargs, pathToCombinedAbiFile, opts) => {
   let builder = buildDefaultOptions(yargs, pathToCombinedAbiFile, opts);
-  return buildAbiCommands(builder, pathToCombinedAbiFile, opts, handler);
+  return buildAbiCommands(builder, pathToCombinedAbiFile, opts);
 };
 
 dotAbiCli.configureWeb3 = configure;

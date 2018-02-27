@@ -47,20 +47,19 @@ let dotAbiCliConfig = {
   }
 };
 
-if (process.env.NODE_ENV == 'ropsten') {
-  dotAbiCliConfig.provider = argv => {
-    return new HDWalletProvider(
-      process.env.KEY_MNEMONIC,
-      process.env.WALLET_PROVIDER_URL
-    );
-  };
-}
+// if (process.env.NODE_ENV == 'ropsten') {
+//   dotAbiCliConfig.provider = argv => {
+//     return new HDWalletProvider(
+//       process.env.KEY_MNEMONIC,
+//       process.env.WALLET_PROVIDER_URL
+//     );
+//   };
+// }
 
 let builder = dotAbiCli(
   yargs,
   path.join(__dirname, '..', 'lib', 'Dotlicense.abi.json'),
-  dotAbiCliConfig,
-  (argv, { contract, abi }) => {}
+  dotAbiCliConfig
 );
 
 builder = builder
@@ -69,6 +68,21 @@ builder = builder
   .demand('contract-address')
   .commandDir(path.join(__dirname, '..', 'lib', 'cmds'))
   .wrap(yargs.terminalWidth());
+
+if (process.env.NODE_ENV == 'ropsten') {
+  builder
+    .option('provider', {
+      hidden: true
+    })
+    .default(
+      'provider',
+      new HDWalletProvider(
+        process.env.KEY_MNEMONIC,
+        process.env.WALLET_PROVIDER_URL
+      ),
+      '(provider)'
+    );
+}
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);

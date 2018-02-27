@@ -8,6 +8,7 @@ const web3 = new Web3();
 web3.eth = Bluebird.promisifyAll(web3.eth);
 const FauxSubscriptionSubprovider = require('./FauxSubscriptionSubprovider');
 const path = require('path');
+const stringify = require('fast-safe-stringify');
 
 // TODO - move the ledger provider to its own file
 // and allow someone to configure their own provider
@@ -50,13 +51,13 @@ const configureLedger = async argv => {
   // _engine = engine;
 
   let accounts = await web3.eth.getAccountsAsync();
-  debug('accounts are:', JSON.stringify(accounts));
+  debug('accounts are:', stringify(accounts));
   return engine;
 };
 
 async function configureProvider(argv, opts = {}) {
-  if (opts.provider) {
-    let provider = await opts.provider(argv);
+  if (argv.provider) {
+    let provider = await argv.provider;
     web3.setProvider(provider);
   } else if (argv.ledger) {
     await configureLedger(argv);
@@ -66,10 +67,17 @@ async function configureProvider(argv, opts = {}) {
   return web3;
 }
 
+let __web3;
+
 async function configure(argv, opts = {}) {
-  debug(JSON.stringify(argv, null, 2));
+  // if (__web3) {
+  //   return { web3: __web3 };
+  // } else {
+  debug(stringify(argv, null, 2));
   const web3 = await configureProvider(argv, opts);
+  __web3 = web3;
   return { web3 };
+  //}
 }
 
 module.exports = configure;
