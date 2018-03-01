@@ -35,7 +35,12 @@ const handleResponse = (response, argv, abi, functionAbi) => {
 
 const handleRead = async (argv, abi, functionAbi, web3) => {
   const contract = new web3.eth.Contract(abi, argv.contractAddress);
-  const response = await contract.methods[functionAbi.name]().call();
+  const transactionArguments = (functionAbi.inputs || []).map(
+    input => argv[input.name]
+  );
+  const response = await contract.methods[functionAbi.name](
+    ...transactionArguments
+  ).call();
   console.log(response);
 };
 
