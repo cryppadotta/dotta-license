@@ -65,17 +65,17 @@ Dotlicense is split into several packages:
 * [`dot-license-contracts`](dot-license-contracts/README.md) holds the Solidity smart contracts that manage the sale and ownership of tokens
 * [`dot-license-cli`](dot-license-cli/README.md) is the CLI admin tools for managing the smart contracts
 * [`dot-license-js`](#COMING_SOON) (coming soon) is a JavaScript wrapper library for client apps that need to list products that are owned, verify the licenses, etc.
+* [`dot-license-store`](#COMING_SOON) (coming soon) a customer checkout page for purchases using Metamask and React
 
-Additionally, this repo stores some utilties we've build along the way such as:
+Additionally, this repo stores some utilities we've built along the way such as:
 
 * [`dot-abi-cli`](dot-abi-cli/README.md) - Generates a DApp CLI scaffold from an ABI (with Ledger support)
 
 # Contracts Overview
 
 <div align="right">
-  <img src="https://i.imgur.com/nJGej5H.png"
-      alt="Contract Inheritance Architecture" />
- </div>
+  <img src="https://i.imgur.com/nJGej5H.png" alt="Contract Inheritance Architecture" />
+</div>
 
 The smart contracts are split into modules.
 
