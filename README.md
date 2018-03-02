@@ -12,20 +12,7 @@ srcset="https://i.imgur.com/HvP6jpJ.png 2x"
 <br />
 
 <div align="center">
-  <img src="https://img.shields.io/badge/platform-Ethereum-brightgreen.svg?style=flat-square"
-      alt="Ethereum" />
-
-  <img src="https://img.shields.io/badge/token-ERC721-ff69b4.svg?style=flat-square"
-      alt="Token ERC721" />
-
-  <img src="https://img.shields.io/badge/contributions-welcome-orange.svg?style=flat-square"
-      alt="Contributions Welcome" />
-
-  <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square"
-      alt="MIT License" />
-
-  <a href="https://t.me/dotlicense"><img src="https://img.shields.io/badge/Join%20Us%20On-Telegram-2599D2.svg?style=flat-square"
-      alt="Join Us On Telegram" /></a>
+  <img src="https://img.shields.io/badge/platform-Ethereum-brightgreen.svg?style=flat-square" alt="Ethereum" /> <img src="https://img.shields.io/badge/token-ERC721-ff69b4.svg?style=flat-square" alt="Token ERC721" /> <img src="https://img.shields.io/badge/contributions-welcome-orange.svg?style=flat-square" alt="Contributions Welcome" /> <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="MIT License" /> <a href="https://t.me/dotlicense"> <img src="https://img.shields.io/badge/Join%20Us%20On-Telegram-2599D2.svg?style=flat-square" alt="Join Us On Telegram" /></a>
 </div>
 
 <div align="center">
@@ -135,9 +122,7 @@ This helps fulfill the piracy deterrence requirement by incentivizing the user t
 
 # Contracts Overview
 
-<div align="right">
-  <img src="https://i.imgur.com/nJGej5H.png" alt="Contract Inheritance Architecture" />
-</div>
+<img align="right" src="https://i.imgur.com/nJGej5H.png" alt="Contract Inheritance Architecture" />
 
 The smart contracts are split into modules.
 
@@ -149,6 +134,7 @@ The smart contracts are split into modules.
 * [`LicenseCore`](dot-license-contracts/contracts/LicenseCore.sol) - Is the core contract that is deployed to the network
 
 * [`AffiliateProgram`](dot-license-contracts/contracts/Affiliate/AffiliateProgram.sol) - Defines a minimal affiliate program, with whitelisting
+
 
 # Roles-based Permissions
 
