@@ -4,9 +4,9 @@ srcset="https://i.imgur.com/HvP6jpJ.png 2x"
   alt="Dotlicense" width="970"></a>
 </h1>
 
-<h3 align="center">Dotlicense - Decentralized software licensing</h3>
+<h3 align="center">Decentralized software licensing</h3>
 <div align="center">
-  An Ethereum ERC721-based software licensing framework.
+  Dotlicense is an Ethereum ERC721-based software licensing framework.
 </div>
 
 <br />
@@ -23,6 +23,9 @@ srcset="https://i.imgur.com/HvP6jpJ.png 2x"
 
   <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square"
       alt="MIT License" />
+
+  <a href="https://t.me/dotlicense"><img src="https://img.shields.io/badge/Join%20Us%20On-Telegram-2599D2.svg?style=flat-square"
+      alt="Join Us On Telegram" /></a>
 </div>
 
 <div align="center">
@@ -45,6 +48,8 @@ The benefits are:
 1. **Surveillance free** -- There is no "license server" tracking the user. Ownership of the token is validated by any [Web3 provider](https://web3js.readthedocs.io/en/1.0/web3.html#setprovider) (e.g. [Infura](https://infura.io/) or even a self-hosted node)
 1. **Scarce** -- The number of licenses available for a given product can be limited
 1. **Transferable** -- Users can transfer or resell their licenses (e.g. they can be auctioned on sites such as [Rarebits](https://rarebits.io/))
+
+It is designed for software licenses in desktop or mobile apps.
 
 # Features
 
@@ -87,6 +92,74 @@ The smart contracts are split into modules.
 * [`LicenseCore`](dot-license-contracts/contracts/LicenseCore.sol) - Is the core contract that is deployed to the network
 
 * [`AffiliateProgram`](dot-license-contracts/contracts/Affiliate/AffiliateProgram.sol) - Defines a minimal affiliate program, with whitelisting
+
+# Roles-based Permissions
+
+Issuance of new products and unsold inventory levels is centrally controlled. There are three roles:
+
+* CEO
+* CFO and
+* COO
+
+Some of the smart contract functions are open to anyone and some are restricted by role. The table below shows the permissions for each:
+
+| function                      | CEO | CFO | COO | anyone |
+| ----------------------------- | --- | --- | --- | ------ |
+| **LicenseAccessControl**      |     |     |     |        |
+| `setCEO`                      | ✔   |     |     |        |
+| `setCFO`                      | ✔   |     |     |        |
+| `setCOO`                      | ✔   |     |     |        |
+| `setWithdrawalAddress`        | ✔   |     |     |        |
+| `withdrawBalance`             | ✔   | ✔   |     |        |
+| `pause`                       | ✔   | ✔   | ✔   |        |
+| `unpause`                     | ✔   |     |     |        |
+|                               |     |     |     |        |
+| **LicenseBase**               |     |     |     |        |
+| `licenseProductId`            |     |     |     | ✔      |
+| `licenseAttributes`           |     |     |     | ✔      |
+| `licenseIssuedTime`           |     |     |     | ✔      |
+| `licenseInfo`                 |     |     |     | ✔      |
+|                               |     |     |     |        |
+| **LicenseInventory**          |     |     |     |        |
+| `createProduct`               | ✔   |     | ✔   |        |
+| `incrementInventory`          | ✔   | ✔   | ✔   |        |
+| `decrementInventory`          | ✔   | ✔   | ✔   |        |
+| `clearInventory`              | ✔   | ✔   | ✔   |        |
+| `setPrice`                    | ✔   | ✔   | ✔   |        |
+| `priceOf`                     |     |     |     | ✔      |
+| `availableInventoryOf`        |     |     |     | ✔      |
+| `totalSupplyOf`               |     |     |     | ✔      |
+| `totalSold`                   |     |     |     | ✔      |
+| `productInfo`                 |     |     |     | ✔      |
+| `getAllProductIds`            |     |     |     | ✔      |
+|                               |     |     |     |        |
+| **LicenseOwnership** (ERC721) |     |     |     |        |
+| `name`                        |     |     |     | ✔      |
+| `symbol`                      |     |     |     | ✔      |
+| `implementsERC721`            |     |     |     | ✔      |
+| `supportsInterface`           |     |     |     | ✔      |
+| `totalSupply`                 |     |     |     | ✔      |
+| `balanceOf`                   |     |     |     | ✔      |
+| `tokensOf`                    |     |     |     | ✔      |
+| `ownerOf`                     |     |     |     | ✔      |
+| `approvedFor`                 |     |     |     | ✔      |
+| `isOperatorApprovedFor`       |     |     |     | ✔      |
+| `transfer`                    |     |     |     | ✔      |
+| `approve`                     |     |     |     | ✔      |
+| `approveAll`                  |     |     |     | ✔      |
+| `disapproveAll`               |     |     |     | ✔      |
+| `takeOwnership`               |     |     |     | ✔      |
+| `transferFrom`                |     |     |     | ✔      |
+|                               |     |     |     |        |
+| **LicenseSale**               |     |     |     |        |
+| `setAffiliateProgramAddress`  | ✔   |     |     |        |
+| `createPromotionalPurchase`   |     |     | ✔   |        |
+| `purchase`                    |     |     |     | ✔      |
+|                               |     |     |     |        |
+| **LicenseCore**               |     |     |     |        |
+| `setNewAddress`               | ✔   |     |     |        |
+| `unpause`                     | ✔   |     |     |        |
+
 
 # CLI Tools
 
@@ -179,6 +252,10 @@ With inspiration from:
 
 * [0x](https://github.com/0xProject/0x.js)
 * [Cryptokitties](https://github.com/axiomzen/cryptokitties-bounty)
+
+# Join Us On Telegram
+
+If you're interested in using or developing Dotlicense, come [join us on Telegram](https://t.me/dotlicense)
 
 # Authors
 
