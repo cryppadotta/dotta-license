@@ -241,6 +241,10 @@ Options:
   --version           Show version number                                                                                                          [boolean]
 ```
 
+# Configuring and deploying
+
+_(Coming soon)_
+
 # Built With
 
 * [OpenZeppelin](https://github.com/OpenZeppelin/zeppelin-solidity)
