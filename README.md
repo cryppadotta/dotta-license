@@ -48,6 +48,7 @@ The benefits are:
 1. **Surveillance free** -- There is no "license server" tracking the user. Ownership of the token is validated by any [Web3 provider](https://web3js.readthedocs.io/en/1.0/web3.html#setprovider) (e.g. [Infura](https://infura.io/) or even a self-hosted node)
 1. **Scarce** -- The number of licenses available for a given product can be limited
 1. **Transferable** -- Users can transfer or resell their licenses (e.g. they can be auctioned on sites such as [Rarebits](https://rarebits.io/))
+1. **Cryptocurrency-based** -- Normal-cryptocurrency benefits apply such as near-instant payments, permissionless, decentralized ownership, etc. No approvals, Stripe, Shopify store, or bank account necessary.
 
 It is designed for software licenses in desktop or mobile apps.
 
@@ -75,6 +76,62 @@ Dotlicense is split into several packages:
 Additionally, this repo stores some utilities we've built along the way such as:
 
 * [`dot-abi-cli`](dot-abi-cli/README.md) - Generates a DApp CLI scaffold from an ABI (with Ledger support)
+
+# Purchase Model
+
+There are two main models in the contracts:
+
+* The `Product` - which defines a feature or set of features and
+* The `License` - (the token) which defines ownership of an instance of a `Product`
+
+And during operation we have:
+
+* The _user_ (our customer) who is buying access to the features and
+* The _client_ (our software) which runs our application and enables new features on verified ownership
+
+### The `Product`s
+
+`Product`s have:
+
+* an `id`
+* a `price`
+* the amount `available`
+* the `totalSupply`
+* the amount `sold`
+
+The client unlocks features of a given `Product` `id` if ownership of a _`License`_ is proven.
+
+When a new product is created, the `totalSupply` is fixed and **cannot be changed**. A `totalSupply` of `0` means "unlimited".
+
+The executives can:
+
+* Create new `Product`s
+* Change the price for future sales of a `Product`
+* Change the inventory amount `available` **as long as it does not violate the `totalSupply`**
+
+### The `License`
+
+The `License` represents ownership of one unit of a `Product`. The `License` is the same as a "token" - they have the same ID and the two are used interchangeably. 
+
+A `License` is created (that is, the token is minted) at time of sale. When a sale is made, the inventory for that `Product` is decremented and ownership is transferred to the `assignee`
+
+### Ownership
+
+The private key that owns the license must be readable by the client software. 
+
+In [Dottabot](https://www.dottabot.com) this private key is:
+
+* generated automatically by the software on installation and
+* kept in OS secret storage (such as Keychain on Mac or `libsecret` on Linux). 
+
+This means, while it is encrypted on disk, it is also readable by the software without user interaction. (It can also be deployed onto a VPS where a hardware wallet may not be available.)
+
+Of course, this raises the problem of funds at purchase: often our users will have an existing wallet that they spend from (and it won't be our application's private key). 
+
+To deal with this issue, we require the user input the `assignee` address at purchase time (that is, the address controlled by the client software). When the token is purchased, **ownership of the token is given to the private key controlled by our software**.
+
+This helps fulfill the piracy deterrence requirement by incentivizing the user to keep the license private.
+
 
 # Contracts Overview
 
@@ -241,9 +298,43 @@ Options:
   --version           Show version number                                                                                                          [boolean]
 ```
 
+# Objections and Risks
+
+Because licenses are verified on the client, this framework may be susceptible to at least two attacks: _cracking_ and _spoofing_.
+
+### Cracking
+
+Like any desktop, mobile, or client-run app it may be possible for a determined hacker to patch the binary in such a way as to bypass the verification mechanism. Over time, we expect to improve our deterrence methods, but cracking is always a risk.
+
+### Spoofing
+
+Because this software uses the Ethereum blockchain to verify ownership of a license-token, one could "spoof" ownership by directing their Web3 provider to a chain fork where they own a token, even when they may have transferred that token on the main net. 
+
+Again, we plan to implement a degree of 'main-chain' verification to make this difficult or cumbersome for an attacker to do. But forks are always a risk. 
+
+This attack could be mitigated by hosting your own Ethereum node and requiring pinning in your client app. However, the tradeoff here is by requiring the user to hit your server  the user has reduced privacy and availability.
+
+# FAQ
+
+* **Q**: Is there a fee to use these contracts?
+* **A**: No. This software is free to use and there are no "rents" extracted that go back to the Dotlicense team. (Of course, if you use the contracts, Ethereum transactions have fees.)
+
+* **Q**: Why must the client-software hold the private-key ownership of the tokens? Wouldn't it be better for the token to specify the 'allowed client' but restrict transfer to user-held key? This way a user could hold their license-tokens in e.g. a hardware wallet
+* **A**: If the user held the ownership private key independently, they could freely share a license key with no consequences. When the client application requires the private key, then there is incentive to keep it private (because otherwise the license may be stolen.)
+
+* **Q**: Why are these NFTs and not ERC20 fungible tokens?
+* **A**: Because each individual license has it's own attributes. These tokens are somewhat of a hybrid in that you may sell multiple copies of the same feature. However, the tokens aren't fully fungible either -- they each hold unique attributes.
+
+* **Q**: Do I have to pay affiliates?
+* **A**: No. Affiliates have a baseline rate, which can be zero. Individual affiliates can be whitelisted
+
 # Configuring and deploying
 
 _(Coming soon)_
+
+# Join Us On Telegram
+
+If you're interested in using or developing Dotlicense, come [join us on Telegram](https://t.me/dotlicense)
 
 # Built With
 
@@ -256,10 +347,6 @@ With inspiration from:
 
 * [0x](https://github.com/0xProject/0x.js)
 * [Cryptokitties](https://github.com/axiomzen/cryptokitties-bounty)
-
-# Join Us On Telegram
-
-If you're interested in using or developing Dotlicense, come [join us on Telegram](https://t.me/dotlicense)
 
 # Authors
 
