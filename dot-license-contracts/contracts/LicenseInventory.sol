@@ -65,7 +65,7 @@ contract LicenseInventory is LicenseBase {
       available: _initialInventoryQuantity,
       supply: _supply,
       sold: 0,
-      interval: interval
+      interval: _interval
     });
 
     products[_productId] = _product;
@@ -284,7 +284,7 @@ contract LicenseInventory is LicenseBase {
 
   /**
    * @notice returns the total cost to renew a product for a number of cycles
-   * @devdoc If a product is a subscription, the interval defines the period of
+   * @dev If a product is a subscription, the interval defines the period of
    * time, in seconds, users can subscribe for. E.g. 1 month or 1 year.
    * _numCycles is the number of these intervals we want to use in the
    * calculation of the price.
@@ -298,6 +298,16 @@ contract LicenseInventory is LicenseBase {
    */
   function costForProductCycles(uint256 _productId, uint256 _numCycles) public view returns (uint256) {
     return priceOf(_productId).mul(_numCycles);
+  }
+
+  /**
+   * @notice returns if this product is a subscription or not
+   * @dev Some products are subscriptions and others are not. An interval of 0
+   * means the product is not a subscription
+   * @param _productId - the product we're checking
+   */
+  function isSubscriptionProduct(uint256 _productId) public view returns (bool) {
+    return intervalOf(_productId) > 0;
   }
 
 }

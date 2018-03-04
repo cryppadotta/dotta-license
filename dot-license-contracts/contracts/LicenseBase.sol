@@ -69,18 +69,10 @@ contract LicenseBase is LicenseAccessControl {
   }
 
   /**
-   * @notice Get a license's issueTime
-   * @param _licenseId the license id
-   */
-  function licenseExpirationTime(uint256 _licenseId) public view returns (uint256) {
-    return licenses[_licenseId].expirationTime;
-  }
-
-  /**
    * @notice Get a the affiliate credited for the sale of this license
    * @param _licenseId the license id
    */
-  function licenseAffiliate(uint256 _licenseId) public view returns (uint256) {
+  function licenseAffiliate(uint256 _licenseId) public view returns (address) {
     return licenses[_licenseId].affiliate;
   }
 
@@ -89,7 +81,7 @@ contract LicenseBase is LicenseAccessControl {
    * @param _licenseId the license id
    */
   function licenseInfo(uint256 _licenseId)
-    public view returns (uint256, uint256, uint256, uint256, uint256)
+    public view returns (uint256, uint256, uint256, uint256, address)
   {
     return (
       licenseProductId(_licenseId),
