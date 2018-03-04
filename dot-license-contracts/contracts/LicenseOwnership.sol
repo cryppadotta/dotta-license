@@ -25,6 +25,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   mapping(uint256 => uint256) private ownedTokensIndex;
 
   /*** Constants ***/
+  // Configure these for your own deployment
   string public constant NAME = "Dottabot";
   string public constant SYMBOL = "DOTTA";
 

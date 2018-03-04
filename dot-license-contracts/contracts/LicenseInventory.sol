@@ -11,13 +11,14 @@ contract LicenseInventory is LicenseBase {
   using SafeMath for uint256;
 
   event ProductCreated(
-    uint256 indexed productId,
+    uint256 id,
     uint256 price,
     uint256 available,
-    uint256 supply
+    uint256 supply,
+    uint256 interval
   );
-  event ProductInventoryAdjusted(uint256 indexed productId, uint256 available);
-  event ProductPriceChanged(uint256 indexed productId, uint256 price);
+  event ProductInventoryAdjusted(uint256 productId, uint256 available);
+  event ProductPriceChanged(uint256 productId, uint256 price);
 
   struct Product {
     uint256 id;
@@ -25,6 +26,7 @@ contract LicenseInventory is LicenseBase {
     uint256 available;
     uint256 supply;
     uint256 sold;
+    uint256 interval;
   }
 
   // @notice All products in existence
@@ -50,7 +52,8 @@ contract LicenseInventory is LicenseBase {
     uint256 _productId,
     uint256 _initialPrice,
     uint256 _initialInventoryQuantity,
-    uint256 _supply)
+    uint256 _supply,
+    uint256 _interval)
     internal
   {
     require(_productDoesNotExist(_productId));
@@ -61,7 +64,8 @@ contract LicenseInventory is LicenseBase {
       price: _initialPrice,
       available: _initialInventoryQuantity,
       supply: _supply,
-      sold: 0
+      sold: 0,
+      interval: interval
     });
 
     products[_productId] = _product;
@@ -71,7 +75,8 @@ contract LicenseInventory is LicenseBase {
       _product.id,
       _product.price,
       _product.available,
-      _product.supply);
+      _product.supply,
+      _product.interval);
   }
 
   function _incrementInventory(
@@ -141,7 +146,8 @@ contract LicenseInventory is LicenseBase {
     uint256 _productId,
     uint256 _initialPrice,
     uint256 _initialInventoryQuantity,
-    uint256 _supply)
+    uint256 _supply,
+    uint256 _interval)
     public
     onlyCEOOrCOO
   {
@@ -149,7 +155,8 @@ contract LicenseInventory is LicenseBase {
       _productId,
       _initialPrice,
       _initialInventoryQuantity,
-      _supply);
+      _supply,
+      _interval);
   }
 
   /**
@@ -249,11 +256,23 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
+  * @notice The renewal interval of a product in seconds
+  * @param _productId - the product id
+  */
+  function intervalOf(uint256 _productId) public view returns (uint256) {
+    return products[_productId].interval;
+  }
+
+  /**
   * @notice The product info for a product
   * @param _productId - the product id
   */
-  function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256) {
-    return (priceOf(_productId), availableInventoryOf(_productId), totalSupplyOf(_productId));
+  function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256, uint256) {
+    return (
+      priceOf(_productId),
+      availableInventoryOf(_productId),
+      totalSupplyOf(_productId),
+      intervalOf(_productId));
   }
 
   /**
@@ -262,4 +281,23 @@ contract LicenseInventory is LicenseBase {
   function getAllProductIds() public view returns (uint256[]) {
     return allProductIds;
   }
+
+  /**
+   * @notice returns the total cost to renew a product for a number of cycles
+   * @devdoc If a product is a subscription, the interval defines the period of
+   * time, in seconds, users can subscribe for. E.g. 1 month or 1 year.
+   * _numCycles is the number of these intervals we want to use in the
+   * calculation of the price.
+   *
+   * We require that the end user send precisely the amount required (instead
+   * of dealing with excess refunds). This method is public so that clients can
+   * read the exact amount our contract expects to receive.
+   *
+   * @param _productId - the product we're calculating for
+   * @param _numCycles - the number of cycles to calculate for
+   */
+  function costForProductCycles(uint256 _productId, uint256 _numCycles) public view returns (uint256) {
+    return priceOf(_productId).mul(_numCycles);
+  }
+
 }

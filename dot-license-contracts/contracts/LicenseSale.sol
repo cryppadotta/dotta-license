@@ -74,12 +74,28 @@ contract LicenseSale is LicenseOwnership {
     public
     onlyCOO
     whenNotPaused
-    returns (uint)
+    returns (uint256)
   {
     return _performPurchase(_productId, _assignee, _attributes);
   }
 
   /** anyone **/
+
+  /**
+   * @notice returns the total cost to renew a product for a number of cycles
+   * @devdoc If a product is a subscription, the interval defines the period of time, in seconds,
+   *  users can subscribe for. E.g. 1 month or 1 year. _numCycles is the number of these intervals
+   *  we want to use in the calculation of the price.
+   *
+   *  We require that the end user send precisely the amount required (instead of dealing with excess refunds).
+   *  This method is public so that clients can read the exact amount our contract expects to receive.
+   *
+   * @param _productId - the product we're calculating for
+   * @param _numCycles - the number of cycles to calculate for
+   */
+  function costForProductCycles(uint256 _productId, uint256 _numCycles) public view returns (uint256) {
+    return products[_productId].price.mul(_numCycles);
+  }
 
   /**
   * @notice Purchase - makes a purchase of a product. Requires that the value sent is exactly the price of the product
@@ -95,7 +111,7 @@ contract LicenseSale is LicenseOwnership {
     public
     payable
     whenNotPaused
-    returns (uint)
+    returns (uint256)
   {
     require(_productId != 0);
     require(_assignee != address(0));

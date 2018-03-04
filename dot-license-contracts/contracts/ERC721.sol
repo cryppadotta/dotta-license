@@ -17,4 +17,5 @@ contract ERC721 {
   function approveAll(address _to) public;
   /* solium-disable-next-line dotta/underscore-function-arguments */
   function supportsInterface(bytes4 interfaceID) external view returns (bool);
+  // function tokenMetadata(uint256 _tokenId) public view returns (string infoUrl);
 }
