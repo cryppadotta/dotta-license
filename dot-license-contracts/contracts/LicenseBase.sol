@@ -10,7 +10,7 @@ contract LicenseBase is LicenseAccessControl {
   /**
    * @notice Issued is emitted when a new license is issued
    */
-  event Issued(
+  event LicenseIssued(
     address indexed owner,
     uint256 licenseId,
     uint256 productId,
@@ -18,6 +18,13 @@ contract LicenseBase is LicenseAccessControl {
     uint256 issuedTime,
     uint256 expirationTime,
     address affiliate
+  );
+
+  event LicenseRenewal(
+    address indexed owner,
+    uint256 licenseId,
+    uint256 productId,
+    uint256 expirationTime
   );
 
   struct License {

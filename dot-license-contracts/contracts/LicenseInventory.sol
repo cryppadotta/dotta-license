@@ -19,7 +19,13 @@ contract LicenseInventory is LicenseBase {
   );
   event ProductInventoryAdjusted(uint256 productId, uint256 available);
   event ProductPriceChanged(uint256 productId, uint256 price);
+  event ProductRenewableChanged(uint256 productId, bool renewable);
 
+
+  /**
+   * @notice Product defines a product
+   * * renewable: There may come a time when we which to disable the ability to renew a subscription. For example, a plan we no longer wish to support. Obviously care needs to be taken with how we communicate this to customers, but contract-wise, we want to support the ability to discontinue renewal of certain plans.
+  */
   struct Product {
     uint256 id;
     uint256 price;
@@ -27,6 +33,7 @@ contract LicenseInventory is LicenseBase {
     uint256 supply;
     uint256 sold;
     uint256 interval;
+    bool renewable;
   }
 
   // @notice All products in existence
@@ -65,7 +72,8 @@ contract LicenseInventory is LicenseBase {
       available: _initialInventoryQuantity,
       supply: _supply,
       sold: 0,
-      interval: _interval
+      interval: _interval,
+      renewable: _interval == 0 ? false : true
     });
 
     products[_productId] = _product;
@@ -120,6 +128,12 @@ contract LicenseInventory is LicenseBase {
     products[_productId].price = _price;
   }
 
+  function _setRenewable(uint256 _productId, bool _isRenewable) internal
+  {
+    require(_productExists(_productId));
+    products[_productId].renewable = _isRenewable;
+  }
+
   function _purchaseOneUnitInStock(uint256 _productId) internal {
     require(_productExists(_productId));
     require(availableInventoryOf(_productId) > 0);
@@ -129,6 +143,15 @@ contract LicenseInventory is LicenseBase {
 
     // record that one was sold
     products[_productId].sold = products[_productId].sold.add(1);
+  }
+
+  function _requireRenewableProduct(uint256 _productId) internal view {
+    // productId must exist
+    require(_productId != 0);
+    // You can only renew a subscription product
+    require(isSubscriptionProduct(_productId));
+    // The product must currently be renewable
+    require(renewableOf(_productId));
   }
 
   /*** public ***/
@@ -221,6 +244,19 @@ contract LicenseInventory is LicenseBase {
     ProductPriceChanged(_productId, _price);
   }
 
+  /**
+  * @notice setRenewable - sets if a product is renewable
+  * @param _productId - the product id
+  * @param _newRenewable - the new renewable setting
+  */
+  function setRenewable(uint256 _productId, bool _newRenewable)
+    public
+    onlyCLevel
+  {
+    _setRenewable(_productId, _newRenewable);
+    ProductRenewableChanged(_productId, _newRenewable);
+  }
+
   /** anyone **/
 
   /**
@@ -264,15 +300,25 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
+  * @notice Is this product renewable?
+  * @param _productId - the product id
+  */
+  function renewableOf(uint256 _productId) public view returns (bool) {
+    return products[_productId].renewable;
+  }
+
+
+  /**
   * @notice The product info for a product
   * @param _productId - the product id
   */
-  function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256, uint256) {
+  function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256, uint256, bool) {
     return (
       priceOf(_productId),
       availableInventoryOf(_productId),
       totalSupplyOf(_productId),
-      intervalOf(_productId));
+      intervalOf(_productId),
+      renewableOf(_productId));
   }
 
   /**
