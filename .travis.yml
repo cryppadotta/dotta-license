@@ -11,6 +11,6 @@ cache:
       - "dot-license-contracts/node_modules"
 before_script:
   - cd dot-license-contracts && npm install
-  - cd dot-license-contracts && npm run testrpc &
+  - npm run testrpc &
   - sleep 5
 script: cd dot-license-contracts && npm run transpile && ./node_modules/.bin/truffle test --network test
