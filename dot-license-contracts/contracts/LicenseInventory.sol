@@ -15,7 +15,8 @@ contract LicenseInventory is LicenseBase {
     uint256 price,
     uint256 available,
     uint256 supply,
-    uint256 interval
+    uint256 interval,
+    bool renewable
   );
   event ProductInventoryAdjusted(uint256 productId, uint256 available);
   event ProductPriceChanged(uint256 productId, uint256 price);
@@ -84,7 +85,9 @@ contract LicenseInventory is LicenseBase {
       _product.price,
       _product.available,
       _product.supply,
-      _product.interval);
+      _product.interval,
+      _product.renewable
+      );
   }
 
   function _incrementInventory(
