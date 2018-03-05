@@ -188,7 +188,7 @@ contract('LicenseSale', (accounts: string[]) => {
           productId.should.be.bignumber.equal(firstProduct.id);
           attributes.should.not.be.bignumber.equal(0);
           issuedTime.should.not.be.bignumber.equal(0);
-          // expirationTime.should.not.be.bignumber.equal(0); // TODO
+          expirationTime.should.be.bignumber.equal(0);
           affiliate.should.be.bignumber.equal(0);
         });
         it('should emit an Issued event', async () => {
@@ -207,6 +207,14 @@ contract('LicenseSale', (accounts: string[]) => {
         it('should be able to find the product id', async () => {
           const productId = await token.licenseProductId(tokenId);
           productId.should.be.bignumber.equal(firstProduct.id);
+        });
+        it('should not have an expiration time', async () => {
+          const productId = await token.licenseExpirationTime(tokenId);
+          productId.should.be.bignumber.equal(0);
+        });
+        it('should not have an affiliate', async () => {
+          const productId = await token.licenseAffiliate(tokenId);
+          productId.should.be.bignumber.equal(ZERO_ADDRESS);
         });
         it('should transfer the license to the new owner', async () => {
           const originalOwner = await token.ownerOf(tokenId);
