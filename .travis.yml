@@ -9,4 +9,8 @@ cache:
   directories:
       - "node_modules"
       - "dot-license-contracts/node_modules"
-script: cd dot-license-contracts && npm install && npm run travis
+before_script:
+  - cd dot-license-contracts && npm install
+  - cd dot-license-contracts && npm run testrpc &
+  - sleep 5
+script: cd dot-license-contracts && npm run transpile && ./node_modules/.bin/truffle test --network test

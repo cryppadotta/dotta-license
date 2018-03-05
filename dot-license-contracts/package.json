@@ -16,8 +16,9 @@
     "deploy": "npm run migrate --network kovan",
     "lint": "tslint migrations/*.ts test/**/*.ts util/*.ts",
     "testrpc": "ganache-cli --networkId 50",
-    "travis": "concurrently \"npm run testrpc\" \"npm run test\"",
-    "pretravis": "npm run compile"
+    "testwithrpc": "concurrently \"npm run testrpc\" \"npm run test\"",
+    "travis": "npm run test",
+    "pretravis": "rm -rf build/contracts"
   },
   "repository": {
     "type": "git",
