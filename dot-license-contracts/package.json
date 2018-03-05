@@ -7,14 +7,16 @@
     "test": "test"
   },
   "scripts": {
-    "transpile": "rm -rf ./transpiled; copyfiles ./build/**/* ./transpiled; tsc",
+    "transpile":
+      "rm -rf ./transpiled; copyfiles ./build/**/* ./transpiled; tsc",
     "test": "npm run transpile; truffle test --network test",
     "watchtest": "tsc-watch --onSuccess 'env truffle test --network test'",
     "compile": "rm -rf build/contracts; truffle compile",
     "migrate": "npm run transpile; truffle migrate",
     "deploy": "npm run migrate --network kovan",
     "lint": "tslint migrations/*.ts test/**/*.ts util/*.ts",
-    "testrpc": "ganache-cli --networkId 50"
+    "testrpc": "ganache-cli --networkId 50",
+    "travis": "concurrently \"npm run testrpc\" \"npm run test\""
   },
   "repository": {
     "type": "git",
@@ -34,6 +36,7 @@
     "chai-as-promised-typescript-typings": "^0.0.3",
     "chai-bignumber": "^2.0.1",
     "chai-typescript-typings": "^0.0.0",
+    "concurrently": "^3.5.1",
     "copyfiles": "^1.2.0",
     "dirty-chai": "^2.0.1",
     "ganache-cli": "^6.0.3",
