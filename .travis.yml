@@ -9,4 +9,4 @@ cache:
   directories:
       - "node_modules"
       - "dot-license-contracts/node_modules"
-script: cd dot-license-contracts && yarn && npm run travis
+script: cd dot-license-contracts && npm install && npm run travis
