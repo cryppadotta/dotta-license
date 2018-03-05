@@ -47,6 +47,8 @@ It is designed for software licenses in desktop or mobile apps.
 * **Full ERC-721 Compatibility** - Each license issued is also an ERC-721-compatible token
 * **CLI Admin Tools** - With Ledger hardware wallet support
 
+> **Subscriptions are in progress in [`feature/subscriptions`](https://github.com/cryppadotta/dotta-license/tree/feature/subscriptions)
+
 # Implementations
 
 Dotlicense is being used in [Dottabot](https://www.dottabot.com/), a cryptocurrency trailing-profit stop bot built with [Electron](https://electronjs.org/).
