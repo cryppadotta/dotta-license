@@ -13,4 +13,4 @@ before_script:
   - cd dot-license-contracts && npm install
   - npm run testrpc &
   - sleep 5
-script: cd dot-license-contracts && npm run transpile && ./node_modules/.bin/truffle test --network test
+script: npm run transpile && ./node_modules/.bin/truffle test --network test
