@@ -24,7 +24,13 @@ contract LicenseSale is LicenseOwnership {
     internal returns (uint)
   {
     _purchaseOneUnitInStock(_productId);
-    return _createLicense(_productId, _numCycles, _assignee, _attributes, _affiliate);
+    return _createLicense(
+      _productId,
+      _numCycles,
+      _assignee,
+      _attributes,
+      _affiliate
+      );
   }
 
   function _createLicense(
@@ -137,7 +143,12 @@ contract LicenseSale is LicenseOwnership {
     whenNotPaused
     returns (uint256)
   {
-    return _performPurchase(_productId, _numCycles, _assignee, _attributes, address(0));
+    return _performPurchase(
+      _productId,
+      _numCycles,
+      _assignee,
+      _attributes,
+      address(0));
   }
 
   function createPromotionalRenewal(
@@ -194,7 +205,12 @@ contract LicenseSale is LicenseOwnership {
     // Feel free to add your own strategies for product attributes
     // solium-disable-next-line security/no-block-members, zeppelin/no-arithmetic-operations
     uint256 attributes = uint256(keccak256(block.blockhash(block.number-1)))^_productId^(uint256(_assignee));
-    uint256 licenseId = _performPurchase(_productId, _numCycles, _assignee, attributes, _affiliate);
+    uint256 licenseId = _performPurchase(
+      _productId,
+      _numCycles,
+      _assignee,
+      attributes,
+      _affiliate);
 
     if(
       priceOf(_productId) > 0 &&
