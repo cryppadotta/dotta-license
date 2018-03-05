@@ -1,6 +1,7 @@
 
 watchtest:
 	nodemon --verbose --ext ts,sol --exec "truffle test --network test"
+	echo "Run tsc-watch in another tab"
 
 # truffle build
 #	truffle migrate --network geth

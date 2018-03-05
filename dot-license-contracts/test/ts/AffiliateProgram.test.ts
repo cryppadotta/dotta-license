@@ -13,6 +13,7 @@ import { advanceBlock } from '../helpers/advanceToBlock';
 import * as Bluebird from 'bluebird';
 import includes = require('lodash/includes');
 import find = require('lodash/find');
+import { duration } from '../helpers/increaseTime';
 
 chaiSetup.configure();
 const expect = chai.expect;
@@ -40,21 +41,24 @@ contract('AffiliateProgram', (accounts: string[]) => {
     id: 1,
     price: 1000,
     initialInventory: 2,
-    supply: 2
+    supply: 2,
+    interval: 0
   };
 
   const secondProduct = {
     id: 2,
     price: 2000,
     initialInventory: 3,
-    supply: 5
+    supply: 5,
+    interval: duration.weeks(4)
   };
 
   const thirdProduct = {
     id: 3,
     price: 3000,
     initialInventory: 5,
-    supply: 10
+    supply: 10,
+    interval: duration.weeks(4)
   };
 
   beforeEach(async () => {
@@ -68,6 +72,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
       firstProduct.price,
       firstProduct.initialInventory,
       firstProduct.supply,
+      firstProduct.interval,
       { from: creator }
     );
 
@@ -76,6 +81,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
       secondProduct.price,
       secondProduct.initialInventory,
       secondProduct.supply,
+      secondProduct.interval,
       { from: creator }
     );
 
@@ -531,7 +537,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
       );
       await assertDoesNotOwn(user3, secondProduct.id);
 
-      await token.purchase(secondProduct.id, user3, affiliate1, {
+      await token.purchase(secondProduct.id, 1, user3, affiliate1, {
         from: user3,
         value: secondProduct.price,
         gasPrice: 0
@@ -580,7 +586,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
           await assertDoesNotOwn(user3, secondProduct.id);
 
           // make a purchase
-          await token.purchase(secondProduct.id, user3, affiliate1, {
+          await token.purchase(secondProduct.id, 1, user3, affiliate1, {
             from: user3,
             value: secondProduct.price,
             gasPrice: 0
@@ -595,7 +601,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
           await assertDoesNotOwn(user3, secondProduct.id);
 
           // make a purchase
-          await token.purchase(secondProduct.id, user3, ZERO_ADDRESS, {
+          await token.purchase(secondProduct.id, 1, user3, ZERO_ADDRESS, {
             from: user3,
             value: secondProduct.price,
             gasPrice: 0
@@ -622,7 +628,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
           await assertDoesNotOwn(user3, secondProduct.id);
 
           // make a purchase
-          await token.purchase(secondProduct.id, user3, affiliate1, {
+          await token.purchase(secondProduct.id, 1, user3, affiliate1, {
             from: user3,
             value: secondProduct.price,
             gasPrice: 0
@@ -666,7 +672,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
           await assertDoesNotOwn(user3, secondProduct.id);
 
           // make a purchase
-          await token.purchase(secondProduct.id, user3, affiliate1, {
+          await token.purchase(secondProduct.id, 1, user3, affiliate1, {
             from: user3,
             value: secondProduct.price,
             gasPrice: 0

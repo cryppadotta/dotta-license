@@ -7,6 +7,7 @@ import { Artifacts } from '../../util/artifacts';
 import assertRevert from '../helpers/assertRevert';
 import expectThrow from '../helpers/expectThrow';
 import eventByName from '../helpers/eventByName';
+import { duration } from '../helpers/increaseTime';
 
 chaiSetup.configure();
 const expect = chai.expect;
@@ -36,21 +37,24 @@ contract('LicenseSale', (accounts: string[]) => {
     id: 1,
     price: 1000,
     initialInventory: 2,
-    supply: 2
+    supply: 2,
+    interval: 0
   };
 
   const secondProduct = {
     id: 2,
     price: 2000,
     initialInventory: 3,
-    supply: 5
+    supply: 5,
+    interval: duration.weeks(4)
   };
 
   const thirdProduct = {
     id: 3,
     price: 3000,
     initialInventory: 5,
-    supply: 10
+    supply: 10,
+    interval: duration.weeks(4)
   };
 
   beforeEach(async () => {
@@ -64,6 +68,7 @@ contract('LicenseSale', (accounts: string[]) => {
       firstProduct.price,
       firstProduct.initialInventory,
       firstProduct.supply,
+      firstProduct.interval,
       { from: ceo }
     );
 
@@ -72,6 +77,7 @@ contract('LicenseSale', (accounts: string[]) => {
       secondProduct.price,
       secondProduct.initialInventory,
       secondProduct.supply,
+      secondProduct.interval,
       { from: ceo }
     );
 
@@ -83,23 +89,23 @@ contract('LicenseSale', (accounts: string[]) => {
       it('should not sell a product that has no inventory', async () => {
         await token.clearInventory(firstProduct.id, { from: ceo });
         await assertRevert(
-          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
+          token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
             from: user1,
             value: firstProduct.price
           })
         );
       });
       it('should not sell a product that was sold out', async () => {
-        await token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
+        await token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
           from: user1,
           value: firstProduct.price
         });
-        await token.purchase(firstProduct.id, user2, ZERO_ADDRESS, {
+        await token.purchase(firstProduct.id, 1, user2, ZERO_ADDRESS, {
           from: user2,
           value: firstProduct.price
         });
         await assertRevert(
-          token.purchase(firstProduct.id, user3, ZERO_ADDRESS, {
+          token.purchase(firstProduct.id, 1, user3, ZERO_ADDRESS, {
             from: user3,
             value: firstProduct.price
           })
@@ -111,13 +117,13 @@ contract('LicenseSale', (accounts: string[]) => {
       });
       it('should not sell at a price too low', async () => {
         await assertRevert(
-          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
+          token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
             from: user1,
             value: firstProduct.price - 1
           })
         );
         await assertRevert(
-          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
+          token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
             from: user1,
             value: 0
           })
@@ -125,7 +131,7 @@ contract('LicenseSale', (accounts: string[]) => {
       });
       it('should not sell at a price too high', async () => {
         await assertRevert(
-          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
+          token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
             from: user1,
             value: firstProduct.price + 1
           })
@@ -134,7 +140,7 @@ contract('LicenseSale', (accounts: string[]) => {
       it('should not sell if the contract is paused', async () => {
         await token.pause({ from: ceo });
         await assertRevert(
-          token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
+          token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
             from: user1,
             value: firstProduct.price + 1
           })
@@ -148,6 +154,7 @@ contract('LicenseSale', (accounts: string[]) => {
       beforeEach(async () => {
         const { logs } = await token.purchase(
           firstProduct.id,
+          1,
           user1,
           ZERO_ADDRESS,
           {
@@ -171,12 +178,18 @@ contract('LicenseSale', (accounts: string[]) => {
           owner.should.be.equal(user1);
         });
         it('should fetch licenseInfo', async () => {
-          const [productId, attributes, issuedTime] = await token.licenseInfo(
-            tokenId
-          );
+          const [
+            productId,
+            attributes,
+            issuedTime,
+            expirationTime,
+            affiliate
+          ] = await token.licenseInfo(tokenId);
           productId.should.be.bignumber.equal(firstProduct.id);
           attributes.should.not.be.bignumber.equal(0);
           issuedTime.should.not.be.bignumber.equal(0);
+          // expirationTime.should.not.be.bignumber.equal(0); // TODO
+          affiliate.should.be.bignumber.equal(0);
         });
         it('should emit an Issued event', async () => {
           issuedEvent.args.owner.should.be.eq(user1);
@@ -214,7 +227,7 @@ contract('LicenseSale', (accounts: string[]) => {
     describe('if a rando is trying it', async () => {
       it('should not be allowed', async () => {
         await assertRevert(
-          token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+          token.createPromotionalPurchase(firstProduct.id, 1, user3, 0, {
             from: user3
           })
         );
@@ -222,25 +235,25 @@ contract('LicenseSale', (accounts: string[]) => {
     });
     describe('if the COO is creating it', async () => {
       it('should not allow violation of the total inventory', async () => {
-        await token.purchase(firstProduct.id, user3, ZERO_ADDRESS, {
+        await token.purchase(firstProduct.id, 1, user3, ZERO_ADDRESS, {
           from: user3,
           value: firstProduct.price
         });
-        await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+        await token.createPromotionalPurchase(firstProduct.id, 1, user3, 0, {
           from: coo
         });
         await assertRevert(
-          token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+          token.createPromotionalPurchase(firstProduct.id, 1, user3, 0, {
             from: coo
           })
         );
       });
       it('should not allow violation of the total supply', async () => {
-        await token.purchase(firstProduct.id, user3, ZERO_ADDRESS, {
+        await token.purchase(firstProduct.id, 1, user3, ZERO_ADDRESS, {
           from: user3,
           value: firstProduct.price
         });
-        await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+        await token.createPromotionalPurchase(firstProduct.id, 1, user3, 0, {
           from: coo
         });
         await assertRevert(
@@ -253,7 +266,7 @@ contract('LicenseSale', (accounts: string[]) => {
         (await token.availableInventoryOf(
           firstProduct.id
         )).should.be.bignumber.equal(2);
-        await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+        await token.createPromotionalPurchase(firstProduct.id, 1, user3, 0, {
           from: coo
         });
         (await token.availableInventoryOf(
@@ -262,7 +275,7 @@ contract('LicenseSale', (accounts: string[]) => {
       });
       it('should count the amount sold', async () => {
         (await token.totalSold(firstProduct.id)).should.be.bignumber.equal(0);
-        await token.createPromotionalPurchase(firstProduct.id, user3, 0, {
+        await token.createPromotionalPurchase(firstProduct.id, 1, user3, 0, {
           from: coo
         });
         (await token.totalSold(firstProduct.id)).should.be.bignumber.equal(1);
