@@ -78,23 +78,33 @@ contract('LicenseInventory', (accounts: string[]) => {
 
   describe('when creating products', async () => {
     it('should create the first product', async () => {
-      const [price, inventory, supply, interval] = await token.productInfo(
-        firstProduct.id
-      );
+      const [
+        price,
+        inventory,
+        supply,
+        interval,
+        renewable
+      ] = await token.productInfo(firstProduct.id);
       price.toNumber().should.equal(firstProduct.price);
       inventory.toNumber().should.equal(firstProduct.initialInventory);
       supply.toNumber().should.equal(firstProduct.supply);
       interval.toNumber().should.equal(firstProduct.interval);
+      renewable.should.be.false();
     });
 
     it('should create the second product', async () => {
-      const [price, inventory, supply, interval] = await token.productInfo(
-        secondProduct.id
-      );
+      const [
+        price,
+        inventory,
+        supply,
+        interval,
+        renewable
+      ] = await token.productInfo(secondProduct.id);
       price.toNumber().should.equal(secondProduct.price);
       inventory.toNumber().should.equal(secondProduct.initialInventory);
       supply.toNumber().should.equal(secondProduct.supply);
       interval.toNumber().should.equal(secondProduct.interval);
+      renewable.should.be.true();
     });
 
     it('should emit a ProductCreated event', async () => {
@@ -108,15 +118,10 @@ contract('LicenseInventory', (accounts: string[]) => {
       );
       logs[0].args.supply.should.be.bignumber.equal(firstProduct.supply);
       logs[0].args.interval.should.be.bignumber.equal(firstProduct.interval);
+      logs[0].args.renewable.should.be.false();
     });
 
-    it('should be able to get all products that exist', async () => {
-      const productIds = await token.getAllProductIds();
-      productIds[0].should.be.bignumber.equal(firstProduct.id);
-      productIds[1].should.be.bignumber.equal(secondProduct.id);
-    });
-
-    it('should not be able to create a product with the same id', async () => {
+    it('should not create a product with the same id', async () => {
       await assertRevert(
         token.createProduct(
           firstProduct.id,
@@ -128,7 +133,7 @@ contract('LicenseInventory', (accounts: string[]) => {
         )
       );
     });
-    it('should not be able to create a product with more inventory than the total supply', async () => {
+    it('should not create a product with more inventory than the total supply', async () => {
       await assertRevert(
         token.createProduct(
           thirdProduct.id,
@@ -264,6 +269,65 @@ contract('LicenseInventory', (accounts: string[]) => {
       logs[0].event.should.be.eq('ProductPriceChanged');
       logs[0].args.productId.should.be.bignumber.equal(secondProduct.id);
       logs[0].args.price.should.be.bignumber.equal(1234567);
+    });
+  });
+
+  describe('when changing renewable', async () => {
+    describe('and an executive is changing renewable', async () => {
+      let logs: any;
+      beforeEach(async () => {
+        const results = (await token.renewableOf(
+          secondProduct.id
+        )).should.be.true();
+        logs = results.logs;
+
+        token.setRenewable(secondProduct.id, false, { from: ceo });
+      });
+      it('should be allowed', async () => {
+        (await token.renewableOf(secondProduct.id)).should.be.false();
+      });
+      it('should emit a ProductRenewableChanged event', async () => {
+        logs.length.should.be.equal(1);
+        logs[0].event.should.be.eq('ProductRenewableChanged');
+        logs[0].args.productId.should.be.bignumber.equal(secondProduct.id);
+        logs[0].args.renewable.should.be.false();
+      });
+    });
+    describe('and a rando is changing renewable', async () => {
+      it('should not be allowed', async () => {
+        await assertRevert(
+          token.setRenewable(secondProduct.id, false, { from: user1 })
+        );
+      });
+    });
+  });
+
+  describe('when reading product information', async () => {
+    it('should get all products that exist', async () => {
+      const productIds = await token.getAllProductIds();
+      productIds[0].should.be.bignumber.equal(firstProduct.id);
+      productIds[1].should.be.bignumber.equal(secondProduct.id);
+    });
+
+    describe('and calling costForProductCycles', async () => {
+      it('should know the price for one cycle', async () => {
+        const cost = await token.costForProductCycles(secondProduct.id, 1);
+        cost.should.not.be.bignumber.equal(0);
+        cost.should.be.bignumber.equal(secondProduct.price);
+      });
+      it('should know the price for two cycles', async () => {
+        const cost = await token.costForProductCycles(secondProduct.id, 3);
+        cost.should.not.be.bignumber.equal(0);
+        cost.should.be.bignumber.equal(secondProduct.price * 3);
+      });
+    });
+    describe('and calling isSubscriptionProduct', async () => {
+      it('should be true for a subscription', async () => {
+        (await token.isSubscriptionProduct(secondProduct.id)).should.be.true();
+      });
+      it('should be false for a non-subscription', async () => {
+        (await token.isSubscriptionProduct(firstProduct.id)).should.be.false();
+      });
     });
   });
 });
