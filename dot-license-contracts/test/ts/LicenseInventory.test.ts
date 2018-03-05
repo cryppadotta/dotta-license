@@ -274,19 +274,17 @@ contract('LicenseInventory', (accounts: string[]) => {
 
   describe('when changing renewable', async () => {
     describe('and an executive is changing renewable', async () => {
-      let logs: any;
-      beforeEach(async () => {
-        const results = (await token.renewableOf(
-          secondProduct.id
-        )).should.be.true();
-        logs = results.logs;
-
-        token.setRenewable(secondProduct.id, false, { from: ceo });
-      });
       it('should be allowed', async () => {
+        (await token.renewableOf(secondProduct.id)).should.be.true();
+        await token.setRenewable(secondProduct.id, false, { from: ceo });
         (await token.renewableOf(secondProduct.id)).should.be.false();
       });
       it('should emit a ProductRenewableChanged event', async () => {
+        (await token.renewableOf(secondProduct.id)).should.be.true();
+
+        const { logs } = await token.setRenewable(secondProduct.id, false, {
+          from: ceo
+        });
         logs.length.should.be.equal(1);
         logs[0].event.should.be.eq('ProductRenewableChanged');
         logs[0].args.productId.should.be.bignumber.equal(secondProduct.id);
