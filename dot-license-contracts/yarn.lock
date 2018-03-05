@@ -4092,9 +4092,9 @@ sol-explore@1.6.1:
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/sol-explore/-/sol-explore-1.6.1.tgz#b59f073c69fe332560d5a10c32ba8ca7f2986cfb"
 
-solc@0.4.11:
-  version "0.4.11"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.11.tgz#2522eb43e7c0419bac2060b96e20a2593bfb5e8b"
+solc@0.4.19:
+  version "0.4.19"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.19.tgz#1af1c4c292a0365a6977d4cbe3fbee7139b4b561"
   dependencies:
     fs-extra "^0.30.0"
     memorystream "^0.3.1"
@@ -4652,13 +4652,13 @@ truffle-resolver@^3.0.0:
     truffle-expect "0.0.3"
     truffle-provisioner "^0.1.0"
 
-truffle@3.4.3:
-  version "3.4.3"
-  resolved "https://registry.yarnpkg.com/truffle/-/truffle-3.4.3.tgz#6d9ea4abea758b452b2d3769669eb7109146229e"
+truffle@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-4.1.0.tgz#2a4e13f86a0aaf816721f060d7e95844c6e8963c"
   dependencies:
     mocha "^3.4.2"
     original-require "^1.0.1"
-    solc "0.4.11"
+    solc "0.4.19"
 
 tsc-watch@^1.0.16:
   version "1.0.16"
