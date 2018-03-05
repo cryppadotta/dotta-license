@@ -133,7 +133,7 @@ contract LicenseSale is LicenseOwnership {
     uint256 _attributes
     )
     public
-    onlyCOO
+    onlyCEOOrCOO
     whenNotPaused
     returns (uint256)
   {
@@ -145,7 +145,7 @@ contract LicenseSale is LicenseOwnership {
     uint256 _numCycles
     )
     public
-    onlyCOO
+    onlyCEOOrCOO
     whenNotPaused
   {
     uint256 productId = licenseProductId(_tokenId);
