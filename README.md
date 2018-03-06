@@ -221,7 +221,7 @@ Some of the smart contract functions are open to anyone and some are restricted 
 | `balanceOf`                      |     |     |     | ✔      |
 | `tokensOf`                       |     |     |     | ✔      |
 | `ownerOf`                        |     |     |     | ✔      |
-| `approvedFor`                    |     |     |     | ✔      |
+| `getApproved`                    |     |     |     | ✔      |
 | `isApprovedForAll`               |     |     |     | ✔      |
 | `transfer`                       |     |     |     | ✔      |
 | `approve`                        |     |     |     | ✔      |
@@ -259,7 +259,7 @@ Commands:
   dot-license-cli.js approve <to> <tokenId>                                       Approves another address to claim for the ownership of the given token ID
   dot-license-cli.js approveAll <to>                                              Approves another address to claim for the ownership of any tokens owned by
                                                                                   this account
-  dot-license-cli.js approvedFor <tokenId>                                        Gets the approved address to take ownership of a given token ID
+  dot-license-cli.js getApproved <tokenId>                                        Gets the approved address to take ownership of a given token ID
   dot-license-cli.js availableInventoryOf <productId>                             The available inventory of a product
   dot-license-cli.js balanceOf <owner>                                            Gets the balance of the specified address
   dot-license-cli.js ceoAddress                                                   Get the CEO's Address

@@ -39,7 +39,7 @@
 | `balanceOf`                   |     |     |     | ✔      |
 | `tokensOf`                    |     |     |     | ✔      |
 | `ownerOf`                     |     |     |     | ✔      |
-| `approvedFor`                 |     |     |     | ✔      |
+| `getApproved`                 |     |     |     | ✔      |
 | `isApprovedForAll`       |     |     |     | ✔      |
 | `transfer`                    |     |     |     | ✔      |
 | `approve`                     |     |     |     | ✔      |

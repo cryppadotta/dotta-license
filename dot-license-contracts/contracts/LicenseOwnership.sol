@@ -130,7 +130,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
    * @param _tokenId uint256 ID of the token to query the approval of
    * @return address currently approved to take ownership of the given token ID
    */
-  function approvedFor(uint256 _tokenId) public view returns (address) {
+  function getApproved(uint256 _tokenId) public view returns (address) {
     return tokenApprovals[_tokenId];
   }
 
@@ -153,7 +153,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
    * @return bool whether the msg.sender is approved for the given token ID or not
    */
   function isSpecificallyApprovedFor(address _asker, uint256 _tokenId) internal view returns (bool) {
-    return approvedFor(_tokenId) == _asker;
+    return getApproved(_tokenId) == _asker;
   }
 
   /**
@@ -192,7 +192,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   {
     address owner = ownerOf(_tokenId);
     require(_to != owner);
-    if (approvedFor(_tokenId) != 0 || _to != 0) {
+    if (getApproved(_tokenId) != 0 || _to != 0) {
       tokenApprovals[_tokenId] = _to;
       Approval(owner, _to, _tokenId);
     }

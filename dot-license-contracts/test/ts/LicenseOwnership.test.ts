@@ -261,10 +261,10 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
           it('clears the approval for the token ID', async () => {
             await token.approve(user2, tokenId, { from: sender });
-            (await token.approvedFor(tokenId)).should.be.equal(user2);
+            (await token.getApproved(tokenId)).should.be.equal(user2);
 
             await token.transfer(to, tokenId, { from: sender });
-            const approvedAccount = await token.approvedFor(tokenId);
+            const approvedAccount = await token.getApproved(tokenId);
             approvedAccount.should.be.equal(ZERO_ADDRESS);
           });
 
@@ -362,7 +362,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
             it('clears the approval for that token', async () => {
               await token.approve(to, tokenId, { from: sender });
 
-              const approvedAccount = await token.approvedFor(tokenId);
+              const approvedAccount = await token.getApproved(tokenId);
               approvedAccount.should.be.equal(to);
             });
 
@@ -383,7 +383,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
             it('clears the approval for the token ID', async () => {
               await token.approve(to, tokenId, { from: sender });
 
-              const approvedAccount = await token.approvedFor(tokenId);
+              const approvedAccount = await token.getApproved(tokenId);
               approvedAccount.should.be.equal(to);
             });
 
@@ -409,7 +409,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
               it('approves the token ID to the given address', async () => {
                 await token.approve(to, tokenId, { from: sender });
 
-                const approvedAccount = await token.approvedFor(tokenId);
+                const approvedAccount = await token.getApproved(tokenId);
                 approvedAccount.should.be.equal(to);
               });
 
@@ -434,7 +434,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
               it('keeps the approval to the given address', async () => {
                 await token.approve(to, tokenId, { from: sender });
 
-                const approvedAccount = await token.approvedFor(tokenId);
+                const approvedAccount = await token.getApproved(tokenId);
                 approvedAccount.should.be.equal(to);
               });
 
@@ -459,7 +459,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
               it('changes the approval to the given address', async () => {
                 await token.approve(to, tokenId, { from: sender });
 
-                const approvedAccount = await token.approvedFor(tokenId);
+                const approvedAccount = await token.getApproved(tokenId);
                 approvedAccount.should.be.equal(to);
               });
 
@@ -549,11 +549,9 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         });
 
         it('should read that the operator is approved', async () => {
-          const isApproved = await token.isOperatorApprovedFor(
-            user1,
-            operator,
-            { from: operator }
-          );
+          const isApproved = await token.isApprovedForAll(user1, operator, {
+            from: operator
+          });
           isApproved.should.be.true();
         });
 
@@ -573,11 +571,9 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
           });
 
           it('should read that the operator is not approved', async () => {
-            const isApproved = await token.isOperatorApprovedFor(
-              user1,
-              operator,
-              { from: operator }
-            );
+            const isApproved = await token.isApprovedForAll(user1, operator, {
+              from: operator
+            });
             isApproved.should.be.false();
           });
           describe('and a rando tries to send too', async () => {
@@ -609,6 +605,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
   describe('setApprovalForAll', async () => {
     it('should ...');
+    it('should emit ApprovalForAll events');
   });
 
   describe('takeOwnership', () => {
@@ -633,7 +630,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         it('clears the approval for the token ID', async () => {
           await token.takeOwnership(tokenId, { from: sender });
 
-          const approvedAccount = await token.approvedFor(tokenId);
+          const approvedAccount = await token.getApproved(tokenId);
           approvedAccount.should.be.equal(ZERO_ADDRESS);
         });
 
