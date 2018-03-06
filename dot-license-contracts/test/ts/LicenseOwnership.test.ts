@@ -607,6 +607,10 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     });
   });
 
+  describe('setApprovalForAll', async () => {
+    it('should ...');
+  });
+
   describe('takeOwnership', () => {
     describe('when the given token ID was already tracked by this contract', () => {
       const tokenId = _firstTokenId;

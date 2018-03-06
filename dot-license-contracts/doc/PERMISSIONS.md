@@ -40,7 +40,7 @@
 | `tokensOf`                    |     |     |     | ✔      |
 | `ownerOf`                     |     |     |     | ✔      |
 | `approvedFor`                 |     |     |     | ✔      |
-| `isOperatorApprovedFor`       |     |     |     | ✔      |
+| `isApprovedForAll`       |     |     |     | ✔      |
 | `transfer`                    |     |     |     | ✔      |
 | `approve`                     |     |     |     | ✔      |
 | `approveAll`                  |     |     |     | ✔      |

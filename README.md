@@ -222,7 +222,7 @@ Some of the smart contract functions are open to anyone and some are restricted 
 | `tokensOf`                       |     |     |     | ✔      |
 | `ownerOf`                        |     |     |     | ✔      |
 | `approvedFor`                    |     |     |     | ✔      |
-| `isOperatorApprovedFor`          |     |     |     | ✔      |
+| `isApprovedForAll`               |     |     |     | ✔      |
 | `transfer`                       |     |     |     | ✔      |
 | `approve`                        |     |     |     | ✔      |
 | `approveAll`                     |     |     |     | ✔      |
@@ -273,7 +273,7 @@ Commands:
                                                                                   tokens owned by this account.
   dot-license-cli.js getAllProductIds                                             Get all product ids
   dot-license-cli.js incrementInventory <productId> <inventoryAdjustment>         incrementInventory - increments the inventory of a product
-  dot-license-cli.js isOperatorApprovedFor <owner> <operator>                     Tells whether an operator is approved by a given owner
+  dot-license-cli.js isApprovedForAll <owner> <operator>                     Tells whether an operator is approved by a given owner
   dot-license-cli.js licenseAttributes <licenseId>                                Get a license's attributes
   dot-license-cli.js licenseInfo <licenseId>                                      Get a license's info
   dot-license-cli.js licenseIssuedTime <licenseId>                                Get a license's issueTime
