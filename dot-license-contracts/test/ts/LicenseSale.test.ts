@@ -161,7 +161,7 @@ contract('LicenseSale', (accounts: string[]) => {
             value: firstProduct.price
           }
         );
-        issuedEvent = eventByName(logs, 'Issued');
+        issuedEvent = eventByName(logs, 'LicenseIssued');
         tokenId = issuedEvent.args.licenseId;
       });
       it('should decrement the inventory', async () => {
