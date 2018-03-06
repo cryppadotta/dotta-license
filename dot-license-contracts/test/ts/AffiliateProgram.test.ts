@@ -61,6 +61,16 @@ contract('AffiliateProgram', (accounts: string[]) => {
     interval: duration.weeks(4)
   };
 
+  const purchase = async (product: any, user: any, opts: any = {}) => {
+    const affiliate = opts.affiliate || ZERO_ADDRESS;
+    const { logs } = await token.purchase(product.id, 1, user, affiliate, {
+      value: product.price,
+      gasPrice: 0
+    });
+    const issuedEvent = eventByName(logs, 'LicenseIssued');
+    return issuedEvent.args.licenseId;
+  };
+
   beforeEach(async () => {
     token = await LicenseCore.new({ from: creator });
     await token.setCEO(creator, { from: creator });
@@ -697,6 +707,125 @@ contract('AffiliateProgram', (accounts: string[]) => {
           newAffiliateBalance.should.be.bignumber.equal(
             originalAffiliateBalance.add(expectedComission)
           );
+        });
+      });
+    });
+    describe('and the affiliate is operational on renew', async () => {
+      describe('and the product is free', async () => {
+        let tokenId: any;
+        beforeEach(async () => {
+          tokenId = await purchase(secondProduct, user1, {
+            affiliate: affiliate1
+          });
+          await token.setPrice(secondProduct.id, 0, {
+            from: creator
+          });
+          secondProduct.price = 0;
+        });
+        it('should work just fine', async () => {
+          await token.renew(tokenId, 1, {
+            from: user3
+          });
+        });
+      });
+      describe('and the affiliate might receive a credit', async () => {
+        let tokenId: any;
+        let expectedComission: any;
+        beforeEach(async () => {
+          await token.setPrice(
+            secondProduct.id,
+            web3.toWei(new BigNumber(1), 'ether'),
+            {
+              from: creator
+            }
+          );
+          secondProduct.price = web3
+            .toWei(new BigNumber(1), 'ether')
+            .toNumber();
+
+          await affiliate.setBaselineRate(100, { from: creator });
+          expectedComission = web3.toWei(new BigNumber(0.01), 'ether');
+          tokenId = await purchase(secondProduct, user1, {
+            affiliate: affiliate1
+          });
+        });
+        describe("and it's within the renewal timeframe", async () => {
+          it('should give the affiliate his credit', async () => {
+            // check original balances
+            const originalLicenseBalance = await web3Eth.getBalanceAsync(
+              token.address
+            );
+            const originalAffiliateBalance = await web3Eth.getBalanceAsync(
+              affiliate.address
+            );
+            await assertOwns(user1, secondProduct.id);
+
+            // make a renewal
+            await token.renew(tokenId, 1, {
+              from: user3,
+              value: secondProduct.price,
+              gasPrice: 0
+            });
+
+            const newLicenseBalance = await web3Eth.getBalanceAsync(
+              token.address
+            );
+
+            newLicenseBalance.should.be.bignumber.equal(
+              originalLicenseBalance
+                .add(secondProduct.price)
+                .sub(expectedComission)
+            );
+
+            const newAffiliateBalance = await web3Eth.getBalanceAsync(
+              affiliate.address
+            );
+            newAffiliateBalance.should.be.bignumber.equal(
+              originalAffiliateBalance.add(expectedComission)
+            );
+          });
+        });
+
+        describe('and the token was sold a long time ago', async () => {
+          beforeEach(async () => {
+            await token.setRenewalsCreditAffiliatesFor(duration.days(1), {
+              from: creator
+            });
+            let renewalsTimeframe = await token.renewalsCreditAffiliatesFor();
+            renewalsTimeframe.should.be.bignumber.equal(duration.days(1));
+            await increaseTime(duration.days(2));
+          });
+          it('should not pay an affiliate', async () => {
+            const originalLicenseBalance = await web3Eth.getBalanceAsync(
+              token.address
+            );
+            const originalAffiliateBalance = await web3Eth.getBalanceAsync(
+              affiliate.address
+            );
+            await assertOwns(user1, secondProduct.id);
+
+            // make a renewal
+            await token.renew(tokenId, 1, {
+              from: user3,
+              value: secondProduct.price,
+              gasPrice: 0
+            });
+
+            const newLicenseBalance = await web3Eth.getBalanceAsync(
+              token.address
+            );
+
+            newLicenseBalance.should.be.bignumber.equal(
+              originalLicenseBalance.add(secondProduct.price)
+            );
+
+            const newAffiliateBalance = await web3Eth.getBalanceAsync(
+              affiliate.address
+            );
+            newAffiliateBalance.should.be.bignumber.equal(
+              originalAffiliateBalance
+            );
+          });
         });
       });
     });
