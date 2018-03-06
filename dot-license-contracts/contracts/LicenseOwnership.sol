@@ -2,6 +2,7 @@ pragma solidity ^0.4.19;
 
 import "./LicenseInventory.sol";
 import "./ERC721.sol";
+import "./strings/Strings.sol";
 
 contract LicenseOwnership is LicenseInventory, ERC721 {
   using SafeMath for uint256;
@@ -28,6 +29,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   // Configure these for your own deployment
   string public constant NAME = "Dottabot";
   string public constant SYMBOL = "DOTTA";
+  string public tokenMetadataBaseURL = "";
 
   /**
    * @notice token's name
@@ -47,6 +49,16 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     return true;
   }
 
+  function tokenMetadata(uint256 _tokenId)
+    public
+    view
+    returns (string infoUrl)
+  {
+    return Strings.strConcat(
+      tokenMetadataBaseURL,
+      Strings.uint2str(_tokenId));
+  }
+
   function supportsInterface(
     bytes4 interfaceID) // solium-disable-line dotta/underscore-function-arguments
     external view returns (bool)
@@ -61,6 +73,10 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
       this.transferFrom.selector ^
       this.approveAll.selector ^
       this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
+  }
+
+  function setTokenMetadataBaseURL(string _newBaseURL) public onlyCLevel {
+    tokenMetadataBaseURL = _newBaseURL;
   }
 
   /**

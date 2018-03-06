@@ -75,6 +75,8 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       { from: ceo }
     );
 
+    await token.setTokenMetadataBaseURL('http://localhost/', { from: ceo });
+
     await token.unpause({ from: ceo });
 
     await token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
@@ -148,6 +150,13 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       it('reverts', async () => {
         await assertRevert(token.ownerOf(_unknownTokenId));
       });
+    });
+  });
+
+  describe('tokenMetadataBaseURL', async () => {
+    it('should return the base URL', async () => {
+      const baseUrl = await token.tokenMetadataBaseURL();
+      baseUrl.should.be.equal('http://localhost/');
     });
   });
 
@@ -696,6 +705,21 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       it('reverts', async () => {
         await assertRevert(token.takeOwnership(tokenId, { from: user1 }));
       });
+    });
+  });
+
+  describe.only('when checking token metadata', async () => {
+    beforeEach(async () => {
+      await token.purchase(secondProduct.id, 1, user1, ZERO_ADDRESS, {
+        from: user1,
+        value: secondProduct.price
+      });
+    });
+    it('should have a metadata URL', async () => {
+      const tokenId = _firstTokenId;
+      let url = await token.tokenMetadata(tokenId);
+      console.log('url', url);
+      url.should.be.equal('http://localhost/1');
     });
   });
 });
