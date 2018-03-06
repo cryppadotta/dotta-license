@@ -708,7 +708,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     });
   });
 
-  describe.only('when checking token metadata', async () => {
+  describe('when checking token metadata', async () => {
     beforeEach(async () => {
       await token.purchase(secondProduct.id, 1, user1, ZERO_ADDRESS, {
         from: user1,
@@ -718,7 +718,6 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     it('should have a metadata URL', async () => {
       const tokenId = _firstTokenId;
       let url = await token.tokenMetadata(tokenId);
-      console.log('url', url);
       url.should.be.equal('http://localhost/1');
     });
   });
