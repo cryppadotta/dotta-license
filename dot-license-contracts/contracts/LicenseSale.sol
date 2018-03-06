@@ -238,7 +238,6 @@ contract LicenseSale is LicenseOwnership {
     payable
     whenNotPaused
   {
-    require(_tokenId != 0);
     require(_numCycles != 0);
     require(ownerOf(_tokenId) != address(0));
 
