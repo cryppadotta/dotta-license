@@ -12,7 +12,7 @@ srcset="https://i.imgur.com/HvP6jpJ.png 2x"
 <br />
 
 <div align="center">
-  <img src="https://img.shields.io/badge/platform-Ethereum-brightgreen.svg?style=flat-square" alt="Ethereum" /> <img src="https://img.shields.io/badge/token-ERC721-ff69b4.svg?style=flat-square" alt="Token ERC721" /> <img src="https://img.shields.io/badge/contributions-welcome-orange.svg?style=flat-square" alt="Contributions Welcome" /> <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="MIT License" /> <a href="https://t.me/dotlicense"> <img src="https://img.shields.io/badge/Join%20Us%20On-Telegram-2599D2.svg?style=flat-square" alt="Join Us On Telegram" /></a>
+  <img src="https://img.shields.io/badge/platform-Ethereum-brightgreen.svg?style=flat-square" alt="Ethereum" /> <img src="https://img.shields.io/badge/token-ERC721-ff69b4.svg?style=flat-square" alt="Token ERC721" /> <img src="https://img.shields.io/badge/contributions-welcome-orange.svg?style=flat-square" alt="Contributions Welcome" /> <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="MIT License" /> <a href="https://travis-ci.org/cryppadotta/dotta-license"><img src="https://travis-ci.org/cryppadotta/dotta-license.svg?branch=master&style=flat-square" alt="Travis CI" /></a> <a href="https://t.me/dotlicense"> <img src="https://img.shields.io/badge/Join%20Us%20On-Telegram-2599D2.svg?style=flat-square" alt="Join Us On Telegram" /></a>
 </div>
 
 <div align="center">
@@ -47,8 +47,6 @@ It is designed for software licenses in desktop or mobile apps. (And there [is d
 * **Roles-based permissions** - The store has three roles: CEO, CFO, and COO
 * **Full ERC-721 Compatibility** - Each license issued is also an ERC-721-compatible token
 * **CLI Admin Tools** - With [Ledger hardware wallet](https://www.ledgerwallet.com/) support
-
-> **Subscriptions are in progress in [`feature/subscriptions`](https://github.com/cryppadotta/dotta-license/tree/feature/subscriptions)
 
 # Implementations
 
