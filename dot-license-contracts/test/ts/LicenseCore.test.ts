@@ -14,11 +14,11 @@ chai.should();
 
 const web3: Web3 = (global as any).web3;
 
-contract('LicenseCore', function(accounts: string[]) {
+contract('LicenseCore', (accounts: string[]) => {
   let token: any = null;
   const _creator = accounts[0];
 
-  beforeEach(async function() {
+  beforeEach(async () => {
     token = await LicenseCore.new({ from: _creator });
   });
 

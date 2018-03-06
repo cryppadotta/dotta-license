@@ -11,20 +11,30 @@ contract LicenseInventory is LicenseBase {
   using SafeMath for uint256;
 
   event ProductCreated(
-    uint256 indexed productId,
+    uint256 id,
     uint256 price,
     uint256 available,
-    uint256 supply
+    uint256 supply,
+    uint256 interval,
+    bool renewable
   );
-  event ProductInventoryAdjusted(uint256 indexed productId, uint256 available);
-  event ProductPriceChanged(uint256 indexed productId, uint256 price);
+  event ProductInventoryAdjusted(uint256 productId, uint256 available);
+  event ProductPriceChanged(uint256 productId, uint256 price);
+  event ProductRenewableChanged(uint256 productId, bool renewable);
 
+
+  /**
+   * @notice Product defines a product
+   * * renewable: There may come a time when we which to disable the ability to renew a subscription. For example, a plan we no longer wish to support. Obviously care needs to be taken with how we communicate this to customers, but contract-wise, we want to support the ability to discontinue renewal of certain plans.
+  */
   struct Product {
     uint256 id;
     uint256 price;
     uint256 available;
     uint256 supply;
     uint256 sold;
+    uint256 interval;
+    bool renewable;
   }
 
   // @notice All products in existence
@@ -50,7 +60,8 @@ contract LicenseInventory is LicenseBase {
     uint256 _productId,
     uint256 _initialPrice,
     uint256 _initialInventoryQuantity,
-    uint256 _supply)
+    uint256 _supply,
+    uint256 _interval)
     internal
   {
     require(_productDoesNotExist(_productId));
@@ -61,7 +72,9 @@ contract LicenseInventory is LicenseBase {
       price: _initialPrice,
       available: _initialInventoryQuantity,
       supply: _supply,
-      sold: 0
+      sold: 0,
+      interval: _interval,
+      renewable: _interval == 0 ? false : true
     });
 
     products[_productId] = _product;
@@ -71,7 +84,10 @@ contract LicenseInventory is LicenseBase {
       _product.id,
       _product.price,
       _product.available,
-      _product.supply);
+      _product.supply,
+      _product.interval,
+      _product.renewable
+      );
   }
 
   function _incrementInventory(
@@ -115,6 +131,12 @@ contract LicenseInventory is LicenseBase {
     products[_productId].price = _price;
   }
 
+  function _setRenewable(uint256 _productId, bool _isRenewable) internal
+  {
+    require(_productExists(_productId));
+    products[_productId].renewable = _isRenewable;
+  }
+
   function _purchaseOneUnitInStock(uint256 _productId) internal {
     require(_productExists(_productId));
     require(availableInventoryOf(_productId) > 0);
@@ -124,6 +146,15 @@ contract LicenseInventory is LicenseBase {
 
     // record that one was sold
     products[_productId].sold = products[_productId].sold.add(1);
+  }
+
+  function _requireRenewableProduct(uint256 _productId) internal view {
+    // productId must exist
+    require(_productId != 0);
+    // You can only renew a subscription product
+    require(isSubscriptionProduct(_productId));
+    // The product must currently be renewable
+    require(renewableOf(_productId));
   }
 
   /*** public ***/
@@ -141,7 +172,8 @@ contract LicenseInventory is LicenseBase {
     uint256 _productId,
     uint256 _initialPrice,
     uint256 _initialInventoryQuantity,
-    uint256 _supply)
+    uint256 _supply,
+    uint256 _interval)
     public
     onlyCEOOrCOO
   {
@@ -149,7 +181,8 @@ contract LicenseInventory is LicenseBase {
       _productId,
       _initialPrice,
       _initialInventoryQuantity,
-      _supply);
+      _supply,
+      _interval);
   }
 
   /**
@@ -214,6 +247,19 @@ contract LicenseInventory is LicenseBase {
     ProductPriceChanged(_productId, _price);
   }
 
+  /**
+  * @notice setRenewable - sets if a product is renewable
+  * @param _productId - the product id
+  * @param _newRenewable - the new renewable setting
+  */
+  function setRenewable(uint256 _productId, bool _newRenewable)
+    public
+    onlyCLevel
+  {
+    _setRenewable(_productId, _newRenewable);
+    ProductRenewableChanged(_productId, _newRenewable);
+  }
+
   /** anyone **/
 
   /**
@@ -249,11 +295,33 @@ contract LicenseInventory is LicenseBase {
   }
 
   /**
+  * @notice The renewal interval of a product in seconds
+  * @param _productId - the product id
+  */
+  function intervalOf(uint256 _productId) public view returns (uint256) {
+    return products[_productId].interval;
+  }
+
+  /**
+  * @notice Is this product renewable?
+  * @param _productId - the product id
+  */
+  function renewableOf(uint256 _productId) public view returns (bool) {
+    return products[_productId].renewable;
+  }
+
+
+  /**
   * @notice The product info for a product
   * @param _productId - the product id
   */
-  function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256) {
-    return (priceOf(_productId), availableInventoryOf(_productId), totalSupplyOf(_productId));
+  function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256, uint256, bool) {
+    return (
+      priceOf(_productId),
+      availableInventoryOf(_productId),
+      totalSupplyOf(_productId),
+      intervalOf(_productId),
+      renewableOf(_productId));
   }
 
   /**
@@ -262,4 +330,33 @@ contract LicenseInventory is LicenseBase {
   function getAllProductIds() public view returns (uint256[]) {
     return allProductIds;
   }
+
+  /**
+   * @notice returns the total cost to renew a product for a number of cycles
+   * @dev If a product is a subscription, the interval defines the period of
+   * time, in seconds, users can subscribe for. E.g. 1 month or 1 year.
+   * _numCycles is the number of these intervals we want to use in the
+   * calculation of the price.
+   *
+   * We require that the end user send precisely the amount required (instead
+   * of dealing with excess refunds). This method is public so that clients can
+   * read the exact amount our contract expects to receive.
+   *
+   * @param _productId - the product we're calculating for
+   * @param _numCycles - the number of cycles to calculate for
+   */
+  function costForProductCycles(uint256 _productId, uint256 _numCycles) public view returns (uint256) {
+    return priceOf(_productId).mul(_numCycles);
+  }
+
+  /**
+   * @notice returns if this product is a subscription or not
+   * @dev Some products are subscriptions and others are not. An interval of 0
+   * means the product is not a subscription
+   * @param _productId - the product we're checking
+   */
+  function isSubscriptionProduct(uint256 _productId) public view returns (bool) {
+    return intervalOf(_productId) > 0;
+  }
+
 }

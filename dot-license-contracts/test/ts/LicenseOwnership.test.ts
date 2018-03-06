@@ -7,6 +7,7 @@ import { Artifacts } from '../../util/artifacts';
 import assertRevert from '../helpers/assertRevert';
 import expectThrow from '../helpers/expectThrow';
 import eventByName from '../helpers/eventByName';
+import { duration } from '../helpers/increaseTime';
 
 chaiSetup.configure();
 const expect = chai.expect;
@@ -38,14 +39,16 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     id: 1,
     price: 1000,
     initialInventory: 2,
-    supply: 2
+    supply: 2,
+    interval: 0
   };
 
   const secondProduct = {
     id: 2,
     price: 2000,
     initialInventory: 3,
-    supply: 5
+    supply: 5,
+    interval: duration.weeks(4)
   };
 
   beforeEach(async () => {
@@ -59,6 +62,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       firstProduct.price,
       firstProduct.initialInventory,
       firstProduct.supply,
+      firstProduct.interval,
       { from: ceo }
     );
 
@@ -67,22 +71,25 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       secondProduct.price,
       secondProduct.initialInventory,
       secondProduct.supply,
+      secondProduct.interval,
       { from: ceo }
     );
 
+    await token.setTokenMetadataBaseURL('http://localhost/', { from: ceo });
+
     await token.unpause({ from: ceo });
 
-    await token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
+    await token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
       from: user1,
       value: firstProduct.price
     });
 
-    await token.purchase(firstProduct.id, user1, ZERO_ADDRESS, {
+    await token.purchase(firstProduct.id, 1, user1, ZERO_ADDRESS, {
       from: coo,
       value: firstProduct.price
     });
 
-    await token.purchase(secondProduct.id, user2, ZERO_ADDRESS, {
+    await token.purchase(secondProduct.id, 1, user2, ZERO_ADDRESS, {
       from: coo,
       value: secondProduct.price
     });
@@ -146,6 +153,13 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     });
   });
 
+  describe('tokenMetadataBaseURL', async () => {
+    it('should return the base URL', async () => {
+      const baseUrl = await token.tokenMetadataBaseURL();
+      baseUrl.should.be.equal('http://localhost/');
+    });
+  });
+
   describe('minting', () => {
     describe('when the given token ID was not tracked by this contract', () => {
       describe('when the given address is not the zero address', () => {
@@ -156,6 +170,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
           const { logs } = await token.purchase(
             secondProduct.id,
+            1,
             to,
             ZERO_ADDRESS,
             {
@@ -176,6 +191,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         it('adds that token to the token list of the owner', async () => {
           const { logs } = await token.purchase(
             secondProduct.id,
+            1,
             user3,
             ZERO_ADDRESS,
             {
@@ -194,6 +210,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         it('emits a transfer event', async () => {
           const { logs } = await token.purchase(
             secondProduct.id,
+            1,
             to,
             ZERO_ADDRESS,
             {
@@ -215,7 +232,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
         it('reverts', async () => {
           await assertRevert(
-            token.purchase(secondProduct.id, to, ZERO_ADDRESS, {
+            token.purchase(secondProduct.id, 1, to, ZERO_ADDRESS, {
               from: user1,
               value: secondProduct.price
             })
@@ -688,6 +705,20 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       it('reverts', async () => {
         await assertRevert(token.takeOwnership(tokenId, { from: user1 }));
       });
+    });
+  });
+
+  describe('when checking token metadata', async () => {
+    beforeEach(async () => {
+      await token.purchase(secondProduct.id, 1, user1, ZERO_ADDRESS, {
+        from: user1,
+        value: secondProduct.price
+      });
+    });
+    it('should have a metadata URL', async () => {
+      const tokenId = _firstTokenId;
+      let url = await token.tokenMetadata(tokenId);
+      url.should.be.equal('http://localhost/1');
     });
   });
 });

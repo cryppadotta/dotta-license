@@ -1,6 +1,10 @@
 
 watchtest:
-	nodemon --verbose --ext ts,sol --exec "truffle test --network test"
+	echo "Run tsc-watch in another tab"
+	nodemon --verbose --ext js,ts,sol --exec "truffle test --network test"
+
+# Note, if you want to run a specific test, you have to tell truffle to run the *transpiled* file, not the .ts file, like this:
+# nodemon --verbose --ext js,ts,sol --exec "truffle test transpiled/test/ts/LicenseInventory.test.js --network test"
 
 # truffle build
 #	truffle migrate --network geth

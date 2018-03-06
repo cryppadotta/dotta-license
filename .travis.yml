@@ -1,0 +1,16 @@
+language: node_js
+node_js:
+  - "8"
+before_install:
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.3.2
+  - export PATH="$HOME/.yarn/bin:$PATH"
+cache:
+  yarn: true
+  directories:
+      - "node_modules"
+      - "dot-license-contracts/node_modules"
+before_script:
+  - cd dot-license-contracts && npm install
+  - npm run testrpc &
+  - sleep 5
+script: npm run transpile && ./node_modules/.bin/truffle test --network test

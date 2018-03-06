@@ -158,7 +158,7 @@ contract LicenseAccessControl {
   /**
    * @notice called by any C-level to pause, triggers stopped state
    */
-  function pause() onlyCLevel whenNotPaused public {
+  function pause() public onlyCLevel whenNotPaused {
     paused = true;
     Paused();
   }
@@ -166,7 +166,7 @@ contract LicenseAccessControl {
   /**
    * @notice called by the CEO to unpause, returns to normal state
    */
-  function unpause() onlyCEO whenPaused public {
+  function unpause() public onlyCEO whenPaused {
     paused = false;
     Unpaused();
   }

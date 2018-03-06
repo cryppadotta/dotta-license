@@ -6,6 +6,7 @@ import { chaiSetup } from './utils/chai_setup';
 import { Artifacts } from '../../util/artifacts';
 import assertRevert from '../helpers/assertRevert';
 import expectThrow from '../helpers/expectThrow';
+import { duration } from '../helpers/increaseTime';
 
 chaiSetup.configure();
 const expect = chai.expect;
@@ -30,21 +31,24 @@ contract('LicenseInventory', (accounts: string[]) => {
     id: 1,
     price: 1000,
     initialInventory: 2,
-    supply: 2
+    supply: 2,
+    interval: 0
   };
 
   const secondProduct = {
     id: 2,
     price: 2000,
     initialInventory: 3,
-    supply: 5
+    supply: 5,
+    interval: duration.weeks(4)
   };
 
   const thirdProduct = {
     id: 3,
     price: 3000,
     initialInventory: 5,
-    supply: 10
+    supply: 10,
+    interval: duration.weeks(4)
   };
 
   beforeEach(async () => {
@@ -58,6 +62,7 @@ contract('LicenseInventory', (accounts: string[]) => {
       firstProduct.price,
       firstProduct.initialInventory,
       firstProduct.supply,
+      firstProduct.interval,
       { from: ceo }
     );
 
@@ -66,67 +71,76 @@ contract('LicenseInventory', (accounts: string[]) => {
       secondProduct.price,
       secondProduct.initialInventory,
       secondProduct.supply,
+      secondProduct.interval,
       { from: ceo }
     );
   });
 
   describe('when creating products', async () => {
-    beforeEach(async () => {});
-
     it('should create the first product', async () => {
-      const [price, inventory, supply] = await token.productInfo(
-        firstProduct.id
-      );
+      const [
+        price,
+        inventory,
+        supply,
+        interval,
+        renewable
+      ] = await token.productInfo(firstProduct.id);
       price.toNumber().should.equal(firstProduct.price);
       inventory.toNumber().should.equal(firstProduct.initialInventory);
       supply.toNumber().should.equal(firstProduct.supply);
+      interval.toNumber().should.equal(firstProduct.interval);
+      renewable.should.be.false();
     });
 
     it('should create the second product', async () => {
-      const [price, inventory, supply] = await token.productInfo(
-        secondProduct.id
-      );
+      const [
+        price,
+        inventory,
+        supply,
+        interval,
+        renewable
+      ] = await token.productInfo(secondProduct.id);
       price.toNumber().should.equal(secondProduct.price);
       inventory.toNumber().should.equal(secondProduct.initialInventory);
       supply.toNumber().should.equal(secondProduct.supply);
+      interval.toNumber().should.equal(secondProduct.interval);
+      renewable.should.be.true();
     });
 
     it('should emit a ProductCreated event', async () => {
       const { logs } = p1Created;
       logs.length.should.be.equal(1);
       logs[0].event.should.be.eq('ProductCreated');
-      logs[0].args.productId.should.be.bignumber.equal(firstProduct.id);
+      logs[0].args.id.should.be.bignumber.equal(firstProduct.id);
       logs[0].args.price.should.be.bignumber.equal(firstProduct.price);
       logs[0].args.available.should.be.bignumber.equal(
         firstProduct.initialInventory
       );
       logs[0].args.supply.should.be.bignumber.equal(firstProduct.supply);
+      logs[0].args.interval.should.be.bignumber.equal(firstProduct.interval);
+      logs[0].args.renewable.should.be.false();
     });
 
-    it('should be able to get all products that exist', async () => {
-      const productIds = await token.getAllProductIds();
-      productIds[0].should.be.bignumber.equal(firstProduct.id);
-      productIds[1].should.be.bignumber.equal(secondProduct.id);
-    });
-
-    it('should not be able to create a product with the same id', async () => {
+    it('should not create a product with the same id', async () => {
       await assertRevert(
         token.createProduct(
           firstProduct.id,
           firstProduct.price,
           firstProduct.initialInventory,
           firstProduct.supply,
+          firstProduct.interval,
           { from: ceo }
         )
       );
     });
-    it('should not be able to create a product with more inventory than the total supply', async () => {
+    it('should not create a product with more inventory than the total supply', async () => {
       await assertRevert(
         token.createProduct(
           thirdProduct.id,
           thirdProduct.price,
           thirdProduct.supply + 1,
           thirdProduct.supply,
+          thirdProduct.interval,
           { from: ceo }
         )
       );
@@ -139,6 +153,7 @@ contract('LicenseInventory', (accounts: string[]) => {
             thirdProduct.price,
             thirdProduct.initialInventory,
             thirdProduct.supply,
+            thirdProduct.interval,
             { from: user1 }
           )
         );
@@ -150,6 +165,7 @@ contract('LicenseInventory', (accounts: string[]) => {
             thirdProduct.price,
             thirdProduct.initialInventory,
             thirdProduct.supply,
+            thirdProduct.interval,
             { from: cfo }
           )
         );
@@ -253,6 +269,63 @@ contract('LicenseInventory', (accounts: string[]) => {
       logs[0].event.should.be.eq('ProductPriceChanged');
       logs[0].args.productId.should.be.bignumber.equal(secondProduct.id);
       logs[0].args.price.should.be.bignumber.equal(1234567);
+    });
+  });
+
+  describe('when changing renewable', async () => {
+    describe('and an executive is changing renewable', async () => {
+      it('should be allowed', async () => {
+        (await token.renewableOf(secondProduct.id)).should.be.true();
+        await token.setRenewable(secondProduct.id, false, { from: ceo });
+        (await token.renewableOf(secondProduct.id)).should.be.false();
+      });
+      it('should emit a ProductRenewableChanged event', async () => {
+        (await token.renewableOf(secondProduct.id)).should.be.true();
+
+        const { logs } = await token.setRenewable(secondProduct.id, false, {
+          from: ceo
+        });
+        logs.length.should.be.equal(1);
+        logs[0].event.should.be.eq('ProductRenewableChanged');
+        logs[0].args.productId.should.be.bignumber.equal(secondProduct.id);
+        logs[0].args.renewable.should.be.false();
+      });
+    });
+    describe('and a rando is changing renewable', async () => {
+      it('should not be allowed', async () => {
+        await assertRevert(
+          token.setRenewable(secondProduct.id, false, { from: user1 })
+        );
+      });
+    });
+  });
+
+  describe('when reading product information', async () => {
+    it('should get all products that exist', async () => {
+      const productIds = await token.getAllProductIds();
+      productIds[0].should.be.bignumber.equal(firstProduct.id);
+      productIds[1].should.be.bignumber.equal(secondProduct.id);
+    });
+
+    describe('and calling costForProductCycles', async () => {
+      it('should know the price for one cycle', async () => {
+        const cost = await token.costForProductCycles(secondProduct.id, 1);
+        cost.should.not.be.bignumber.equal(0);
+        cost.should.be.bignumber.equal(secondProduct.price);
+      });
+      it('should know the price for two cycles', async () => {
+        const cost = await token.costForProductCycles(secondProduct.id, 3);
+        cost.should.not.be.bignumber.equal(0);
+        cost.should.be.bignumber.equal(secondProduct.price * 3);
+      });
+    });
+    describe('and calling isSubscriptionProduct', async () => {
+      it('should be true for a subscription', async () => {
+        (await token.isSubscriptionProduct(secondProduct.id)).should.be.true();
+      });
+      it('should be false for a non-subscription', async () => {
+        (await token.isSubscriptionProduct(firstProduct.id)).should.be.false();
+      });
     });
   });
 });

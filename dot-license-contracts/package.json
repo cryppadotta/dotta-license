@@ -14,7 +14,10 @@
     "migrate": "npm run transpile; truffle migrate",
     "deploy": "npm run migrate --network kovan",
     "lint": "tslint migrations/*.ts test/**/*.ts util/*.ts",
-    "testrpc": "ganache-cli --networkId 50"
+    "testrpc": "ganache-cli --networkId 50",
+    "testwithrpc": "concurrently \"npm run testrpc\" \"npm run test\"",
+    "travis": "npm run test",
+    "pretravis": "rm -rf build/contracts"
   },
   "repository": {
     "type": "git",
@@ -34,12 +37,13 @@
     "chai-as-promised-typescript-typings": "^0.0.3",
     "chai-bignumber": "^2.0.1",
     "chai-typescript-typings": "^0.0.0",
+    "concurrently": "^3.5.1",
     "copyfiles": "^1.2.0",
     "dirty-chai": "^2.0.1",
     "ganache-cli": "^6.0.3",
     "nodemon": "^1.15.0",
     "solc": "^0.4.11",
-    "truffle": "3.4.3",
+    "truffle": "4.1.0",
     "tsc-watch": "^1.0.16",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "machinomy/types-ethereumjs-util",
