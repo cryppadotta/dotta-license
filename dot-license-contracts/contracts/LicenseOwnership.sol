@@ -75,7 +75,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
       this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
   }
 
-  function setTokenMetadataBaseURL(string _newBaseURL) public onlyCLevel {
+  function setTokenMetadataBaseURL(string _newBaseURL) public onlyCEOOrCOO {
     tokenMetadataBaseURL = _newBaseURL;
   }
 
