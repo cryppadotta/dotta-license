@@ -34,7 +34,7 @@ The benefits are:
 1. **Piracy deterring** -- Because the private key is used to validate the license, owners are dis-incentivized to share that key. Because if the key is shared, for example, on a file-sharing site the license can be transferred, stolen, and sold.
 1. **Surveillance free** -- There is no "license server" tracking the user. Ownership of the token is validated by any [Web3 provider](https://web3js.readthedocs.io/en/1.0/web3.html#setprovider) (e.g. [Infura](https://infura.io/) or even a self-hosted node)
 1. **Scarce** -- The number of licenses available for a given product can be limited
-1. **Transferable** -- Users can transfer or resell their licenses (e.g. they can be auctioned on sites such as [Rarebits](https://rarebits.io/))
+1. **Transferable** -- Users can transfer or resell their licenses (e.g. they can be auctioned on sites such as [Rarebits](https://rarebits.io/) or [OpenSea](https://opensea.io/))
 1. **Cryptocurrency-based** -- Normal-cryptocurrency benefits apply such as near-instant payments, permissionless, decentralized ownership, etc. No approvals, Stripe, Shopify store, or bank account necessary.
 
 It is designed for software licenses in desktop or mobile apps.
