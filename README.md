@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://i.imgur.com/Cp9BmvE.png" 
+  <img src="https://i.imgur.com/Cp9BmvE.png"
 srcset="https://i.imgur.com/HvP6jpJ.png 2x"
   alt="Dotlicense" width="970"></a>
 </h1>
@@ -16,7 +16,7 @@ srcset="https://i.imgur.com/HvP6jpJ.png 2x"
 </div>
 
 <div align="center">
-  <sub>Built by 
+  <sub>Built by
   <a href="https://twitter.com/cryppadotta">Dotta</a> and
   <a href="https://github.com/cryppadotta/dotta-license/graphs/contributors">
     contributors
@@ -25,7 +25,7 @@ srcset="https://i.imgur.com/HvP6jpJ.png 2x"
 
 # Overview
 
-Dotlicense is a set of smart contracts and JavaScript tooling to sell and verify software licenses (e.g. **in-app-purchases** or **feature access tokens**) using Ethereum.
+Dotlicense is a set of smart contracts and JavaScript tooling to sell and verify software licenses (e.g. **in-app-purchases** or **feature access tokens**) using Ethereum. It supports both single purchase and (prepaid) subscriptions.
 
 The licenses are [ERC721-compatible Tokens](http://erc721.org/). The client app holds the private key that owns the token.
 
@@ -37,15 +37,16 @@ The benefits are:
 1. **Transferable** -- Users can transfer or resell their licenses (e.g. they can be auctioned on sites such as [Rarebits](https://rarebits.io/))
 1. **Cryptocurrency-based** -- Normal-cryptocurrency benefits apply such as near-instant payments, permissionless, decentralized ownership, etc. No approvals, Stripe, Shopify store, or bank account necessary.
 
-It is designed for software licenses in desktop or mobile apps.
+It is designed for software licenses in desktop or mobile apps. (And there [is discussion](https://github.com/cryppadotta/dotta-license/issues/2) about using it for subscription web apps.)
 
 # Features
 
 * **Multiple products** - Each product has its own inventory levels and total supply, housed in one contract
-* **Affiliate program** - Affiliates can get a cut of sales they refer with individual, whitelisted rates
+* **Subscriptions** - Products can (optionally) expire and be renewed by paying additional funds
+* **Affiliate program** - Affiliates can get a cut of sales they refer with individual, whitelisted rates (including recurring affiliate revenue with subscriptions)
 * **Roles-based permissions** - The store has three roles: CEO, CFO, and COO
 * **Full ERC-721 Compatibility** - Each license issued is also an ERC-721-compatible token
-* **CLI Admin Tools** - With Ledger hardware wallet support
+* **CLI Admin Tools** - With [Ledger hardware wallet](https://www.ledgerwallet.com/) support
 
 # Implementations
 
@@ -82,43 +83,70 @@ And during operation we have:
 
 * an `id`
 * a `price`
-* the amount `available`
+* the quantity `available`
 * the `totalSupply`
-* the amount `sold`
+* the quantity `sold`
+
+And optionally, if the product is a subscription, it may have:
+
+* a renewal `interval`, e.g. 1 month or 1 year in seconds
+* a `renewable` setting, which may be used to disable renewals of old plans
 
 The client unlocks features of a given `Product` `id` if ownership of a _`License`_ is proven.
 
 When a new product is created, the `totalSupply` is fixed and **cannot be changed**. A `totalSupply` of `0` means "unlimited".
+
+When a new product is created, the renewal `interval` is fixed and **cannot be changed**. An `interval` of `0` means "unlimited".
 
 The executives can:
 
 * Create new `Product`s
 * Change the price for future sales of a `Product`
 * Change the inventory amount `available` **as long as it does not violate the `totalSupply`**
+* Change the product's `renewable` status
 
 ### The `License`
 
-The `License` represents ownership of one unit of a `Product`. The `License` is the same as a "token" - they have the same ID and the two are used interchangeably. 
+The `License` represents ownership of one unit of a `Product`. The `License` is the same as a "token" - they have the same ID and the two are used interchangeably.
+
+`License`s have:
+
+* an `id`
+* a `productId`, which points to the `Product` this `License` is for
+* `attributes` (`uint256`), which are specific to this individual `License`
+* `issuedTime`, which is the time when this `License` was created (i.e. minted)
+* an owner
+
+And optionally:
+
+* an `expirationTime` when this `License` expires
+* an `affiliate` address, who is credited for the original sale of this `License`
 
 A `License` is created (that is, the token is minted) at time of sale. When a sale is made, the inventory for that `Product` is decremented and ownership is transferred to the `assignee`
 
+An `expirationTime` of `0` means "does not expire".
+
+The executives can:
+
+* Issue promotional (free) `License`s, within the bounds of the supply
+* Issue promotional (free) renewal of `Licenses`
+
 ### Ownership
 
-The private key that owns the license must be readable by the client software. 
+The private key that owns the license must be readable by the client software.
 
 In [Dottabot](https://www.dottabot.com) this private key is:
 
 * generated automatically by the software on installation and
-* kept in OS secret storage (such as Keychain on Mac or `libsecret` on Linux). 
+* kept in OS secret storage (such as Keychain on Mac or `libsecret` on Linux).
 
-This means, while it is encrypted on disk, it is also readable by the software without user interaction. (It can also be deployed onto a VPS where a hardware wallet may not be available.)
+In Dottabot, this means that while it is encrypted on disk, it is also readable by the software without user interaction. (It can also be deployed onto a VPS where a hardware wallet may not be available.)
 
-Of course, this raises the problem of funds at purchase: often our users will have an existing wallet that they spend from (and it won't be our application's private key). 
+Of course, this raises the problem of funds at purchase: often our users will have an existing wallet that they spend from (and it won't be our application's private key).
 
 To deal with this issue, we require the user input the `assignee` address at purchase time (that is, the address controlled by the client software). When the token is purchased, **ownership of the token is given to the private key controlled by our software**.
 
 This helps fulfill the piracy deterrence requirement by incentivizing the user to keep the license private.
-
 
 # Contracts Overview
 
@@ -135,7 +163,6 @@ The smart contracts are split into modules.
 
 * [`AffiliateProgram`](dot-license-contracts/contracts/Affiliate/AffiliateProgram.sol) - Defines a minimal affiliate program, with whitelisting
 
-
 # Roles-based Permissions
 
 Issuance of new products and unsold inventory levels is centrally controlled. There are three roles:
@@ -146,63 +173,74 @@ Issuance of new products and unsold inventory levels is centrally controlled. Th
 
 Some of the smart contract functions are open to anyone and some are restricted by role. The table below shows the permissions for each:
 
-| function                      | CEO | CFO | COO | anyone |
-| ----------------------------- | --- | --- | --- | ------ |
-| **LicenseAccessControl**      |     |     |     |        |
-| `setCEO`                      | ✔   |     |     |        |
-| `setCFO`                      | ✔   |     |     |        |
-| `setCOO`                      | ✔   |     |     |        |
-| `setWithdrawalAddress`        | ✔   |     |     |        |
-| `withdrawBalance`             | ✔   | ✔   |     |        |
-| `pause`                       | ✔   | ✔   | ✔   |        |
-| `unpause`                     | ✔   |     |     |        |
-|                               |     |     |     |        |
-| **LicenseBase**               |     |     |     |        |
-| `licenseProductId`            |     |     |     | ✔      |
-| `licenseAttributes`           |     |     |     | ✔      |
-| `licenseIssuedTime`           |     |     |     | ✔      |
-| `licenseInfo`                 |     |     |     | ✔      |
-|                               |     |     |     |        |
-| **LicenseInventory**          |     |     |     |        |
-| `createProduct`               | ✔   |     | ✔   |        |
-| `incrementInventory`          | ✔   | ✔   | ✔   |        |
-| `decrementInventory`          | ✔   | ✔   | ✔   |        |
-| `clearInventory`              | ✔   | ✔   | ✔   |        |
-| `setPrice`                    | ✔   | ✔   | ✔   |        |
-| `priceOf`                     |     |     |     | ✔      |
-| `availableInventoryOf`        |     |     |     | ✔      |
-| `totalSupplyOf`               |     |     |     | ✔      |
-| `totalSold`                   |     |     |     | ✔      |
-| `productInfo`                 |     |     |     | ✔      |
-| `getAllProductIds`            |     |     |     | ✔      |
-|                               |     |     |     |        |
-| **LicenseOwnership** (ERC721) |     |     |     |        |
-| `name`                        |     |     |     | ✔      |
-| `symbol`                      |     |     |     | ✔      |
-| `implementsERC721`            |     |     |     | ✔      |
-| `supportsInterface`           |     |     |     | ✔      |
-| `totalSupply`                 |     |     |     | ✔      |
-| `balanceOf`                   |     |     |     | ✔      |
-| `tokensOf`                    |     |     |     | ✔      |
-| `ownerOf`                     |     |     |     | ✔      |
-| `approvedFor`                 |     |     |     | ✔      |
-| `isOperatorApprovedFor`       |     |     |     | ✔      |
-| `transfer`                    |     |     |     | ✔      |
-| `approve`                     |     |     |     | ✔      |
-| `approveAll`                  |     |     |     | ✔      |
-| `disapproveAll`               |     |     |     | ✔      |
-| `takeOwnership`               |     |     |     | ✔      |
-| `transferFrom`                |     |     |     | ✔      |
-|                               |     |     |     |        |
-| **LicenseSale**               |     |     |     |        |
-| `setAffiliateProgramAddress`  | ✔   |     |     |        |
-| `createPromotionalPurchase`   |     |     | ✔   |        |
-| `purchase`                    |     |     |     | ✔      |
-|                               |     |     |     |        |
-| **LicenseCore**               |     |     |     |        |
-| `setNewAddress`               | ✔   |     |     |        |
-| `unpause`                     | ✔   |     |     |        |
-
+| function                         | CEO | CFO | COO | anyone |
+| -------------------------------- | --- | --- | --- | ------ |
+| **LicenseAccessControl**         |     |     |     |        |
+| `setCEO`                         | ✔   |     |     |        |
+| `setCFO`                         | ✔   |     |     |        |
+| `setCOO`                         | ✔   |     |     |        |
+| `setWithdrawalAddress`           | ✔   |     |     |        |
+| `withdrawBalance`                | ✔   | ✔   |     |        |
+| `pause`                          | ✔   | ✔   | ✔   |        |
+| `unpause`                        | ✔   |     |     |        |
+|                                  |     |     |     |        |
+| **LicenseBase**                  |     |     |     |        |
+| `licenseProductId`               |     |     |     | ✔      |
+| `licenseAttributes`              |     |     |     | ✔      |
+| `licenseIssuedTime`              |     |     |     | ✔      |
+| `licenseExpirationTime`          |     |     |     | ✔      |
+| `licenseAffiliate`               |     |     |     | ✔      |
+| `licenseInfo`                    |     |     |     | ✔      |
+|                                  |     |     |     |        |
+| **LicenseInventory**             |     |     |     |        |
+| `createProduct`                  | ✔   |     | ✔   |        |
+| `incrementInventory`             | ✔   | ✔   | ✔   |        |
+| `decrementInventory`             | ✔   | ✔   | ✔   |        |
+| `clearInventory`                 | ✔   | ✔   | ✔   |        |
+| `setPrice`                       | ✔   | ✔   | ✔   |        |
+| `setRenewable`                   | ✔   | ✔   | ✔   |        |
+| `priceOf`                        |     |     |     | ✔      |
+| `availableInventoryOf`           |     |     |     | ✔      |
+| `totalSupplyOf`                  |     |     |     | ✔      |
+| `totalSold`                      |     |     |     | ✔      |
+| `intervalOf`                     |     |     |     | ✔      |
+| `renewableOf`                    |     |     |     | ✔      |
+| `productInfo`                    |     |     |     | ✔      |
+| `getAllProductIds`               |     |     |     | ✔      |
+| `costForProductCycles`           |     |     |     | ✔      |
+| `isSubscriptionProduct`          |     |     |     | ✔      |
+|                                  |     |     |     |        |
+| **LicenseOwnership** (ERC721)    |     |     |     |        |
+| `name`                           |     |     |     | ✔      |
+| `symbol`                         |     |     |     | ✔      |
+| `implementsERC721`               |     |     |     | ✔      |
+| `tokenMetadata`                  |     |     |     | ✔      |
+| `supportsInterface`              |     |     |     | ✔      |
+| `setTokenMetadataBaseURL`        | ✔   |     | ✔   |        |
+| `totalSupply`                    |     |     |     | ✔      |
+| `balanceOf`                      |     |     |     | ✔      |
+| `tokensOf`                       |     |     |     | ✔      |
+| `ownerOf`                        |     |     |     | ✔      |
+| `approvedFor`                    |     |     |     | ✔      |
+| `isOperatorApprovedFor`          |     |     |     | ✔      |
+| `transfer`                       |     |     |     | ✔      |
+| `approve`                        |     |     |     | ✔      |
+| `approveAll`                     |     |     |     | ✔      |
+| `disapproveAll`                  |     |     |     | ✔      |
+| `takeOwnership`                  |     |     |     | ✔      |
+| `transferFrom`                   |     |     |     | ✔      |
+|                                  |     |     |     |        |
+| **LicenseSale**                  |     |     |     |        |
+| `setAffiliateProgramAddress`     | ✔   |     |     |        |
+| `setRenewalsCreditAffiliatesFor` | ✔   |     |     |        |
+| `createPromotionalPurchase`      | ✔   |     | ✔   |        |
+| `createPromotionalRenewal`       | ✔   |     | ✔   |        |
+| `purchase`                       |     |     |     | ✔      |
+| `renew`                          |     |     |     | ✔      |
+|                                  |     |     |     |        |
+| **LicenseCore**                  |     |     |     |        |
+| `setNewAddress`                  | ✔   |     |     |        |
+| `unpause`                        | ✔   |     |     |        |
 
 # CLI Tools
 
@@ -294,11 +332,11 @@ Like any desktop, mobile, or client-run app it may be possible for a determined 
 
 ### Spoofing
 
-Because this software uses the Ethereum blockchain to verify ownership of a license-token, one could "spoof" ownership by directing their Web3 provider to a chain fork where they own a token, even when they may have transferred that token on the main net. 
+Because this software uses the Ethereum blockchain to verify ownership of a license-token, one could "spoof" ownership by directing their Web3 provider to a chain fork where they own a token, even when they may have transferred that token on the main net.
 
-Again, we plan to implement a degree of 'main-chain' verification to make this difficult or cumbersome for an attacker to do. But forks are always a risk. 
+Again, we plan to implement a degree of 'main-chain' verification to make this difficult or cumbersome for an attacker to do. But forks are always a risk.
 
-This attack could be mitigated by hosting your own Ethereum node and requiring pinning in your client app. However, the tradeoff here is by requiring the user to hit your server  the user has reduced privacy and availability.
+This attack could be mitigated by hosting your own Ethereum node and requiring pinning in your client app. However, the tradeoff here is by requiring the user to hit your server the user has reduced privacy and availability.
 
 # FAQ
 
