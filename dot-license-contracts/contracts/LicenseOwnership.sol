@@ -29,7 +29,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   // Configure these for your own deployment
   string public constant NAME = "Dottabot";
   string public constant SYMBOL = "DOTTA";
-  string public tokenMetadataBaseURL = "";
+  string public tokenMetadataBaseURL = "https://api.dottabot.com/";
 
   /**
    * @notice token's name
