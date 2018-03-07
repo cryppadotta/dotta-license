@@ -216,7 +216,7 @@ Some of the smart contract functions are open to anyone and some are restricted 
 | `implementsERC721`               |     |     |     | ✔      |
 | `tokenMetadata`                  |     |     |     | ✔      |
 | `supportsInterface`              |     |     |     | ✔      |
-| `setTokenMetadataBaseURL`        | ✔   |     | ✔   |        |
+| `setTokenMetadataBaseURI`        | ✔   |     | ✔   |        |
 | `totalSupply`                    |     |     |     | ✔      |
 | `balanceOf`                      |     |     |     | ✔      |
 | `tokensOf`                       |     |     |     | ✔      |

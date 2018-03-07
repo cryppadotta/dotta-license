@@ -1,10 +1,14 @@
 pragma solidity ^0.4.19;
 
 import "./LicenseInventory.sol";
-import "./ERC721.sol";
+import "./interfaces/ERC721.sol";
+import "./interfaces/ERC721Metadata.sol";
+import "./interfaces/ERC165.sol";
 import "./strings/Strings.sol";
 
-contract LicenseOwnership is LicenseInventory, ERC721 {
+import "./interfaces/ERC721TokenReceiver.sol";
+
+contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
   using SafeMath for uint256;
 
   // Total amount of tokens
@@ -29,33 +33,33 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   // Configure these for your own deployment
   string public constant NAME = "Dottabot";
   string public constant SYMBOL = "DOTTA";
-  string public tokenMetadataBaseURL = "https://api.dottabot.com/";
+  string public tokenMetadataBaseURI = "https://api.dottabot.com/";
 
   /**
    * @notice token's name
    */
-  function name() public pure returns (string) {
+  function name() external pure returns (string) {
     return NAME;
   }
 
   /**
    * @notice symbols's name
    */
-  function symbol() public pure returns (string) {
+  function symbol() external pure returns (string) {
     return SYMBOL;
   }
 
-  function implementsERC721() public pure returns (bool) {
+  function implementsERC721() external pure returns (bool) {
     return true;
   }
 
-  function tokenMetadata(uint256 _tokenId)
-    public
+  function tokenURI(uint256 _tokenId)
+    external
     view
     returns (string infoUrl)
   {
     return Strings.strConcat(
-      tokenMetadataBaseURL,
+      tokenMetadataBaseURI,
       Strings.uint2str(_tokenId));
   }
 
@@ -75,8 +79,8 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
       this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
   }
 
-  function setTokenMetadataBaseURL(string _newBaseURL) public onlyCEOOrCOO {
-    tokenMetadataBaseURL = _newBaseURL;
+  function setTokenMetadataBaseURI(string _newBaseURI) public onlyCEOOrCOO {
+    tokenMetadataBaseURI = _newBaseURI;
   }
 
   /**
@@ -289,11 +293,47 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @param _tokenId The NFT to transfer
   * @param data Additional data with no specified format, sent in call to `_to`
   */
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) public payable {
+  function safeTransferFrom(
+    address _from,
+    address _to,
+    uint256 _tokenId,
+    bytes data
+  )
+    public
+    payable
+    whenNotPaused
+  {
+    require(_to != address(0));
+    // TODO check for valid _tokenId
+    transferFrom(_from, _to, _tokenId);
 
+    if (_isContract(_to)) {
+      bytes4 tokenReceiverResponse = ERC721TokenReceiver(_to).onERC721Received.gas(50000)(
+        _from, _tokenId, data
+      );
+      require(tokenReceiverResponse == bytes4(keccak256("onTokenReceived(address,uint256,bytes)")));
+    }
   }
 
-
+  /*
+   * @notice Transfers the ownership of an NFT from one address to another address
+   * @dev This works identically to the other function with an extra data parameter,
+   *  except this function just sets data to ""
+   * @param _from The current owner of the NFT
+   * @param _to The new owner
+   * @param _tokenId The NFT to transfer
+  */
+  function safeTransferFrom(
+    address _from,
+    address _to,
+    uint256 _tokenId
+  )
+    external
+    payable
+    whenNotPaused
+  {
+    safeTransferFrom(_from, _to, _tokenId, "");
+  }
 
   /**
   * @notice Mint token function

@@ -75,7 +75,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       { from: ceo }
     );
 
-    await token.setTokenMetadataBaseURL('http://localhost/', { from: ceo });
+    await token.setTokenMetadataBaseURI('http://localhost/', { from: ceo });
 
     await token.unpause({ from: ceo });
 
@@ -153,9 +153,9 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     });
   });
 
-  describe('tokenMetadataBaseURL', async () => {
+  describe('tokenMetadataBaseURI', async () => {
     it('should return the base URL', async () => {
-      const baseUrl = await token.tokenMetadataBaseURL();
+      const baseUrl = await token.tokenMetadataBaseURI();
       baseUrl.should.be.equal('http://localhost/');
     });
   });
