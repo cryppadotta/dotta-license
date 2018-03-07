@@ -15,10 +15,10 @@ contract ERC721 {
   function ownerOf(uint256 _tokenId) public view returns (address _owner);
   function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) public payable;
   function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable;
-  function transfer(address _to, uint256 _tokenId) public;
+  function transfer(address _to, uint256 _tokenId) external;
   function transferFrom(address _from, address _to, uint256 _tokenId) public;
-  function approve(address _to, uint256 _tokenId) public;
-  function setApprovalForAll(address _to, bool _approved) public;
+  function approve(address _to, uint256 _tokenId) external;
+  function setApprovalForAll(address _to, bool _approved) external;
   function getApproved(uint256 _tokenId) public view returns (address);
   function isApprovedForAll(address _owner, address _operator) public view returns (bool);
 }

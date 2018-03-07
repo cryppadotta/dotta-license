@@ -122,13 +122,13 @@ contract LicenseSale is LicenseOwnership {
   }
 
   /** executives **/
-  function setAffiliateProgramAddress(address _address) public onlyCEO {
+  function setAffiliateProgramAddress(address _address) external onlyCEO {
     AffiliateProgram candidateContract = AffiliateProgram(_address);
     require(candidateContract.isAffiliateProgram());
     affiliateProgram = candidateContract;
   }
 
-  function setRenewalsCreditAffiliatesFor(uint256 _newTime) public onlyCEO {
+  function setRenewalsCreditAffiliatesFor(uint256 _newTime) external onlyCEO {
     renewalsCreditAffiliatesFor = _newTime;
   }
 
@@ -138,7 +138,7 @@ contract LicenseSale is LicenseOwnership {
     address _assignee,
     uint256 _attributes
     )
-    public
+    external
     onlyCEOOrCOO
     whenNotPaused
     returns (uint256)
@@ -155,7 +155,7 @@ contract LicenseSale is LicenseOwnership {
     uint256 _tokenId,
     uint256 _numCycles
     )
-    public
+    external
     onlyCEOOrCOO
     whenNotPaused
   {
@@ -181,7 +181,7 @@ contract LicenseSale is LicenseOwnership {
     address _assignee,
     address _affiliate
     )
-    public
+    external
     payable
     whenNotPaused
     returns (uint256)
@@ -234,7 +234,7 @@ contract LicenseSale is LicenseOwnership {
     uint256 _tokenId,
     uint256 _numCycles
     )
-    public
+    external
     payable
     whenNotPaused
   {

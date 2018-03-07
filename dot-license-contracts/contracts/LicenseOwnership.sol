@@ -79,7 +79,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
       this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
   }
 
-  function setTokenMetadataBaseURI(string _newBaseURI) public onlyCEOOrCOO {
+  function setTokenMetadataBaseURI(string _newBaseURI) external onlyCEOOrCOO {
     tokenMetadataBaseURI = _newBaseURI;
   }
 
@@ -178,7 +178,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
   * @param _tokenId uint256 ID of the token to be transferred
   */
   function transfer(address _to, uint256 _tokenId)
-    public
+    external
     whenNotPaused
     onlyOwnerOf(_tokenId)
   {
@@ -191,7 +191,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
   * @param _tokenId uint256 ID of the token to be approved
   */
   function approve(address _to, uint256 _tokenId)
-    public
+    external
     whenNotPaused
     onlyOwnerOf(_tokenId)
   {
@@ -209,7 +209,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
   * @param _to Address to add to the set of authorized operators.
   * @param _approved True if the operators is approved, false to revoke approval
   */
-  function setApprovalForAll(address _to, bool _approved) public whenNotPaused {
+  function setApprovalForAll(address _to, bool _approved) external whenNotPaused {
     if(_approved) {
       approveAll(_to);
     } else {
@@ -252,7 +252,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
   * @param _tokenId uint256 ID of the token being claimed by the msg.sender
   */
   function takeOwnership(uint256 _tokenId)
-   public
+   external
    whenNotPaused
   {
     require(isSenderApprovedFor(_tokenId));

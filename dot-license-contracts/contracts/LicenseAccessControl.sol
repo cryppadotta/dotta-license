@@ -96,7 +96,7 @@ contract LicenseAccessControl {
    * @notice Sets a new CEO
    * @param _newCEO - the address of the new CEO
    */
-  function setCEO(address _newCEO) public onlyCEO {
+  function setCEO(address _newCEO) external onlyCEO {
     require(_newCEO != address(0));
     ceoAddress = _newCEO;
   }
@@ -105,7 +105,7 @@ contract LicenseAccessControl {
    * @notice Sets a new CFO
    * @param _newCFO - the address of the new CFO
    */
-  function setCFO(address _newCFO) public onlyCEO {
+  function setCFO(address _newCFO) external onlyCEO {
     require(_newCFO != address(0));
     cfoAddress = _newCFO;
   }
@@ -114,7 +114,7 @@ contract LicenseAccessControl {
    * @notice Sets a new COO
    * @param _newCOO - the address of the new COO
    */
-  function setCOO(address _newCOO) public onlyCEO {
+  function setCOO(address _newCOO) external onlyCEO {
     require(_newCOO != address(0));
     cooAddress = _newCOO;
   }
@@ -123,7 +123,7 @@ contract LicenseAccessControl {
    * @notice Sets a new withdrawalAddress
    * @param _newWithdrawalAddress - the address where we'll send the funds
    */
-  function setWithdrawalAddress(address _newWithdrawalAddress) public onlyCEO {
+  function setWithdrawalAddress(address _newWithdrawalAddress) external onlyCEO {
     require(_newWithdrawalAddress != address(0));
     withdrawalAddress = _newWithdrawalAddress;
   }
