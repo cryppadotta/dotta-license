@@ -718,7 +718,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     });
     it('should have a metadata URL', async () => {
       const tokenId = _firstTokenId;
-      let url = await token.tokenMetadata(tokenId);
+      let url = await token.tokenURI(tokenId);
       url.should.be.equal('http://localhost/1');
     });
   });
