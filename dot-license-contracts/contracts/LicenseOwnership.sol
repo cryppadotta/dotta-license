@@ -142,6 +142,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
    */
   function isSenderApprovedFor(uint256 _tokenId) internal view returns (bool) {
     return
+      ownerOf(_tokenId) == msg.sender ||
       isSpecificallyApprovedFor(msg.sender, _tokenId) ||
       isApprovedForAll(ownerOf(_tokenId), msg.sender);
   }
@@ -201,7 +202,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   /**
   * @notice Enable or disable approval for a third party ("operator") to manage all your assets
   * @dev Emits the ApprovalForAll event
-  * @param _operator Address to add to the set of authorized operators.
+  * @param _to Address to add to the set of authorized operators.
   * @param _approved True if the operators is approved, false to revoke approval
   */
   function setApprovalForAll(address _to, bool _approved) public whenNotPaused {
@@ -273,6 +274,26 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     require(ownerOf(_tokenId) == _from);
     clearApprovalAndTransfer(ownerOf(_tokenId), _to, _tokenId);
   }
+
+  /**
+  * @notice Transfers the ownership of an NFT from one address to another address
+  * @dev Throws unless `msg.sender` is the current owner, an authorized
+  * operator, or the approved address for this NFT. Throws if `_from` is
+  * not the current owner. Throws if `_to` is the zero address. Throws if
+  * `_tokenId` is not a valid NFT. When transfer is complete, this function
+  * checks if `_to` is a smart contract (code size > 0). If so, it calls
+  * `onERC721Received` on `_to` and throws if the return value is not
+  * `bytes4(keccak256("onERC721Received(address,uint256,bytes)"))`.
+  * @param _from The current owner of the NFT
+  * @param _to The new owner
+  * @param _tokenId The NFT to transfer
+  * @param data Additional data with no specified format, sent in call to `_to`
+  */
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) public payable {
+
+  }
+
+
 
   /**
   * @notice Mint token function
@@ -349,5 +370,11 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     ownedTokensIndex[_tokenId] = 0;
     ownedTokensIndex[lastToken] = tokenIndex;
     totalTokens = totalTokens.sub(1);
+  }
+
+  function _isContract(address addr) internal view returns (bool) {
+    uint size;
+    assembly { size := extcodesize(addr) }
+    return size > 0;
   }
 }
