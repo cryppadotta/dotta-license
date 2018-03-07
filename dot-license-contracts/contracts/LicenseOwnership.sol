@@ -3,12 +3,13 @@ pragma solidity ^0.4.19;
 import "./LicenseInventory.sol";
 import "./interfaces/ERC721.sol";
 import "./interfaces/ERC721Metadata.sol";
+import "./interfaces/ERC721Enumerable.sol";
 import "./interfaces/ERC165.sol";
 import "./strings/Strings.sol";
 
 import "./interfaces/ERC721TokenReceiver.sol";
 
-contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
+contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
   using SafeMath for uint256;
 
   // Total amount of tokens
@@ -72,8 +73,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
       interfaceID == this.supportsInterface.selector ||
       interfaceID == this.balanceOf.selector ^
       this.ownerOf.selector ^
-      // this.transfer.selector^
-      bytes4(keccak256("transfer(address,uint256)")) ^// see:
+      bytes4(keccak256("transfer(address,uint256)")) ^
       this.transferFrom.selector ^
       this.approveAll.selector ^
       this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
@@ -101,11 +101,26 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
   }
 
   /**
+  * @notice Enumerate valid NFTs
+  * @dev Our Licenses are kept in an array and each new License-token is just
+  * the next element in the array. This method is required for ERC721Enumerable
+  * which may support more complicated storage schemes. However, in our case the
+  * _index is the tokenId
+  * @param _index A counter less than `totalSupply()`
+  * @return The token identifier for the `_index`th NFT
+  */
+  function tokenByIndex(uint256 _index) external view returns (uint256) {
+    require(_index < totalSupply());
+    return _index;
+  }
+
+  /**
   * @notice Gets the balance of the specified address
   * @param _owner address to query the balance of
   * @return uint256 representing the amount owned by the passed address
   */
   function balanceOf(address _owner) public view returns (uint256) {
+    require(_owner != address(0));
     return ownedTokens[_owner].length;
   }
 
@@ -116,6 +131,23 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
   */
   function tokensOf(address _owner) public view returns (uint256[]) {
     return ownedTokens[_owner];
+  }
+
+  /**
+  * @notice Enumerate NFTs assigned to an owner
+  * @dev Throws if `_index` >= `balanceOf(_owner)` or if
+  *  `_owner` is the zero address, representing invalid NFTs.
+  * @param _owner An address where we are interested in NFTs owned by them
+  * @param _index A counter less than `balanceOf(_owner)`
+  * @return The token identifier for the `_index`th NFT assigned to `_owner`,
+  */
+  function tokenOfOwnerByIndex(address _owner, uint256 _index)
+    external
+    view
+    returns (uint256 _tokenId)
+  {
+    require(_index < balanceOf(_owner));
+    return ownedTokens[_owner][_index];
   }
 
   /**
@@ -304,7 +336,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
     whenNotPaused
   {
     require(_to != address(0));
-    // TODO check for valid _tokenId
+    require(_isValidLicense(_tokenId));
     transferFrom(_from, _to, _tokenId);
 
     if (_isContract(_to)) {
@@ -356,6 +388,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata {
     require(_to != address(0));
     require(_to != ownerOf(_tokenId));
     require(ownerOf(_tokenId) == _from);
+    require(_isValidLicense(_tokenId));
 
     clearApproval(_from, _tokenId);
     removeToken(_from, _tokenId);

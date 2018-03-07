@@ -41,6 +41,11 @@ contract LicenseBase is LicenseAccessControl {
    */
   License[] licenses;
 
+  /** internal **/
+  function _isValidLicense(uint256 _licenseId) internal view returns (bool) {
+    return licenseProductId(_licenseId) != 0;
+  }
+
   /** anyone **/
 
   /**
