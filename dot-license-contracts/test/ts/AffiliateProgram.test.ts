@@ -112,10 +112,24 @@ contract('AffiliateProgram', (accounts: string[]) => {
       (await affiliate.isAffiliateProgram()).should.be.true();
     });
     describe('when setting the baselineRate', async () => {
-      it('the owner should set a new rate', async () => {
-        (await affiliate.baselineRate()).should.be.bignumber.equal(0);
-        await affiliate.setBaselineRate(1000, { from: creator });
-        (await affiliate.baselineRate()).should.be.bignumber.equal(1000);
+      describe('when the owner sets a new rate', async () => {
+        let event: any;
+        beforeEach(async () => {
+          (await affiliate.baselineRate()).should.be.bignumber.equal(0);
+          const { logs } = await affiliate.setBaselineRate(1000, {
+            from: creator
+          });
+          event = eventByName(logs, 'RateChanged');
+        });
+
+        it('the owner should set a new rate', async () => {
+          (await affiliate.baselineRate()).should.be.bignumber.equal(1000);
+        });
+
+        it('should emit a RateChanged event', async () => {
+          event.args.rate.should.be.bignumber.equal(0);
+          event.args.amount.should.be.bignumber.equal(1000);
+        });
       });
       it('the owner should not be able to set it too high', async () => {
         await assertRevert(affiliate.setBaselineRate(5100, { from: creator }));
@@ -123,13 +137,26 @@ contract('AffiliateProgram', (accounts: string[]) => {
       it('a random user should not be able to change the rate', async () => {
         await assertRevert(affiliate.setBaselineRate(1000, { from: user1 }));
       });
-      it('should emit a RateChanged event');
     });
     describe('when setting the maximumRate', async () => {
-      it('should allow the owner to set a new rate', async () => {
-        (await affiliate.maximumRate()).should.be.bignumber.equal(5000);
-        await affiliate.setMaximumRate(1000, { from: creator });
-        (await affiliate.maximumRate()).should.be.bignumber.equal(1000);
+      describe('when the owner is setting the new rate', async () => {
+        let event: any;
+        beforeEach(async () => {
+          (await affiliate.maximumRate()).should.be.bignumber.equal(5000);
+          const { logs } = await affiliate.setMaximumRate(1000, {
+            from: creator
+          });
+          event = eventByName(logs, 'RateChanged');
+        });
+
+        it('should allow the owner to set a new rate', async () => {
+          (await affiliate.maximumRate()).should.be.bignumber.equal(1000);
+        });
+
+        it('should emit a RateChanged event', async () => {
+          event.args.rate.should.be.bignumber.equal(1);
+          event.args.amount.should.be.bignumber.equal(1000);
+        });
       });
       it('should not allow the owner to set a new rate too high', async () => {
         await assertRevert(affiliate.setMaximumRate(5100, { from: creator }));
@@ -137,17 +164,29 @@ contract('AffiliateProgram', (accounts: string[]) => {
       it('should not allow a rando to change the maximumRate', async () => {
         await assertRevert(affiliate.setMaximumRate(1000, { from: user1 }));
       });
-      it('should emit a RateChanged event');
     });
     describe('when whitelisting affiliates', async () => {
-      it('should allow the owner to whitelist affiliates', async () => {
-        (await affiliate.whitelistRates(affiliate1)).should.be.bignumber.equal(
-          0
-        );
-        await affiliate.whitelist(affiliate1, 2500, { from: creator });
-        (await affiliate.whitelistRates(affiliate1)).should.be.bignumber.equal(
-          2500
-        );
+      describe('when the owner is whitelisting', async () => {
+        let event: any;
+        beforeEach(async () => {
+          (await affiliate.whitelistRates(
+            affiliate1
+          )).should.be.bignumber.equal(0);
+          let { logs } = await affiliate.whitelist(affiliate1, 2500, {
+            from: creator
+          });
+          event = eventByName(logs, 'Whitelisted');
+        });
+        it('should allow the owner to whitelist affiliates', async () => {
+          (await affiliate.whitelistRates(
+            affiliate1
+          )).should.be.bignumber.equal(2500);
+        });
+
+        it('should emit a Whitelisted event', async () => {
+          event.args.affiliate.should.be.equal(affiliate1);
+          event.args.amount.should.be.bignumber.equal(2500);
+        });
       });
       it('should not allow the owner to whitelist with too high of a rate', async () => {
         await assertRevert(
@@ -159,7 +198,6 @@ contract('AffiliateProgram', (accounts: string[]) => {
           affiliate.whitelist(affiliate1, 1000, { from: user1 })
         );
       });
-      it('should emit a whitelisted event');
     });
 
     describe('when using rateFor', async () => {
@@ -261,7 +299,7 @@ contract('AffiliateProgram', (accounts: string[]) => {
       const purchaseId = 1;
       const valueAmount = 12345;
       describe('in a valid way', async () => {
-        let logs;
+        let logs: any;
 
         beforeEach(async () => {
           const result = await affiliate.credit(affiliate1, purchaseId, {
@@ -292,7 +330,12 @@ contract('AffiliateProgram', (accounts: string[]) => {
           const lastDepositTime = await affiliate.lastDepositTime();
           lastDepositTime.should.be.bignumber.equal(block.timestamp);
         });
-        it('emit an AffiliateCredit');
+        it('emit an AffiliateCredit', async () => {
+          let event = eventByName(logs, 'AffiliateCredit');
+          event.args.affiliate.should.be.equal(affiliate1);
+          event.args.productId.should.be.bignumber.equal(purchaseId);
+          event.args.amount.should.be.bignumber.equal(valueAmount);
+        });
       });
 
       it('should not allow deposits when paused', async () => {
