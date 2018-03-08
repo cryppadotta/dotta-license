@@ -69,14 +69,10 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
     external view returns (bool)
   {
     return
-      // ERC165
-      interfaceID == this.supportsInterface.selector ||
-      interfaceID == this.balanceOf.selector ^
-      this.ownerOf.selector ^
-      bytes4(keccak256("transfer(address,uint256)")) ^
-      this.transferFrom.selector ^
-      this.approveAll.selector ^
-      this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
+      interfaceID == this.supportsInterface.selector || // ERC165
+      interfaceID == 0x5b5e139f || // ERC721Metadata
+      interfaceID == 0x6466353c || // ERC-721 on 3/7/2018
+      interfaceID == 0x780e9d63; // ERC721Enumerable
   }
 
   function setTokenMetadataBaseURI(string _newBaseURI) external onlyCEOOrCOO {
