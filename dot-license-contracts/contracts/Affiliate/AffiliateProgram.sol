@@ -54,7 +54,7 @@ contract AffiliateProgram is Pausable {
   );
 
   event Withdraw(address affiliate, address to, uint256 amount);
-  event Whitelisted(address affiliate, uint256 rate);
+  event Whitelisted(address affiliate, uint256 amount);
   event RateChanged(uint256 rate, uint256 amount);
 
   // @notice A mapping from affiliate address to their balance
