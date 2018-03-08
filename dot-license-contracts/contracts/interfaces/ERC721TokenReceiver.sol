@@ -10,8 +10,8 @@ interface ERC721TokenReceiver {
     ///  Note: the contract address is always the message sender.
     /// @param _from The sending address
     /// @param _tokenId The NFT identifier which is being transfered
-    /// @param data Additional data with no specified format
+    /// @param _data Additional data with no specified format
     /// @return `bytes4(keccak256("onERC721Received(address,uint256,bytes)"))`
     ///  unless throwing
-	function onERC721Received(address _from, uint256 _tokenId, bytes data) external returns(bytes4);
+	function onERC721Received(address _from, uint256 _tokenId, bytes _data) external returns(bytes4);
 }

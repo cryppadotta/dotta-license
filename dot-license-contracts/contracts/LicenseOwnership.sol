@@ -210,7 +210,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
     whenNotPaused
     onlyOwnerOf(_tokenId)
   {
-    clearApprovalAndTransfer(msg.sender, _to, _tokenId);
+    _clearApprovalAndTransfer(msg.sender, _to, _tokenId);
   }
 
   /**
@@ -237,7 +237,10 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
   * @param _to Address to add to the set of authorized operators.
   * @param _approved True if the operators is approved, false to revoke approval
   */
-  function setApprovalForAll(address _to, bool _approved) external whenNotPaused {
+  function setApprovalForAll(address _to, bool _approved)
+    external
+    whenNotPaused
+  {
     if(_approved) {
       approveAll(_to);
     } else {
@@ -284,7 +287,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
    whenNotPaused
   {
     require(isSenderApprovedFor(_tokenId));
-    clearApprovalAndTransfer(ownerOf(_tokenId), msg.sender, _tokenId);
+    _clearApprovalAndTransfer(ownerOf(_tokenId), msg.sender, _tokenId);
   }
 
   /**
@@ -304,7 +307,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
   {
     require(isSenderApprovedFor(_tokenId));
     require(ownerOf(_tokenId) == _from);
-    clearApprovalAndTransfer(ownerOf(_tokenId), _to, _tokenId);
+    _clearApprovalAndTransfer(ownerOf(_tokenId), _to, _tokenId);
   }
 
   /**
@@ -319,25 +322,23 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
   * @param _from The current owner of the NFT
   * @param _to The new owner
   * @param _tokenId The NFT to transfer
-  * @param data Additional data with no specified format, sent in call to `_to`
+  * @param _data Additional data with no specified format, sent in call to `_to`
   */
   function safeTransferFrom(
     address _from,
     address _to,
     uint256 _tokenId,
-    bytes data
+    bytes _data
   )
     public
-    payable
     whenNotPaused
   {
     require(_to != address(0));
     require(_isValidLicense(_tokenId));
     transferFrom(_from, _to, _tokenId);
-
     if (_isContract(_to)) {
       bytes4 tokenReceiverResponse = ERC721TokenReceiver(_to).onERC721Received.gas(50000)(
-        _from, _tokenId, data
+        _from, _tokenId, _data
       );
       require(tokenReceiverResponse == bytes4(keccak256("onTokenReceived(address,uint256,bytes)")));
     }
@@ -357,7 +358,6 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
     uint256 _tokenId
   )
     external
-    payable
     whenNotPaused
   {
     safeTransferFrom(_from, _to, _tokenId, "");
@@ -370,7 +370,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
   */
   function _mint(address _to, uint256 _tokenId) internal {
     require(_to != address(0));
-    addToken(_to, _tokenId);
+    _addToken(_to, _tokenId);
     Transfer(0x0, _to, _tokenId);
   }
 
@@ -380,15 +380,15 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
   * @param _to address which you want to transfer the token to
   * @param _tokenId uint256 ID of the token to be transferred
   */
-  function clearApprovalAndTransfer(address _from, address _to, uint256 _tokenId) internal {
+  function _clearApprovalAndTransfer(address _from, address _to, uint256 _tokenId) internal {
     require(_to != address(0));
     require(_to != ownerOf(_tokenId));
     require(ownerOf(_tokenId) == _from);
     require(_isValidLicense(_tokenId));
 
-    clearApproval(_from, _tokenId);
-    removeToken(_from, _tokenId);
-    addToken(_to, _tokenId);
+    _clearApproval(_from, _tokenId);
+    _removeToken(_from, _tokenId);
+    _addToken(_to, _tokenId);
     Transfer(_from, _to, _tokenId);
   }
 
@@ -396,7 +396,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
   * @notice Internal function to clear current approval of a given token ID
   * @param _tokenId uint256 ID of the token to be transferred
   */
-  function clearApproval(address _owner, uint256 _tokenId) private {
+  function _clearApproval(address _owner, uint256 _tokenId) private {
     require(ownerOf(_tokenId) == _owner);
     tokenApprovals[_tokenId] = 0;
     Approval(_owner, 0, _tokenId);
@@ -407,7 +407,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
   * @param _to address representing the new owner of the given token ID
   * @param _tokenId uint256 ID of the token to be added to the tokens list of the given address
   */
-  function addToken(address _to, uint256 _tokenId) private {
+  function _addToken(address _to, uint256 _tokenId) private {
     require(tokenOwner[_tokenId] == address(0));
     tokenOwner[_tokenId] = _to;
     uint256 length = balanceOf(_to);
@@ -421,7 +421,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
   * @param _from address representing the previous owner of the given token ID
   * @param _tokenId uint256 ID of the token to be removed from the tokens list of the given address
   */
-  function removeToken(address _from, uint256 _tokenId) private {
+  function _removeToken(address _from, uint256 _tokenId) private {
     require(ownerOf(_tokenId) == _from);
 
     uint256 tokenIndex = ownedTokensIndex[_tokenId];

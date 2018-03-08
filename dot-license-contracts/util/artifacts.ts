@@ -11,6 +11,8 @@ export class Artifacts {
   public ERC721: any;
   public SafeMath: any;
 
+  public MockTokenReceiver: any;
+
   constructor(artifacts: any) {
     this.Migrations = artifacts.require('Migrations');
     this.LicenseCore = artifacts.require('LicenseCore');
@@ -23,5 +25,7 @@ export class Artifacts {
     this.ERC721 = artifacts.require('ERC721');
     this.SafeMath = artifacts.require('SafeMath');
     this.AffiliateProgram = artifacts.require('AffiliateProgram');
+
+    this.MockTokenReceiver = artifacts.require('MockTokenReceiver');
   }
 }

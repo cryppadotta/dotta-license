@@ -13,8 +13,8 @@ contract ERC721 {
 
   function balanceOf(address _owner) public view returns (uint256 _balance);
   function ownerOf(uint256 _tokenId) public view returns (address _owner);
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) public payable;
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable;
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) public;
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId) external;
   function transfer(address _to, uint256 _tokenId) external;
   function transferFrom(address _from, address _to, uint256 _tokenId) public;
   function approve(address _to, uint256 _tokenId) external;

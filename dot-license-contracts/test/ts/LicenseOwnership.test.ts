@@ -11,7 +11,7 @@ import { duration } from '../helpers/increaseTime';
 
 chaiSetup.configure();
 const expect = chai.expect;
-const { LicenseCoreTest } = new Artifacts(artifacts);
+const { LicenseCoreTest, MockTokenReceiver } = new Artifacts(artifacts);
 const LicenseCore = LicenseCoreTest;
 chai.should();
 
@@ -30,6 +30,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
   const user4 = accounts[7];
   const user5 = accounts[8];
   const operator = accounts[9];
+  const _zeroethTokenId = 0;
   const _firstTokenId = 1;
   const _secondTokenId = 2;
   const _unknownTokenId = 312389234752;
@@ -251,6 +252,10 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
         describe('when the msg.sender is the owner of the given token ID', () => {
           const sender = user1;
+          beforeEach(async () => {
+            const originalOwner = await token.ownerOf(tokenId);
+            originalOwner.should.be.equal(sender);
+          });
 
           it('transfers the ownership of the given token ID to the given address', async () => {
             await token.transfer(to, tokenId, { from: sender });
@@ -524,8 +529,15 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
   describe('approveAll', async () => {
     describe('when the sender approves an operator', async () => {
       const tokenId = _firstTokenId; // owned by user1
+      let approvalEvent: any;
       beforeEach(async () => {
-        await token.approveAll(operator, { from: user1 });
+        const { logs } = await token.approveAll(operator, { from: user1 });
+        approvalEvent = eventByName(logs, 'ApprovalForAll');
+      });
+      it('should emit an ApprovalForAll event', async () => {
+        approvalEvent.args._owner.should.be.equal(user1);
+        approvalEvent.args._operator.should.be.equal(operator);
+        approvalEvent.args._approved.should.be.true();
       });
       describe('and the operator is the sender', async () => {
         const sender = operator;
@@ -557,7 +569,15 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
         describe('and the user has subsequently disapproved the operator', async () => {
           beforeEach(async () => {
-            await token.disapproveAll(operator, { from: user1 });
+            const { logs } = await token.disapproveAll(operator, {
+              from: user1
+            });
+            approvalEvent = eventByName(logs, 'ApprovalForAll');
+          });
+          it('should emit an ApprovalForAll event', async () => {
+            approvalEvent.args._owner.should.be.equal(user1);
+            approvalEvent.args._operator.should.be.equal(operator);
+            approvalEvent.args._approved.should.be.false();
           });
           it('should not allow the operator to takeOwnership', async () => {
             await assertRevert(
@@ -604,8 +624,21 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
   });
 
   describe('setApprovalForAll', async () => {
-    it('should ...');
-    it('should emit ApprovalForAll events');
+    describe('when approving and disapproving', async () => {
+      it('should set approval appropriately', async () => {
+        (await token.isApprovedForAll(user1, operator, {
+          from: operator
+        })).should.be.false();
+        await token.setApprovalForAll(operator, true, { from: user1 });
+        (await token.isApprovedForAll(user1, operator, {
+          from: operator
+        })).should.be.true();
+        await token.setApprovalForAll(operator, false, { from: user1 });
+        (await token.isApprovedForAll(user1, operator, {
+          from: operator
+        })).should.be.false();
+      });
+    });
   });
 
   describe('takeOwnership', () => {
@@ -722,6 +755,70 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       url.should.be.equal('http://localhost/1');
     });
   });
-});
 
-// TODO test pausing
+  describe('tokenByIndex', async () => {
+    it('should return the tokenId', async () => {
+      (await token.tokenByIndex(0)).should.be.bignumber.equal(0);
+      (await token.tokenByIndex(1)).should.be.bignumber.equal(1);
+      (await token.tokenByIndex(2)).should.be.bignumber.equal(2);
+    });
+    it('should revert if requesting greater than the supply', async () => {
+      await assertRevert(token.tokenByIndex(3));
+    });
+  });
+  describe('tokenOfOwnerByIndex', async () => {
+    it('should return the tokenId', async () => {
+      (await token.tokenOfOwnerByIndex(user1, 0)).should.be.bignumber.equal(0);
+      (await token.tokenOfOwnerByIndex(user1, 1)).should.be.bignumber.equal(1);
+
+      (await token.tokenOfOwnerByIndex(user2, 0)).should.be.bignumber.equal(2);
+    });
+    it('should revert if the index greater than this users balance', async () => {
+      await assertRevert(token.tokenOfOwnerByIndex(user1, 2));
+      await assertRevert(token.tokenOfOwnerByIndex(user2, 1));
+      await assertRevert(token.tokenOfOwnerByIndex(operator, 0));
+    });
+  });
+  describe.only('safeTransferFrom', async () => {
+    describe('when the sender is the owner', async () => {
+      const sender = user1;
+      const tokenId = _firstTokenId;
+
+      beforeEach(async () => {
+        const originalOwner = await token.ownerOf(tokenId);
+        originalOwner.should.be.equal(sender);
+      });
+      describe('and the receiver is a normal address', async () => {
+        it('should work');
+      });
+      describe("and the receiver is a contract that doesn't support onTokenReceived", async () => {
+        it('should not work');
+      });
+      describe('and the receiver supports receiving tokens', async () => {
+        let tokenReceiver: any;
+        beforeEach(async () => {
+          tokenReceiver = await MockTokenReceiver.new({ from: creator });
+        });
+        it('should transfer the tokens', async () => {
+          await token.safeTransferFrom(user1, tokenReceiver.address, tokenId, {
+            from: user1
+          });
+          const newOwner = await token.ownerOf(tokenId);
+          newOwner.should.be.equal(tokenReceiver.address);
+        });
+        describe('and the contract is paused', async () => {
+          it('should not work');
+        });
+      });
+    });
+    describe('when the sender is the operator', async () => {
+      it('should transfer the tokens');
+    });
+    describe('when the sender is specifically approved', async () => {
+      it('should transfer the tokens');
+    });
+    describe('when the sender is a rando', async () => {
+      it('should not be allowed');
+    });
+  });
+});
