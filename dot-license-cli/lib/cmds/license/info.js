@@ -92,7 +92,8 @@ exports.handler = async function(argv) {
           productId,
           price: results['0'],
           inventory: results['1'],
-          totalSupply: results['2']
+          totalSupply: results['2'],
+          interval: results['3']
         };
       }
     );
