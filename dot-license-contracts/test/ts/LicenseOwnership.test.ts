@@ -11,7 +11,9 @@ import { duration } from '../helpers/increaseTime';
 
 chaiSetup.configure();
 const expect = chai.expect;
-const { LicenseCoreTest, MockTokenReceiver } = new Artifacts(artifacts);
+const { LicenseCoreTest, AffiliateProgram, MockTokenReceiver } = new Artifacts(
+  artifacts
+);
 const LicenseCore = LicenseCoreTest;
 chai.should();
 
@@ -779,7 +781,11 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       await assertRevert(token.tokenOfOwnerByIndex(operator, 0));
     });
   });
-  describe.only('safeTransferFrom', async () => {
+  describe('safeTransferFrom', async () => {
+    let tokenReceiver: any;
+    beforeEach(async () => {
+      tokenReceiver = await MockTokenReceiver.new({ from: creator });
+    });
     describe('when the sender is the owner', async () => {
       const sender = user1;
       const tokenId = _firstTokenId;
@@ -789,36 +795,100 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         originalOwner.should.be.equal(sender);
       });
       describe('and the receiver is a normal address', async () => {
-        it('should work');
+        it('should work', async () => {
+          await token.safeTransferFrom(sender, user2, tokenId, {
+            from: sender
+          });
+          const newOwner = await token.ownerOf(tokenId);
+          newOwner.should.be.equal(user2);
+        });
       });
       describe("and the receiver is a contract that doesn't support onTokenReceived", async () => {
-        it('should not work');
+        let affiliateProgram: any;
+        beforeEach(async () => {
+          affiliateProgram = await AffiliateProgram.new(token.address, {
+            from: creator
+          });
+        });
+        it('should not work', async () => {
+          await assertRevert(
+            token.safeTransferFrom(sender, affiliateProgram.address, tokenId, {
+              from: sender
+            })
+          );
+        });
       });
       describe('and the receiver supports receiving tokens', async () => {
-        let tokenReceiver: any;
-        beforeEach(async () => {
-          tokenReceiver = await MockTokenReceiver.new({ from: creator });
-        });
         it('should transfer the tokens', async () => {
-          await token.safeTransferFrom(user1, tokenReceiver.address, tokenId, {
-            from: user1
+          await token.safeTransferFrom(sender, tokenReceiver.address, tokenId, {
+            from: sender
           });
           const newOwner = await token.ownerOf(tokenId);
           newOwner.should.be.equal(tokenReceiver.address);
         });
         describe('and the contract is paused', async () => {
-          it('should not work');
+          beforeEach(async () => {
+            await token.pause({ from: ceo });
+          });
+          it('should not work', async () => {
+            await assertRevert(
+              token.safeTransferFrom(sender, tokenReceiver.address, tokenId, {
+                from: sender
+              })
+            );
+          });
         });
       });
     });
     describe('when the sender is the operator', async () => {
-      it('should transfer the tokens');
+      const tokenId = _firstTokenId; // owned by user1
+      const sender = operator;
+      beforeEach(async () => {
+        const originalOwner = await token.ownerOf(tokenId);
+        originalOwner.should.be.equal(user1);
+        await token.approveAll(operator, { from: user1 });
+      });
+      it('should transfer the tokens', async () => {
+        await token.safeTransferFrom(user1, tokenReceiver.address, tokenId, {
+          from: sender
+        });
+        const newOwner = await token.ownerOf(tokenId);
+        newOwner.should.be.equal(tokenReceiver.address);
+      });
     });
     describe('when the sender is specifically approved', async () => {
-      it('should transfer the tokens');
+      const tokenId = _firstTokenId; // owned by user1
+      const sender = user2;
+      beforeEach(async () => {
+        const originalOwner = await token.ownerOf(tokenId);
+        originalOwner.should.be.equal(user1);
+        await token.approve(user2, tokenId, { from: user1 });
+      });
+      it('should transfer the tokens', async () => {
+        await token.safeTransferFrom(user1, tokenReceiver.address, tokenId, {
+          from: sender
+        });
+        const newOwner = await token.ownerOf(tokenId);
+        newOwner.should.be.equal(tokenReceiver.address);
+      });
     });
     describe('when the sender is a rando', async () => {
-      it('should not be allowed');
+      const tokenId = _firstTokenId; // owned by user1
+      const sender = user3;
+      let originalOwner: any;
+
+      beforeEach(async () => {
+        originalOwner = await token.ownerOf(tokenId);
+        originalOwner.should.be.equal(user1);
+      });
+      it('should not be allowed', async () => {
+        await assertRevert(
+          token.safeTransferFrom(user1, tokenReceiver.address, tokenId, {
+            from: sender
+          })
+        );
+        originalOwner.should.be.equal(user1);
+      });
     });
   });
 });
