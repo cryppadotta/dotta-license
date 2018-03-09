@@ -19,7 +19,7 @@ contract LicenseCore is LicenseSale {
     withdrawalAddress = msg.sender;
   }
 
-  function setNewAddress(address _v2Address) public onlyCEO whenPaused {
+  function setNewAddress(address _v2Address) external onlyCEO whenPaused {
     newContractAddress = _v2Address;
     ContractUpgrade(_v2Address);
   }

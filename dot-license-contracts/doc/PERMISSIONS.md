@@ -39,8 +39,8 @@
 | `balanceOf`                   |     |     |     | ✔      |
 | `tokensOf`                    |     |     |     | ✔      |
 | `ownerOf`                     |     |     |     | ✔      |
-| `approvedFor`                 |     |     |     | ✔      |
-| `isOperatorApprovedFor`       |     |     |     | ✔      |
+| `getApproved`                 |     |     |     | ✔      |
+| `isApprovedForAll`       |     |     |     | ✔      |
 | `transfer`                    |     |     |     | ✔      |
 | `approve`                     |     |     |     | ✔      |
 | `approveAll`                  |     |     |     | ✔      |

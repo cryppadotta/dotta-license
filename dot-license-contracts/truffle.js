@@ -46,6 +46,15 @@ module.exports = {
       network_id: 3,
       gas: 4700000, // Gas limit used for deploys
       gasPrice: 30000000000 // 30 gwei
+    },
+    rinkeby: {
+      provider: new HDWalletProvider(
+        process.env.KEY_MNEMONIC,
+        process.env.WALLET_PROVIDER_URL
+      ),
+      network_id: 3,
+      gas: 4700000, // Gas limit used for deploys
+      gasPrice: 30000000000 // 30 gwei
     }
   },
   solc: {

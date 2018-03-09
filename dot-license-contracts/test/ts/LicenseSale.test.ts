@@ -486,7 +486,7 @@ contract('LicenseSale', (accounts: string[]) => {
           const originalExpirationTime = await token.licenseExpirationTime(
             tokenId
           );
-          await increaseTime(secondProduct.interval + 1);
+          await increaseTime(secondProduct.interval + duration.days(1));
           originalExpirationTime.should.be.bignumber.greaterThan(0);
           let now = await latestTime();
           now.should.be.bignumber.greaterThan(originalExpirationTime);

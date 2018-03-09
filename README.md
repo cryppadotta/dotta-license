@@ -216,13 +216,13 @@ Some of the smart contract functions are open to anyone and some are restricted 
 | `implementsERC721`               |     |     |     | ✔      |
 | `tokenMetadata`                  |     |     |     | ✔      |
 | `supportsInterface`              |     |     |     | ✔      |
-| `setTokenMetadataBaseURL`        | ✔   |     | ✔   |        |
+| `setTokenMetadataBaseURI`        | ✔   |     | ✔   |        |
 | `totalSupply`                    |     |     |     | ✔      |
 | `balanceOf`                      |     |     |     | ✔      |
 | `tokensOf`                       |     |     |     | ✔      |
 | `ownerOf`                        |     |     |     | ✔      |
-| `approvedFor`                    |     |     |     | ✔      |
-| `isOperatorApprovedFor`          |     |     |     | ✔      |
+| `getApproved`                    |     |     |     | ✔      |
+| `isApprovedForAll`               |     |     |     | ✔      |
 | `transfer`                       |     |     |     | ✔      |
 | `approve`                        |     |     |     | ✔      |
 | `approveAll`                     |     |     |     | ✔      |
@@ -259,7 +259,7 @@ Commands:
   dot-license-cli.js approve <to> <tokenId>                                       Approves another address to claim for the ownership of the given token ID
   dot-license-cli.js approveAll <to>                                              Approves another address to claim for the ownership of any tokens owned by
                                                                                   this account
-  dot-license-cli.js approvedFor <tokenId>                                        Gets the approved address to take ownership of a given token ID
+  dot-license-cli.js getApproved <tokenId>                                        Gets the approved address to take ownership of a given token ID
   dot-license-cli.js availableInventoryOf <productId>                             The available inventory of a product
   dot-license-cli.js balanceOf <owner>                                            Gets the balance of the specified address
   dot-license-cli.js ceoAddress                                                   Get the CEO's Address
@@ -273,7 +273,7 @@ Commands:
                                                                                   tokens owned by this account.
   dot-license-cli.js getAllProductIds                                             Get all product ids
   dot-license-cli.js incrementInventory <productId> <inventoryAdjustment>         incrementInventory - increments the inventory of a product
-  dot-license-cli.js isOperatorApprovedFor <owner> <operator>                     Tells whether an operator is approved by a given owner
+  dot-license-cli.js isApprovedForAll <owner> <operator>                     Tells whether an operator is approved by a given owner
   dot-license-cli.js licenseAttributes <licenseId>                                Get a license's attributes
   dot-license-cli.js licenseInfo <licenseId>                                      Get a license's info
   dot-license-cli.js licenseIssuedTime <licenseId>                                Get a license's issueTime

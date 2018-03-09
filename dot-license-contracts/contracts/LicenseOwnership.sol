@@ -1,10 +1,15 @@
 pragma solidity ^0.4.19;
 
 import "./LicenseInventory.sol";
-import "./ERC721.sol";
+import "./interfaces/ERC721.sol";
+import "./interfaces/ERC721Metadata.sol";
+import "./interfaces/ERC721Enumerable.sol";
+import "./interfaces/ERC165.sol";
 import "./strings/Strings.sol";
 
-contract LicenseOwnership is LicenseInventory, ERC721 {
+import "./interfaces/ERC721TokenReceiver.sol";
+
+contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
   using SafeMath for uint256;
 
   // Total amount of tokens
@@ -29,33 +34,33 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   // Configure these for your own deployment
   string public constant NAME = "Dottabot";
   string public constant SYMBOL = "DOTTA";
-  string public tokenMetadataBaseURL = "https://api.dottabot.com/";
+  string public tokenMetadataBaseURI = "https://api.dottabot.com/";
 
   /**
    * @notice token's name
    */
-  function name() public pure returns (string) {
+  function name() external pure returns (string) {
     return NAME;
   }
 
   /**
    * @notice symbols's name
    */
-  function symbol() public pure returns (string) {
+  function symbol() external pure returns (string) {
     return SYMBOL;
   }
 
-  function implementsERC721() public pure returns (bool) {
+  function implementsERC721() external pure returns (bool) {
     return true;
   }
 
-  function tokenMetadata(uint256 _tokenId)
-    public
+  function tokenURI(uint256 _tokenId)
+    external
     view
     returns (string infoUrl)
   {
     return Strings.strConcat(
-      tokenMetadataBaseURL,
+      tokenMetadataBaseURI,
       Strings.uint2str(_tokenId));
   }
 
@@ -64,19 +69,14 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     external view returns (bool)
   {
     return
-      // ERC165
-      interfaceID == this.supportsInterface.selector ||
-      interfaceID == this.balanceOf.selector ^
-      this.ownerOf.selector ^
-      // this.transfer.selector^
-      bytes4(keccak256("transfer(address,uint256)")) ^// see:
-      this.transferFrom.selector ^
-      this.approveAll.selector ^
-      this.supportsInterface.selector; // ERC721 (at some point in time, anyway)
+      interfaceID == this.supportsInterface.selector || // ERC165
+      interfaceID == 0x5b5e139f || // ERC721Metadata
+      interfaceID == 0x6466353c || // ERC-721 on 3/7/2018
+      interfaceID == 0x780e9d63; // ERC721Enumerable
   }
 
-  function setTokenMetadataBaseURL(string _newBaseURL) public onlyCEOOrCOO {
-    tokenMetadataBaseURL = _newBaseURL;
+  function setTokenMetadataBaseURI(string _newBaseURI) external onlyCEOOrCOO {
+    tokenMetadataBaseURI = _newBaseURI;
   }
 
   /**
@@ -97,11 +97,26 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   }
 
   /**
+  * @notice Enumerate valid NFTs
+  * @dev Our Licenses are kept in an array and each new License-token is just
+  * the next element in the array. This method is required for ERC721Enumerable
+  * which may support more complicated storage schemes. However, in our case the
+  * _index is the tokenId
+  * @param _index A counter less than `totalSupply()`
+  * @return The token identifier for the `_index`th NFT
+  */
+  function tokenByIndex(uint256 _index) external view returns (uint256) {
+    require(_index < totalSupply());
+    return _index;
+  }
+
+  /**
   * @notice Gets the balance of the specified address
   * @param _owner address to query the balance of
   * @return uint256 representing the amount owned by the passed address
   */
   function balanceOf(address _owner) public view returns (uint256) {
+    require(_owner != address(0));
     return ownedTokens[_owner].length;
   }
 
@@ -112,6 +127,23 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   */
   function tokensOf(address _owner) public view returns (uint256[]) {
     return ownedTokens[_owner];
+  }
+
+  /**
+  * @notice Enumerate NFTs assigned to an owner
+  * @dev Throws if `_index` >= `balanceOf(_owner)` or if
+  *  `_owner` is the zero address, representing invalid NFTs.
+  * @param _owner An address where we are interested in NFTs owned by them
+  * @param _index A counter less than `balanceOf(_owner)`
+  * @return The token identifier for the `_index`th NFT assigned to `_owner`,
+  */
+  function tokenOfOwnerByIndex(address _owner, uint256 _index)
+    external
+    view
+    returns (uint256 _tokenId)
+  {
+    require(_index < balanceOf(_owner));
+    return ownedTokens[_owner][_index];
   }
 
   /**
@@ -130,7 +162,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
    * @param _tokenId uint256 ID of the token to query the approval of
    * @return address currently approved to take ownership of the given token ID
    */
-  function approvedFor(uint256 _tokenId) public view returns (address) {
+  function getApproved(uint256 _tokenId) public view returns (address) {
     return tokenApprovals[_tokenId];
   }
 
@@ -142,8 +174,9 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
    */
   function isSenderApprovedFor(uint256 _tokenId) internal view returns (bool) {
     return
+      ownerOf(_tokenId) == msg.sender ||
       isSpecificallyApprovedFor(msg.sender, _tokenId) ||
-      isOperatorApprovedFor(ownerOf(_tokenId), msg.sender);
+      isApprovedForAll(ownerOf(_tokenId), msg.sender);
   }
 
   /**
@@ -153,7 +186,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
    * @return bool whether the msg.sender is approved for the given token ID or not
    */
   function isSpecificallyApprovedFor(address _asker, uint256 _tokenId) internal view returns (bool) {
-    return approvedFor(_tokenId) == _asker;
+    return getApproved(_tokenId) == _asker;
   }
 
   /**
@@ -162,7 +195,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
    * @param _operator operator address which you want to query the approval of
    * @return bool whether the given operator is approved by the given owner
    */
-  function isOperatorApprovedFor(address _owner, address _operator) public view returns (bool)
+  function isApprovedForAll(address _owner, address _operator) public view returns (bool)
   {
     return operatorApprovals[_owner][_operator];
   }
@@ -173,11 +206,11 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @param _tokenId uint256 ID of the token to be transferred
   */
   function transfer(address _to, uint256 _tokenId)
-    public
+    external
     whenNotPaused
     onlyOwnerOf(_tokenId)
   {
-    clearApprovalAndTransfer(msg.sender, _to, _tokenId);
+    _clearApprovalAndTransfer(msg.sender, _to, _tokenId);
   }
 
   /**
@@ -186,15 +219,32 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @param _tokenId uint256 ID of the token to be approved
   */
   function approve(address _to, uint256 _tokenId)
-    public
+    external
     whenNotPaused
     onlyOwnerOf(_tokenId)
   {
     address owner = ownerOf(_tokenId);
     require(_to != owner);
-    if (approvedFor(_tokenId) != 0 || _to != 0) {
+    if (getApproved(_tokenId) != 0 || _to != 0) {
       tokenApprovals[_tokenId] = _to;
       Approval(owner, _to, _tokenId);
+    }
+  }
+
+  /**
+  * @notice Enable or disable approval for a third party ("operator") to manage all your assets
+  * @dev Emits the ApprovalForAll event
+  * @param _to Address to add to the set of authorized operators.
+  * @param _approved True if the operators is approved, false to revoke approval
+  */
+  function setApprovalForAll(address _to, bool _approved)
+    external
+    whenNotPaused
+  {
+    if(_approved) {
+      approveAll(_to);
+    } else {
+      disapproveAll(_to);
     }
   }
 
@@ -209,6 +259,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     require(_to != msg.sender);
     require(_to != address(0));
     operatorApprovals[msg.sender][_to] = true;
+    ApprovalForAll(msg.sender, _to, true);
   }
 
   /**
@@ -224,6 +275,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   {
     require(_to != msg.sender);
     delete operatorApprovals[msg.sender][_to];
+    ApprovalForAll(msg.sender, _to, false);
   }
 
   /**
@@ -231,11 +283,11 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @param _tokenId uint256 ID of the token being claimed by the msg.sender
   */
   function takeOwnership(uint256 _tokenId)
-   public
+   external
    whenNotPaused
   {
     require(isSenderApprovedFor(_tokenId));
-    clearApprovalAndTransfer(ownerOf(_tokenId), msg.sender, _tokenId);
+    _clearApprovalAndTransfer(ownerOf(_tokenId), msg.sender, _tokenId);
   }
 
   /**
@@ -255,7 +307,60 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   {
     require(isSenderApprovedFor(_tokenId));
     require(ownerOf(_tokenId) == _from);
-    clearApprovalAndTransfer(ownerOf(_tokenId), _to, _tokenId);
+    _clearApprovalAndTransfer(ownerOf(_tokenId), _to, _tokenId);
+  }
+
+  /**
+  * @notice Transfers the ownership of an NFT from one address to another address
+  * @dev Throws unless `msg.sender` is the current owner, an authorized
+  * operator, or the approved address for this NFT. Throws if `_from` is
+  * not the current owner. Throws if `_to` is the zero address. Throws if
+  * `_tokenId` is not a valid NFT. When transfer is complete, this function
+  * checks if `_to` is a smart contract (code size > 0). If so, it calls
+  * `onERC721Received` on `_to` and throws if the return value is not
+  * `bytes4(keccak256("onERC721Received(address,uint256,bytes)"))`.
+  * @param _from The current owner of the NFT
+  * @param _to The new owner
+  * @param _tokenId The NFT to transfer
+  * @param _data Additional data with no specified format, sent in call to `_to`
+  */
+  function safeTransferFrom(
+    address _from,
+    address _to,
+    uint256 _tokenId,
+    bytes _data
+  )
+    public
+    whenNotPaused
+  {
+    require(_to != address(0));
+    require(_isValidLicense(_tokenId));
+    transferFrom(_from, _to, _tokenId);
+    if (_isContract(_to)) {
+      bytes4 tokenReceiverResponse = ERC721TokenReceiver(_to).onERC721Received.gas(50000)(
+        _from, _tokenId, _data
+      );
+      require(tokenReceiverResponse == bytes4(keccak256("onERC721Received(address,uint256,bytes)")));
+    }
+  }
+
+  /*
+   * @notice Transfers the ownership of an NFT from one address to another address
+   * @dev This works identically to the other function with an extra data parameter,
+   *  except this function just sets data to ""
+   * @param _from The current owner of the NFT
+   * @param _to The new owner
+   * @param _tokenId The NFT to transfer
+  */
+  function safeTransferFrom(
+    address _from,
+    address _to,
+    uint256 _tokenId
+  )
+    external
+    whenNotPaused
+  {
+    safeTransferFrom(_from, _to, _tokenId, "");
   }
 
   /**
@@ -265,7 +370,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   */
   function _mint(address _to, uint256 _tokenId) internal {
     require(_to != address(0));
-    addToken(_to, _tokenId);
+    _addToken(_to, _tokenId);
     Transfer(0x0, _to, _tokenId);
   }
 
@@ -275,14 +380,15 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @param _to address which you want to transfer the token to
   * @param _tokenId uint256 ID of the token to be transferred
   */
-  function clearApprovalAndTransfer(address _from, address _to, uint256 _tokenId) internal {
+  function _clearApprovalAndTransfer(address _from, address _to, uint256 _tokenId) internal {
     require(_to != address(0));
     require(_to != ownerOf(_tokenId));
     require(ownerOf(_tokenId) == _from);
+    require(_isValidLicense(_tokenId));
 
-    clearApproval(_from, _tokenId);
-    removeToken(_from, _tokenId);
-    addToken(_to, _tokenId);
+    _clearApproval(_from, _tokenId);
+    _removeToken(_from, _tokenId);
+    _addToken(_to, _tokenId);
     Transfer(_from, _to, _tokenId);
   }
 
@@ -290,7 +396,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @notice Internal function to clear current approval of a given token ID
   * @param _tokenId uint256 ID of the token to be transferred
   */
-  function clearApproval(address _owner, uint256 _tokenId) private {
+  function _clearApproval(address _owner, uint256 _tokenId) private {
     require(ownerOf(_tokenId) == _owner);
     tokenApprovals[_tokenId] = 0;
     Approval(_owner, 0, _tokenId);
@@ -301,7 +407,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @param _to address representing the new owner of the given token ID
   * @param _tokenId uint256 ID of the token to be added to the tokens list of the given address
   */
-  function addToken(address _to, uint256 _tokenId) private {
+  function _addToken(address _to, uint256 _tokenId) private {
     require(tokenOwner[_tokenId] == address(0));
     tokenOwner[_tokenId] = _to;
     uint256 length = balanceOf(_to);
@@ -315,7 +421,7 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
   * @param _from address representing the previous owner of the given token ID
   * @param _tokenId uint256 ID of the token to be removed from the tokens list of the given address
   */
-  function removeToken(address _from, uint256 _tokenId) private {
+  function _removeToken(address _from, uint256 _tokenId) private {
     require(ownerOf(_tokenId) == _from);
 
     uint256 tokenIndex = ownedTokensIndex[_tokenId];
@@ -333,5 +439,11 @@ contract LicenseOwnership is LicenseInventory, ERC721 {
     ownedTokensIndex[_tokenId] = 0;
     ownedTokensIndex[lastToken] = tokenIndex;
     totalTokens = totalTokens.sub(1);
+  }
+
+  function _isContract(address addr) internal view returns (bool) {
+    uint size;
+    assembly { size := extcodesize(addr) }
+    return size > 0;
   }
 }

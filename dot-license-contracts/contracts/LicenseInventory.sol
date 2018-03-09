@@ -174,7 +174,7 @@ contract LicenseInventory is LicenseBase {
     uint256 _initialInventoryQuantity,
     uint256 _supply,
     uint256 _interval)
-    public
+    external
     onlyCEOOrCOO
   {
     _createProduct(
@@ -193,7 +193,7 @@ contract LicenseInventory is LicenseBase {
   function incrementInventory(
     uint256 _productId,
     uint256 _inventoryAdjustment)
-    public
+    external
     onlyCLevel
   {
     _incrementInventory(_productId, _inventoryAdjustment);
@@ -208,7 +208,7 @@ contract LicenseInventory is LicenseBase {
   function decrementInventory(
     uint256 _productId,
     uint256 _inventoryAdjustment)
-    public
+    external
     onlyCLevel
   {
     _decrementInventory(_productId, _inventoryAdjustment);
@@ -227,7 +227,7 @@ contract LicenseInventory is LicenseBase {
   * @param _productId - the product id
   */
   function clearInventory(uint256 _productId)
-    public
+    external
     onlyCLevel
   {
     _clearInventory(_productId);
@@ -240,7 +240,7 @@ contract LicenseInventory is LicenseBase {
   * @param _price - the product price
   */
   function setPrice(uint256 _productId, uint256 _price)
-    public
+    external
     onlyCLevel
   {
     _setPrice(_productId, _price);
@@ -253,7 +253,7 @@ contract LicenseInventory is LicenseBase {
   * @param _newRenewable - the new renewable setting
   */
   function setRenewable(uint256 _productId, bool _newRenewable)
-    public
+    external
     onlyCLevel
   {
     _setRenewable(_productId, _newRenewable);
@@ -315,7 +315,11 @@ contract LicenseInventory is LicenseBase {
   * @notice The product info for a product
   * @param _productId - the product id
   */
-  function productInfo(uint256 _productId) public view returns (uint256, uint256, uint256, uint256, bool) {
+  function productInfo(uint256 _productId)
+    public
+    view
+    returns (uint256, uint256, uint256, uint256, bool)
+  {
     return (
       priceOf(_productId),
       availableInventoryOf(_productId),
@@ -345,7 +349,11 @@ contract LicenseInventory is LicenseBase {
    * @param _productId - the product we're calculating for
    * @param _numCycles - the number of cycles to calculate for
    */
-  function costForProductCycles(uint256 _productId, uint256 _numCycles) public view returns (uint256) {
+  function costForProductCycles(uint256 _productId, uint256 _numCycles)
+    public
+    view
+    returns (uint256)
+  {
     return priceOf(_productId).mul(_numCycles);
   }
 

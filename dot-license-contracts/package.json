@@ -40,7 +40,7 @@
     "concurrently": "^3.5.1",
     "copyfiles": "^1.2.0",
     "dirty-chai": "^2.0.1",
-    "ganache-cli": "^6.0.3",
+    "ganache-cli": "6.1.0",
     "nodemon": "^1.15.0",
     "solc": "^0.4.11",
     "truffle": "4.1.0",

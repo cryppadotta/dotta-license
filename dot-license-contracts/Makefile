@@ -16,11 +16,17 @@ build-abi:
 gas-estimates:
 	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --gas /contracts/LicenseCore.sol /contracts/Affiliate/AffiliateProgram.sol
 
+compile:
+	npm run compile
+
 transpile:
 	npm run transpile
 
-migrate-ropsten: transpile
+migrate-ropsten: compile transpile
 	NODE_ENV=ropsten truffle migrate --network ropsten
+
+migrate-rinkeby: compile transpile
+	NODE_ENV=rinkeby truffle migrate --network rinkeby
 
 remixd:
 	remixd -s contracts/
@@ -29,4 +35,3 @@ remixd:
 # 	source $HOME/anaconda/bin/activate py27 cd contracts && solidity_flattener LicenseCore.sol
 
 # note: use --reset if you want to start migrate from the beginning
-

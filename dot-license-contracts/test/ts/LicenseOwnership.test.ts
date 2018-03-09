@@ -11,7 +11,9 @@ import { duration } from '../helpers/increaseTime';
 
 chaiSetup.configure();
 const expect = chai.expect;
-const { LicenseCoreTest } = new Artifacts(artifacts);
+const { LicenseCoreTest, AffiliateProgram, MockTokenReceiver } = new Artifacts(
+  artifacts
+);
 const LicenseCore = LicenseCoreTest;
 chai.should();
 
@@ -30,6 +32,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
   const user4 = accounts[7];
   const user5 = accounts[8];
   const operator = accounts[9];
+  const _zeroethTokenId = 0;
   const _firstTokenId = 1;
   const _secondTokenId = 2;
   const _unknownTokenId = 312389234752;
@@ -75,7 +78,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
       { from: ceo }
     );
 
-    await token.setTokenMetadataBaseURL('http://localhost/', { from: ceo });
+    await token.setTokenMetadataBaseURI('http://localhost/', { from: ceo });
 
     await token.unpause({ from: ceo });
 
@@ -153,9 +156,9 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     });
   });
 
-  describe('tokenMetadataBaseURL', async () => {
+  describe('tokenMetadataBaseURI', async () => {
     it('should return the base URL', async () => {
-      const baseUrl = await token.tokenMetadataBaseURL();
+      const baseUrl = await token.tokenMetadataBaseURI();
       baseUrl.should.be.equal('http://localhost/');
     });
   });
@@ -251,6 +254,10 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
         describe('when the msg.sender is the owner of the given token ID', () => {
           const sender = user1;
+          beforeEach(async () => {
+            const originalOwner = await token.ownerOf(tokenId);
+            originalOwner.should.be.equal(sender);
+          });
 
           it('transfers the ownership of the given token ID to the given address', async () => {
             await token.transfer(to, tokenId, { from: sender });
@@ -261,10 +268,10 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
 
           it('clears the approval for the token ID', async () => {
             await token.approve(user2, tokenId, { from: sender });
-            (await token.approvedFor(tokenId)).should.be.equal(user2);
+            (await token.getApproved(tokenId)).should.be.equal(user2);
 
             await token.transfer(to, tokenId, { from: sender });
-            const approvedAccount = await token.approvedFor(tokenId);
+            const approvedAccount = await token.getApproved(tokenId);
             approvedAccount.should.be.equal(ZERO_ADDRESS);
           });
 
@@ -362,7 +369,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
             it('clears the approval for that token', async () => {
               await token.approve(to, tokenId, { from: sender });
 
-              const approvedAccount = await token.approvedFor(tokenId);
+              const approvedAccount = await token.getApproved(tokenId);
               approvedAccount.should.be.equal(to);
             });
 
@@ -383,7 +390,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
             it('clears the approval for the token ID', async () => {
               await token.approve(to, tokenId, { from: sender });
 
-              const approvedAccount = await token.approvedFor(tokenId);
+              const approvedAccount = await token.getApproved(tokenId);
               approvedAccount.should.be.equal(to);
             });
 
@@ -409,7 +416,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
               it('approves the token ID to the given address', async () => {
                 await token.approve(to, tokenId, { from: sender });
 
-                const approvedAccount = await token.approvedFor(tokenId);
+                const approvedAccount = await token.getApproved(tokenId);
                 approvedAccount.should.be.equal(to);
               });
 
@@ -434,7 +441,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
               it('keeps the approval to the given address', async () => {
                 await token.approve(to, tokenId, { from: sender });
 
-                const approvedAccount = await token.approvedFor(tokenId);
+                const approvedAccount = await token.getApproved(tokenId);
                 approvedAccount.should.be.equal(to);
               });
 
@@ -459,7 +466,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
               it('changes the approval to the given address', async () => {
                 await token.approve(to, tokenId, { from: sender });
 
-                const approvedAccount = await token.approvedFor(tokenId);
+                const approvedAccount = await token.getApproved(tokenId);
                 approvedAccount.should.be.equal(to);
               });
 
@@ -524,8 +531,15 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
   describe('approveAll', async () => {
     describe('when the sender approves an operator', async () => {
       const tokenId = _firstTokenId; // owned by user1
+      let approvalEvent: any;
       beforeEach(async () => {
-        await token.approveAll(operator, { from: user1 });
+        const { logs } = await token.approveAll(operator, { from: user1 });
+        approvalEvent = eventByName(logs, 'ApprovalForAll');
+      });
+      it('should emit an ApprovalForAll event', async () => {
+        approvalEvent.args._owner.should.be.equal(user1);
+        approvalEvent.args._operator.should.be.equal(operator);
+        approvalEvent.args._approved.should.be.true();
       });
       describe('and the operator is the sender', async () => {
         const sender = operator;
@@ -549,17 +563,23 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         });
 
         it('should read that the operator is approved', async () => {
-          const isApproved = await token.isOperatorApprovedFor(
-            user1,
-            operator,
-            { from: operator }
-          );
+          const isApproved = await token.isApprovedForAll(user1, operator, {
+            from: operator
+          });
           isApproved.should.be.true();
         });
 
         describe('and the user has subsequently disapproved the operator', async () => {
           beforeEach(async () => {
-            await token.disapproveAll(operator, { from: user1 });
+            const { logs } = await token.disapproveAll(operator, {
+              from: user1
+            });
+            approvalEvent = eventByName(logs, 'ApprovalForAll');
+          });
+          it('should emit an ApprovalForAll event', async () => {
+            approvalEvent.args._owner.should.be.equal(user1);
+            approvalEvent.args._operator.should.be.equal(operator);
+            approvalEvent.args._approved.should.be.false();
           });
           it('should not allow the operator to takeOwnership', async () => {
             await assertRevert(
@@ -573,11 +593,9 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
           });
 
           it('should read that the operator is not approved', async () => {
-            const isApproved = await token.isOperatorApprovedFor(
-              user1,
-              operator,
-              { from: operator }
-            );
+            const isApproved = await token.isApprovedForAll(user1, operator, {
+              from: operator
+            });
             isApproved.should.be.false();
           });
           describe('and a rando tries to send too', async () => {
@@ -607,6 +625,24 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     });
   });
 
+  describe('setApprovalForAll', async () => {
+    describe('when approving and disapproving', async () => {
+      it('should set approval appropriately', async () => {
+        (await token.isApprovedForAll(user1, operator, {
+          from: operator
+        })).should.be.false();
+        await token.setApprovalForAll(operator, true, { from: user1 });
+        (await token.isApprovedForAll(user1, operator, {
+          from: operator
+        })).should.be.true();
+        await token.setApprovalForAll(operator, false, { from: user1 });
+        (await token.isApprovedForAll(user1, operator, {
+          from: operator
+        })).should.be.false();
+      });
+    });
+  });
+
   describe('takeOwnership', () => {
     describe('when the given token ID was already tracked by this contract', () => {
       const tokenId = _firstTokenId;
@@ -629,7 +665,7 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
         it('clears the approval for the token ID', async () => {
           await token.takeOwnership(tokenId, { from: sender });
 
-          const approvedAccount = await token.approvedFor(tokenId);
+          const approvedAccount = await token.getApproved(tokenId);
           approvedAccount.should.be.equal(ZERO_ADDRESS);
         });
 
@@ -717,10 +753,142 @@ contract('LicenseOwnership (ERC721)', (accounts: string[]) => {
     });
     it('should have a metadata URL', async () => {
       const tokenId = _firstTokenId;
-      let url = await token.tokenMetadata(tokenId);
+      let url = await token.tokenURI(tokenId);
       url.should.be.equal('http://localhost/1');
     });
   });
-});
 
-// TODO test pausing
+  describe('tokenByIndex', async () => {
+    it('should return the tokenId', async () => {
+      (await token.tokenByIndex(0)).should.be.bignumber.equal(0);
+      (await token.tokenByIndex(1)).should.be.bignumber.equal(1);
+      (await token.tokenByIndex(2)).should.be.bignumber.equal(2);
+    });
+    it('should revert if requesting greater than the supply', async () => {
+      await assertRevert(token.tokenByIndex(3));
+    });
+  });
+  describe('tokenOfOwnerByIndex', async () => {
+    it('should return the tokenId', async () => {
+      (await token.tokenOfOwnerByIndex(user1, 0)).should.be.bignumber.equal(0);
+      (await token.tokenOfOwnerByIndex(user1, 1)).should.be.bignumber.equal(1);
+
+      (await token.tokenOfOwnerByIndex(user2, 0)).should.be.bignumber.equal(2);
+    });
+    it('should revert if the index greater than this users balance', async () => {
+      await assertRevert(token.tokenOfOwnerByIndex(user1, 2));
+      await assertRevert(token.tokenOfOwnerByIndex(user2, 1));
+      await assertRevert(token.tokenOfOwnerByIndex(operator, 0));
+    });
+  });
+  describe('safeTransferFrom', async () => {
+    let tokenReceiver: any;
+    beforeEach(async () => {
+      tokenReceiver = await MockTokenReceiver.new({ from: creator });
+    });
+    describe('when the sender is the owner', async () => {
+      const sender = user1;
+      const tokenId = _firstTokenId;
+
+      beforeEach(async () => {
+        const originalOwner = await token.ownerOf(tokenId);
+        originalOwner.should.be.equal(sender);
+      });
+      describe('and the receiver is a normal address', async () => {
+        it('should work', async () => {
+          await token.safeTransferFrom(sender, user2, tokenId, {
+            from: sender
+          });
+          const newOwner = await token.ownerOf(tokenId);
+          newOwner.should.be.equal(user2);
+        });
+      });
+      describe("and the receiver is a contract that doesn't support onTokenReceived", async () => {
+        let affiliateProgram: any;
+        beforeEach(async () => {
+          affiliateProgram = await AffiliateProgram.new(token.address, {
+            from: creator
+          });
+        });
+        it('should not work', async () => {
+          await assertRevert(
+            token.safeTransferFrom(sender, affiliateProgram.address, tokenId, {
+              from: sender
+            })
+          );
+        });
+      });
+      describe('and the receiver supports receiving tokens', async () => {
+        it('should transfer the tokens', async () => {
+          await token.safeTransferFrom(sender, tokenReceiver.address, tokenId, {
+            from: sender
+          });
+          const newOwner = await token.ownerOf(tokenId);
+          newOwner.should.be.equal(tokenReceiver.address);
+        });
+        describe('and the contract is paused', async () => {
+          beforeEach(async () => {
+            await token.pause({ from: ceo });
+          });
+          it('should not work', async () => {
+            await assertRevert(
+              token.safeTransferFrom(sender, tokenReceiver.address, tokenId, {
+                from: sender
+              })
+            );
+          });
+        });
+      });
+    });
+    describe('when the sender is the operator', async () => {
+      const tokenId = _firstTokenId; // owned by user1
+      const sender = operator;
+      beforeEach(async () => {
+        const originalOwner = await token.ownerOf(tokenId);
+        originalOwner.should.be.equal(user1);
+        await token.approveAll(operator, { from: user1 });
+      });
+      it('should transfer the tokens', async () => {
+        await token.safeTransferFrom(user1, tokenReceiver.address, tokenId, {
+          from: sender
+        });
+        const newOwner = await token.ownerOf(tokenId);
+        newOwner.should.be.equal(tokenReceiver.address);
+      });
+    });
+    describe('when the sender is specifically approved', async () => {
+      const tokenId = _firstTokenId; // owned by user1
+      const sender = user2;
+      beforeEach(async () => {
+        const originalOwner = await token.ownerOf(tokenId);
+        originalOwner.should.be.equal(user1);
+        await token.approve(user2, tokenId, { from: user1 });
+      });
+      it('should transfer the tokens', async () => {
+        await token.safeTransferFrom(user1, tokenReceiver.address, tokenId, {
+          from: sender
+        });
+        const newOwner = await token.ownerOf(tokenId);
+        newOwner.should.be.equal(tokenReceiver.address);
+      });
+    });
+    describe('when the sender is a rando', async () => {
+      const tokenId = _firstTokenId; // owned by user1
+      const sender = user3;
+      let originalOwner: any;
+
+      beforeEach(async () => {
+        originalOwner = await token.ownerOf(tokenId);
+        originalOwner.should.be.equal(user1);
+      });
+      it('should not be allowed', async () => {
+        await assertRevert(
+          token.safeTransferFrom(user1, tokenReceiver.address, tokenId, {
+            from: sender
+          })
+        );
+        originalOwner.should.be.equal(user1);
+      });
+    });
+  });
+});
