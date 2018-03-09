@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
 const Bluebird = require('bluebird');
+const web3Util = require('web3-utils');
 
 const configureWeb3 = require('dot-abi-cli').configureWeb3;
 
@@ -98,6 +99,9 @@ exports.handler = async function(argv) {
       }
     );
   }
+
+  info['balance'] = await web3.eth.getBalance(argv.contractAddress);
+  info['balance (eth)'] = web3Util.fromWei(info['balance'], 'ether');
 
   console.log(info);
 };
