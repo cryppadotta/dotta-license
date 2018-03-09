@@ -24,3 +24,7 @@ docker run -v "$PWD/contracts":/contracts ethereum/solc:stable --combined-json a
 * `GAS_PRICE`
 * `GAS_LIMIT`
 * `NETWORK_ID`
+
+## Similar Projects
+
+* [seth](https://github.com/dapphub/seth)
