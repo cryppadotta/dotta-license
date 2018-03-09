@@ -340,7 +340,7 @@ contract LicenseOwnership is LicenseInventory, ERC721, ERC165, ERC721Metadata, E
       bytes4 tokenReceiverResponse = ERC721TokenReceiver(_to).onERC721Received.gas(50000)(
         _from, _tokenId, _data
       );
-      require(tokenReceiverResponse == bytes4(keccak256("onTokenReceived(address,uint256,bytes)")));
+      require(tokenReceiverResponse == bytes4(keccak256("onERC721Received(address,uint256,bytes)")));
     }
   }
 
