@@ -6,9 +6,13 @@ var HDWalletProvider = require('truffle-hdwallet-provider');
 const suffix =
   process.env.NODE_ENV === 'production'
     ? '.production'
-    : process.env.NODE_ENV === 'ropsten' ? '.ropsten' : '';
+    : process.env.NODE_ENV === 'ropsten'
+      ? '.ropsten'
+      : process.env.NODE_ENV === 'rinkeby' ? '.rinkeby' : '';
+
+const envConfigFile = path.resolve(process.cwd(), `.env${suffix}`);
 require('dotenv').config({
-  path: path.resolve(process.cwd(), `.env${suffix}`)
+  path: envConfigFile
 });
 
 module.exports = {
@@ -52,9 +56,9 @@ module.exports = {
         process.env.KEY_MNEMONIC,
         process.env.WALLET_PROVIDER_URL
       ),
-      network_id: 3,
+      network_id: 4,
       gas: 4700000, // Gas limit used for deploys
-      gasPrice: 30000000000 // 30 gwei
+      gasPrice: 3000000000 // 3 gwei
     }
   },
   solc: {
