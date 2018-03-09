@@ -43,7 +43,7 @@ builder = builder
   .commandDir(path.join(__dirname, '..', 'lib', 'cmds', 'affiliate'))
   .wrap(yargs.terminalWidth());
 
-if (process.env.NODE_ENV == 'ropsten') {
+if (process.env.NODE_ENV == 'ropsten' || process.env.NODE_ENV == 'rinkeby') {
   let provider = new HDWalletProvider(
     process.env.KEY_MNEMONIC,
     process.env.WALLET_PROVIDER_URL,
