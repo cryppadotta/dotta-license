@@ -58,7 +58,7 @@ module.exports = {
       ),
       network_id: 4,
       gas: 4700000, // Gas limit used for deploys
-      gasPrice: 3000000000 // 3 gwei
+      gasPrice: 20000000000 // 20 gwei
     }
   },
   solc: {
