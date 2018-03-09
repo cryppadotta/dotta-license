@@ -60,7 +60,20 @@ When you're ready to use it, you have to unpause the main contract
 ```bash
 # unpause
 node bin/dot-license-cli.js unpause
+```
 
-# buy a product
-node bin/dot-license-cli.js --value 1000000000000000 purchase 1 1 0xTO 0xAFFILIATE
+## Commerce
+
+```bash
+# buy a product with an affiliate
+node bin/dot-license-cli.js --value 100000000000000000 purchase 1 1 0xTO 0xAFFILIATE
+
+# check the balance of your main contract
+node bin/dot-license-cli.js info
+
+# and check the balance of your affiliate program
+node bin/dot-affiliate-cli.js info
+
+# withdraw the balance
+node bin/dot-license-cli.js withdrawBalance
 ```
