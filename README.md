@@ -47,6 +47,14 @@ It is designed for software licenses in desktop or mobile apps. (And there [is d
 * **Roles-based permissions** - The store has three roles: CEO, CFO, and COO
 * **Full ERC-721 Compatibility** - Each license issued is also an ERC-721-compatible token
 * **CLI Admin Tools** - With [Ledger hardware wallet](https://www.ledgerwallet.com/) support
+* **Embeddable Web3 Checkout** - UMD JavaScript checkout button with [Metamask](https://github.com/MetaMask) support
+
+# Dotlicense Checkout
+
+<div align="center">
+  <img src="https://i.imgur.com/LNa0A7q.png"
+  alt="dot-checkout" width="975"></a>
+</div>
 
 # Implementations
 
@@ -58,8 +66,8 @@ Dotlicense is split into several packages:
 
 * [`dot-license-contracts`](dot-license-contracts/README.md) holds the Solidity smart contracts that manage the sale and ownership of tokens
 * [`dot-license-cli`](dot-license-cli/README.md) is the CLI admin tools for managing the smart contracts
-* [`dot-license-js`](#COMING_SOON) (coming soon) is a JavaScript wrapper library for client apps that need to list products that are owned, verify the licenses, etc.
-* [`dot-license-store`](#COMING_SOON) (coming soon) a customer checkout page for purchases using Metamask and React
+* [`dot-license-verifier`](#COMING_SOON) (open-sourced soon) is a JavaScript wrapper library for client apps that need to list products that are owned, verify the licenses, etc.
+* [`dot-license-checkout`](#COMING_SOON) (open-sourced soon) a customer checkout page for purchases using Metamask and React
 
 Additionally, this repo stores some utilities we've built along the way such as:
 
