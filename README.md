@@ -49,13 +49,6 @@ It is designed for software licenses in desktop or mobile apps. (And there [is d
 * **CLI Admin Tools** - With [Ledger hardware wallet](https://www.ledgerwallet.com/) support
 * **Embeddable Web3 Checkout** - UMD JavaScript checkout button with [Metamask](https://github.com/MetaMask) support
 
-# Dotlicense Checkout
-
-<div align="center">
-  <img src="https://i.imgur.com/LNa0A7q.png"
-  alt="dot-checkout" width="975"></a>
-</div>
-
 # Implementations
 
 Dotlicense is being used in [Dottabot](https://www.dottabot.com/), a cryptocurrency trailing-profit stop bot built with [Electron](https://electronjs.org/).
@@ -249,6 +242,51 @@ Some of the smart contract functions are open to anyone and some are restricted 
 | **LicenseCore**                  |     |     |     |        |
 | `setNewAddress`                  | ✔   |     |     |        |
 | `unpause`                        | ✔   |     |     |        |
+
+# Dotlicense Checkout
+
+`dot-license-checkout` is a UMD (or React-component) library which embeds a Metamask-enabled checkout.
+
+<div align="center">
+  <img src="https://i.imgur.com/LNa0A7q.png"
+  alt="dot-checkout" width="975"></a>
+</div>
+
+```javascript
+// React Component 
+
+const logo = require("path/to/logo.png");
+
+const offers = [
+  {
+    productId: '1',
+    duration: ONE_YEAR,
+    name: '1 year',
+    price: 0.15
+  },
+  {
+    productId: '1',
+    duration: ONE_YEAR * 2,
+    name: '2 years',
+    price: 0.15 * 2
+  }
+];
+
+const config = {
+  httpProviderURL: 'https://rinkeby.infura.io/98sadfnjncadlh8',
+  licenseCoreAddress: '0xc3e2f9aADc4B5c467E0668C2d690a999A91A1a5C'
+};
+
+<DotLicenseCheckout
+  productName="Dottabot"
+  productSubheading="Unlimited License"
+  offerLabel="Years:"
+  offers={offers}
+  logo={logo}
+  httpProviderURL={config.httpProviderURL}
+  licenseCoreAddress={config.licenseCoreAddress}
+/>
+```
 
 # CLI Tools
 
