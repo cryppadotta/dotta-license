@@ -63,6 +63,7 @@ contract LicenseSale is LicenseOwnership {
     uint256 newLicenseId = licenses.push(_license) - 1; // solium-disable-line zeppelin/no-arithmetic-operations
     LicenseIssued(
       _assignee,
+      msg.sender,
       newLicenseId,
       _license.productId,
       _license.attributes,
@@ -108,6 +109,7 @@ contract LicenseSale is LicenseOwnership {
 
     LicenseRenewal(
       ownerOf(_tokenId),
+      msg.sender,
       _tokenId,
       productId,
       newExpirationTime

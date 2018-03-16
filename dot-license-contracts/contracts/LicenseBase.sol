@@ -12,6 +12,7 @@ contract LicenseBase is LicenseAccessControl {
    */
   event LicenseIssued(
     address indexed owner,
+    address indexed purchaser,
     uint256 licenseId,
     uint256 productId,
     uint256 attributes,
@@ -22,6 +23,7 @@ contract LicenseBase is LicenseAccessControl {
 
   event LicenseRenewal(
     address indexed owner,
+    address indexed purchaser,
     uint256 licenseId,
     uint256 productId,
     uint256 expirationTime
