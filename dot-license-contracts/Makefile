@@ -43,4 +43,12 @@ remixd:
 # * Contract Name should **not** have .sol at the end
 # * Compiler is: cat build/contracts/LicenseCore.json  | jq -r '.compiler.version'
 flatten_source:
-	source $HOME/anaconda/bin/activate py35 cd contracts && solidity_flattener LicenseCore.sol > ../LicenseCore.etherscan.sol
+	mkdir -p tmp
+	source $$HOME/anaconda/bin/activate py35 && cd contracts && solidity_flattener LicenseCore.sol > ../tmp/LicenseCore.etherscan.sol
+
+compiler-version:
+	cat build/contracts/LicenseCore.json  | jq -r '.compiler.version'
+
+deployed-addresses:
+	cat build/contracts/LicenseCore.json  | jq -r '.networks'
+	cat build/contracts/AffiliateProgram.json  | jq -r '.networks'

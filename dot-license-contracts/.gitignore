@@ -70,3 +70,4 @@ build/
 scripts/doxity-tmp* 
 .env
 .env.*
+tmp
