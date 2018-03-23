@@ -1,0 +1,431 @@
+
+======= /contracts/Affiliate/AffiliateProgram.sol:AffiliateProgram =======
+Gas estimation:
+construction:
+   127678 + 1033800 = 1161478
+external:
+   balances(address):	502
+   baselineRate():	694
+   credit(address,uint256):	63623
+   cutFor(address,uint256,uint256,uint256):	infinite
+   isAffiliateProgram():	580
+   lastDepositTime():	738
+   lastDepositTimes(address):	744
+   maximumRate():	518
+   owner():	654
+   pause():	21964
+   paused():	594
+   rateFor(address,uint256,uint256,uint256):	1217
+   retire(address):	infinite
+   retired():	506
+   setBaselineRate(uint256):	22027
+   setMaximumRate(uint256):	22005
+   storeAddress():	896
+   transferOwnership(address):	23022
+   unpause():	22185
+   whitelist(address,uint256):	22227
+   whitelistRates(address):	832
+   withdraw():	infinite
+   withdrawFrom(address,address):	infinite
+internal:
+   _performWithdraw(address,address):	infinite
+
+======= /contracts/LicenseAccessControl.sol:LicenseAccessControl =======
+Gas estimation:
+construction:
+   20925 + 582200 = 603125
+external:
+   ceoAddress():	456
+   cfoAddress():	434
+   cooAddress():	654
+   pause():	22558
+   paused():	638
+   setCEO(address):	20823
+   setCFO(address):	20889
+   setCOO(address):	20845
+   setWithdrawalAddress(address):	20801
+   unpause():	21917
+   withdrawBalance():	infinite
+   withdrawalAddress():	676
+
+======= /contracts/LicenseBase.sol:LicenseBase =======
+Gas estimation:
+construction:
+   21091 + 747400 = 768491
+external:
+   ceoAddress():	456
+   cfoAddress():	434
+   cooAddress():	742
+   licenseAffiliate(uint256):	828
+   licenseAttributes(uint256):	1110
+   licenseExpirationTime(uint256):	1066
+   licenseInfo(uint256):	3235
+   licenseIssuedTime(uint256):	802
+   licenseProductId(uint256):	1022
+   pause():	22624
+   paused():	704
+   setCEO(address):	20889
+   setCFO(address):	20955
+   setCOO(address):	20911
+   setWithdrawalAddress(address):	20867
+   unpause():	21983
+   withdrawBalance():	infinite
+   withdrawalAddress():	786
+internal:
+   _isValidLicense(uint256):	infinite
+
+======= /contracts/LicenseCore.sol:LicenseCore =======
+Gas estimation:
+construction:
+   infinite + 4914200 = infinite
+external:
+   fallback:	1688
+   NAME():	infinite
+   SYMBOL():	infinite
+   affiliateProgram():	1600
+   allProductIds(uint256):	2086
+   approve(address,uint256):	infinite
+   approveAll(address):	22924
+   availableInventoryOf(uint256):	1419
+   balanceOf(address):	1351
+   ceoAddress():	588
+   cfoAddress():	456
+   clearInventory(uint256):	8762
+   cooAddress():	1534
+   costForProductCycles(uint256,uint256):	infinite
+   createProduct(uint256,uint256,uint256,uint256,uint256):	infinite
+   createPromotionalPurchase(uint256,uint256,address,uint256):	infinite
+   createPromotionalRenewal(uint256,uint256):	infinite
+   decrementInventory(uint256,uint256):	infinite
+   disapproveAll(address):	23383
+   getAllProductIds():	infinite
+   getApproved(uint256):	669
+   implementsERC721():	404
+   incrementInventory(uint256,uint256):	infinite
+   intervalOf(uint256):	1661
+   isApprovedForAll(address,address):	2151
+   isSubscriptionProduct(uint256):	622
+   licenseAffiliate(uint256):	960
+   licenseAttributes(uint256):	2232
+   licenseExpirationTime(uint256):	2122
+   licenseInfo(uint256):	3411
+   licenseIssuedTime(uint256):	956
+   licenseProductId(uint256):	1704
+   name():	infinite
+   newContractAddress():	1182
+   ownerOf(uint256):	1320
+   pause():	23240
+   paused():	1144
+   priceOf(uint256):	1749
+   productInfo(uint256):	3306
+   products(uint256):	2786
+   purchase(uint256,uint256,address,address):	infinite
+   renew(uint256,uint256):	infinite
+   renewableOf(uint256):	1093
+   renewalsCreditAffiliatesFor():	1816
+   safeTransferFrom(address,address,uint256):	infinite
+   safeTransferFrom(address,address,uint256,bytes):	infinite
+   setAffiliateProgramAddress(address):	infinite
+   setApprovalForAll(address,bool):	24274
+   setCEO(address):	21131
+   setCFO(address):	21307
+   setCOO(address):	21153
+   setNewAddress(address):	22890
+   setPrice(uint256,uint256):	24390
+   setRenewable(uint256,bool):	23605
+   setRenewalsCreditAffiliatesFor(uint256):	21796
+   setTokenMetadataBaseURI(string):	infinite
+   setWithdrawalAddress(address):	21065
+   supportsInterface(bytes4):	421
+   symbol():	infinite
+   takeOwnership(uint256):	infinite
+   tokenByIndex(uint256):	1069
+   tokenMetadataBaseURI():	infinite
+   tokenOfOwnerByIndex(address,uint256):	1676
+   tokenURI(uint256):	infinite
+   tokensOf(address):	infinite
+   totalSold(uint256):	1463
+   totalSupply():	636
+   totalSupplyOf(uint256):	1331
+   transfer(address,uint256):	infinite
+   transferFrom(address,address,uint256):	infinite
+   unpause():	23155
+   withdrawBalance():	infinite
+   withdrawalAddress():	1908
+
+======= /contracts/LicenseInventory.sol:LicenseInventory =======
+Gas estimation:
+construction:
+   22153 + 1748000 = 1770153
+external:
+   allProductIds(uint256):	1360
+   availableInventoryOf(uint256):	979
+   ceoAddress():	478
+   cfoAddress():	434
+   clearInventory(uint256):	8454
+   cooAddress():	984
+   costForProductCycles(uint256,uint256):	infinite
+   createProduct(uint256,uint256,uint256,uint256,uint256):	infinite
+   decrementInventory(uint256,uint256):	infinite
+   getAllProductIds():	infinite
+   incrementInventory(uint256,uint256):	infinite
+   intervalOf(uint256):	1089
+   isSubscriptionProduct(uint256):	600
+   licenseAffiliate(uint256):	850
+   licenseAttributes(uint256):	1462
+   licenseExpirationTime(uint256):	1396
+   licenseInfo(uint256):	3257
+   licenseIssuedTime(uint256):	824
+   licenseProductId(uint256):	1264
+   pause():	22800
+   paused():	814
+   priceOf(uint256):	1111
+   productInfo(uint256):	2668
+   products(uint256):	2368
+   renewableOf(uint256):	829
+   setCEO(address):	20933
+   setCFO(address):	21043
+   setCOO(address):	20955
+   setPrice(uint256,uint256):	23598
+   setRenewable(uint256,bool):	23363
+   setWithdrawalAddress(address):	20889
+   totalSold(uint256):	1023
+   totalSupplyOf(uint256):	913
+   unpause():	22027
+   withdrawBalance():	infinite
+   withdrawalAddress():	1138
+internal:
+   _clearInventory(uint256):	5474
+   _createProduct(uint256,uint256,uint256,uint256,uint256):	infinite
+   _decrementInventory(uint256,uint256):	infinite
+   _incrementInventory(uint256,uint256):	infinite
+   _productDoesNotExist(uint256):	324
+   _productExists(uint256):	327
+   _purchaseOneUnitInStock(uint256):	infinite
+   _requireRenewableProduct(uint256):	infinite
+   _setPrice(uint256,uint256):	20476
+   _setRenewable(uint256,bool):	20729
+
+======= /contracts/LicenseOwnership.sol:LicenseOwnership =======
+Gas estimation:
+construction:
+   infinite + 3830800 = infinite
+external:
+   NAME():	infinite
+   SYMBOL():	infinite
+   allProductIds(uint256):	1888
+   approve(address,uint256):	infinite
+   approveAll(address):	22924
+   availableInventoryOf(uint256):	1331
+   balanceOf(address):	1307
+   ceoAddress():	588
+   cfoAddress():	456
+   clearInventory(uint256):	8740
+   cooAddress():	1424
+   costForProductCycles(uint256,uint256):	infinite
+   createProduct(uint256,uint256,uint256,uint256,uint256):	infinite
+   decrementInventory(uint256,uint256):	infinite
+   disapproveAll(address):	23361
+   getAllProductIds():	infinite
+   getApproved(uint256):	669
+   implementsERC721():	404
+   incrementInventory(uint256,uint256):	infinite
+   intervalOf(uint256):	1551
+   isApprovedForAll(address,address):	1931
+   isSubscriptionProduct(uint256):	622
+   licenseAffiliate(uint256):	960
+   licenseAttributes(uint256):	2012
+   licenseExpirationTime(uint256):	1924
+   licenseInfo(uint256):	3411
+   licenseIssuedTime(uint256):	956
+   licenseProductId(uint256):	1616
+   name():	infinite
+   ownerOf(uint256):	1298
+   pause():	23152
+   paused():	1122
+   priceOf(uint256):	1617
+   productInfo(uint256):	3174
+   products(uint256):	2720
+   renewableOf(uint256):	1071
+   safeTransferFrom(address,address,uint256):	infinite
+   safeTransferFrom(address,address,uint256,bytes):	infinite
+   setApprovalForAll(address,bool):	24186
+   setCEO(address):	21131
+   setCFO(address):	21285
+   setCOO(address):	21153
+   setPrice(uint256,uint256):	24170
+   setRenewable(uint256,bool):	23583
+   setTokenMetadataBaseURI(string):	infinite
+   setWithdrawalAddress(address):	21065
+   supportsInterface(bytes4):	421
+   symbol():	infinite
+   takeOwnership(uint256):	infinite
+   tokenByIndex(uint256):	1047
+   tokenMetadataBaseURI():	infinite
+   tokenOfOwnerByIndex(address,uint256):	1676
+   tokenURI(uint256):	infinite
+   tokensOf(address):	infinite
+   totalSold(uint256):	1375
+   totalSupply():	636
+   totalSupplyOf(uint256):	1265
+   transfer(address,uint256):	infinite
+   transferFrom(address,address,uint256):	infinite
+   unpause():	22247
+   withdrawBalance():	infinite
+   withdrawalAddress():	1688
+internal:
+   _addToken(address,uint256):	infinite
+   _clearApproval(address,uint256):	infinite
+   _clearApprovalAndTransfer(address,address,uint256):	infinite
+   _isContract(address):	747
+   _mint(address,uint256):	infinite
+   _removeToken(address,uint256):	infinite
+   isSenderApprovedFor(uint256):	infinite
+   isSpecificallyApprovedFor(address,uint256):	411
+
+======= /contracts/LicenseSale.sol:LicenseSale =======
+Gas estimation:
+construction:
+   infinite + 4769000 = infinite
+external:
+   NAME():	infinite
+   SYMBOL():	infinite
+   affiliateProgram():	1556
+   allProductIds(uint256):	2042
+   approve(address,uint256):	infinite
+   approveAll(address):	22924
+   availableInventoryOf(uint256):	1375
+   balanceOf(address):	1329
+   ceoAddress():	588
+   cfoAddress():	456
+   clearInventory(uint256):	8762
+   cooAddress():	1490
+   costForProductCycles(uint256,uint256):	infinite
+   createProduct(uint256,uint256,uint256,uint256,uint256):	infinite
+   createPromotionalPurchase(uint256,uint256,address,uint256):	infinite
+   createPromotionalRenewal(uint256,uint256):	infinite
+   decrementInventory(uint256,uint256):	infinite
+   disapproveAll(address):	23383
+   getAllProductIds():	infinite
+   getApproved(uint256):	669
+   implementsERC721():	404
+   incrementInventory(uint256,uint256):	infinite
+   intervalOf(uint256):	1617
+   isApprovedForAll(address,address):	2107
+   isSubscriptionProduct(uint256):	622
+   licenseAffiliate(uint256):	960
+   licenseAttributes(uint256):	2188
+   licenseExpirationTime(uint256):	2078
+   licenseInfo(uint256):	3411
+   licenseIssuedTime(uint256):	956
+   licenseProductId(uint256):	1660
+   name():	infinite
+   ownerOf(uint256):	1320
+   pause():	23196
+   paused():	1144
+   priceOf(uint256):	1705
+   productInfo(uint256):	3262
+   products(uint256):	2742
+   purchase(uint256,uint256,address,address):	infinite
+   renew(uint256,uint256):	infinite
+   renewableOf(uint256):	1093
+   renewalsCreditAffiliatesFor():	1772
+   safeTransferFrom(address,address,uint256):	infinite
+   safeTransferFrom(address,address,uint256,bytes):	infinite
+   setAffiliateProgramAddress(address):	infinite
+   setApprovalForAll(address,bool):	24230
+   setCEO(address):	21131
+   setCFO(address):	21307
+   setCOO(address):	21153
+   setPrice(uint256,uint256):	24346
+   setRenewable(uint256,bool):	23605
+   setRenewalsCreditAffiliatesFor(uint256):	21752
+   setTokenMetadataBaseURI(string):	infinite
+   setWithdrawalAddress(address):	21065
+   supportsInterface(bytes4):	421
+   symbol():	infinite
+   takeOwnership(uint256):	infinite
+   tokenByIndex(uint256):	1069
+   tokenMetadataBaseURI():	infinite
+   tokenOfOwnerByIndex(address,uint256):	1676
+   tokenURI(uint256):	infinite
+   tokensOf(address):	infinite
+   totalSold(uint256):	1419
+   totalSupply():	636
+   totalSupplyOf(uint256):	1287
+   transfer(address,uint256):	infinite
+   transferFrom(address,address,uint256):	infinite
+   unpause():	22269
+   withdrawBalance():	infinite
+   withdrawalAddress():	1864
+internal:
+   _affiliateProgramIsActive():	infinite
+   _createLicense(uint256,uint256,address,uint256,address):	infinite
+   _handleAffiliate(address,uint256,uint256,uint256):	infinite
+   _performPurchase(uint256,uint256,address,uint256,address):	infinite
+   _performRenewal(uint256,uint256):	infinite
+
+======= /contracts/interfaces/ERC165.sol:ERC165 =======
+Gas estimation:
+
+======= /contracts/interfaces/ERC721.sol:ERC721 =======
+Gas estimation:
+
+======= /contracts/interfaces/ERC721Enumerable.sol:ERC721Enumerable =======
+Gas estimation:
+
+======= /contracts/interfaces/ERC721Metadata.sol:ERC721Metadata =======
+Gas estimation:
+
+======= /contracts/interfaces/ERC721TokenReceiver.sol:ERC721TokenReceiver =======
+Gas estimation:
+
+======= /contracts/lifecycle/Pausable.sol:Pausable =======
+Gas estimation:
+construction:
+   40834 + 233200 = 274034
+external:
+   owner():	500
+   pause():	21854
+   paused():	506
+   transferOwnership(address):	22626
+   unpause():	21807
+
+======= /contracts/math/Math.sol:Math =======
+Gas estimation:
+construction:
+   116 + 15200 = 15316
+internal:
+   max256(uint256,uint256):	infinite
+   max64(uint64,uint64):	infinite
+   min256(uint256,uint256):	infinite
+   min64(uint64,uint64):	infinite
+
+======= /contracts/math/SafeMath.sol:SafeMath =======
+Gas estimation:
+construction:
+   116 + 15200 = 15316
+internal:
+   add(uint256,uint256):	infinite
+   div(uint256,uint256):	infinite
+   mul(uint256,uint256):	infinite
+   sub(uint256,uint256):	infinite
+
+======= /contracts/ownership/Ownable.sol:Ownable =======
+Gas estimation:
+construction:
+   20438 + 129000 = 149438
+external:
+   owner():	434
+   transferOwnership(address):	22560
+
+======= /contracts/strings/Strings.sol:Strings =======
+Gas estimation:
+construction:
+   116 + 15200 = 15316
+internal:
+   strConcat(string memory,string memory):	infinite
+   strConcat(string memory,string memory,string memory):	infinite
+   strConcat(string memory,string memory,string memory,string memory):	infinite
+   strConcat(string memory,string memory,string memory,string memory,string memory):	infinite
+   uint2str(uint256):	infinite
