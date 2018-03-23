@@ -9,10 +9,10 @@ docker-solc-version:
 	docker run ethereum/solc:stable solc --version
 
 build-abi:
-	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --combined-json abi,devdoc,userdoc --pretty-json /contracts/LicenseCore.sol /contracts/Affiliate/AffiliateProgram.sol > ../dot-license-cli/lib/Dotlicense.abi.json
+	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --combined-json abi,devdoc,userdoc --pretty-json /contracts/LicenseCore.sol /contracts/Affiliate/AffiliateProgram.sol > ../dot-license-cli/lib/dot-license.abi.json
 
 gas-estimates:
-	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --gas /contracts/LicenseCore.sol /contracts/Affiliate/AffiliateProgram.sol
+	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --gas /contracts/LicenseCore.sol /contracts/Affiliate/AffiliateProgram.sol > doc/gas-estimates.txt
 
 asm:
 	docker run -v "$$PWD/contracts":/contracts ethereum/solc:stable --asm /contracts/LicenseCore.sol > LicenseCore.asm
@@ -44,4 +44,3 @@ remixd:
 # * Compiler is: cat build/contracts/LicenseCore.json  | jq -r '.compiler.version'
 flatten_source:
 	source $HOME/anaconda/bin/activate py35 cd contracts && solidity_flattener LicenseCore.sol > ../LicenseCore.etherscan.sol
-

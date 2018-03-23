@@ -22,7 +22,7 @@ exports.handler = async function(argv) {
     __dirname,
     '..',
     '..',
-    'Dotlicense.abi.json'
+    'dot-license.abi.json'
   );
   const combined = JSON.parse(fs.readFileSync(combinedAbiFle));
   let contracts = _.reduce(

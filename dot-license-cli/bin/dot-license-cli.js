@@ -50,7 +50,7 @@ let dotAbiCliConfig = {
 
 let builder = dotAbiCli(
   yargs,
-  path.join(__dirname, '..', 'lib', 'Dotlicense.abi.json'),
+  path.join(__dirname, '..', 'lib', 'dot-license.abi.json'),
   dotAbiCliConfig
 );
 
