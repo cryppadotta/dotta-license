@@ -181,5 +181,5 @@ exports.handler = async function(argv) {
     }
   };
 
-  await Bluebird.map(products.slice(0, 1), product => syncProduct(product));
+  await Bluebird.mapSeries(products, product => syncProduct(product));
 };
