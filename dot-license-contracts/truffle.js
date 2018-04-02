@@ -3,14 +3,9 @@ var ganache = require('ganache-cli');
 var HDWalletProvider = require('truffle-hdwallet-provider');
 
 // Load environment-specific configs
-const suffix =
-  process.env.NODE_ENV === 'production'
-    ? '.production'
-    : process.env.NODE_ENV === 'ropsten'
-      ? '.ropsten'
-      : process.env.NODE_ENV === 'rinkeby' ? '.rinkeby' : '';
-
+const suffix = process.env.NODE_ENV ? '.' + process.env.NODE_ENV : '';
 const envConfigFile = path.resolve(process.cwd(), `.env${suffix}`);
+console.log('envConfigFile', envConfigFile);
 require('dotenv').config({
   path: envConfigFile
 });
@@ -59,6 +54,15 @@ module.exports = {
       network_id: 4,
       gas: 4700000, // Gas limit used for deploys
       gasPrice: 20000000000 // 20 gwei
+    },
+    mainnet: {
+      provider: new HDWalletProvider(
+        process.env.KEY_MNEMONIC,
+        process.env.WALLET_PROVIDER_URL
+      ),
+      network_id: 1,
+      gas: 4700000, // Gas limit used for deploys
+      gasPrice: 1000000000 // 1 gwei
     }
   },
   solc: {
