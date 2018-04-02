@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>dot-license-checkout UMD 1.0.0 Demo</title>
+    <link href="../umd/main.css" rel="stylesheet"></head>
+  <body>
+    <div>
+      <button data-checkout-button>Buy Dottabot</button>
+    </div>
+    <script type="text/javascript" src="../umd/dot-license-checkout.js"></script>
+    <script type="text/javascript">
+var ONE_DAY = 60 * 60 * 24;
+var ONE_MONTH = ONE_DAY * 30;
+var ONE_YEAR = ONE_MONTH * 12;
+DotLicenseCheckout.configure({
+  productName: 'Dottabot',
+  productSubheading: 'Unlimited License',
+  offerLabel: 'Subscription length',
+  offers: [
+    {
+      id: '1', // client-side id for e.g. forms
+      productId: '3',
+      duration: ONE_MONTH,
+      name: '1 month'
+    },
+    {
+      id: '12',
+      productId: '3',
+      duration: ONE_YEAR,
+      name: '12 months'
+    }
+  ],
+  logo: './img/dottabot-cart-circle.png',
+  httpProviderURL: 'https://rinkeby.infura.io/27frIBD1a0VNt3pMtjVc',
+  licenseCoreAddress: '0xc3e2f9aADc4B5c467E0668C2d690a999A91A1a5C'
+});
+</script>
+  </body>
+</html>

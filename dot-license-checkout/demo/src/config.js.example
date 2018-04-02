@@ -1,0 +1,4 @@
+module.exports = {
+  httpProviderURL: 'https://rinkeby.infura.io/90dsfh2k3h98ydfadfjh',
+  licenseCoreAddress: '0xdeadbeef'
+};

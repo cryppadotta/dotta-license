@@ -1,0 +1,65 @@
+{
+  "name": "dot-license-checkout",
+  "version": "1.0.0",
+  "description": "dot-license-checkout React component",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "files": [
+    "css",
+    "es",
+    "lib",
+    "umd"
+  ],
+  "scripts": {
+    "build": "nwb build-react-component",
+    "clean": "nwb clean-module && nwb clean-demo",
+    "start": "nwb serve-react-demo",
+    "test": "nwb test-react",
+    "test:coverage": "nwb test-react --coverage",
+    "test:watch": "nwb test-react --server"
+  },
+  "dependencies": {
+    "classnames": "^2.2.5",
+    "dot-prop-immutable": "^1.4.0",
+    "history": "^4.7.2",
+    "karma": "^2.0.0",
+    "karma-mocha-reporter": "^2.2.5",
+    "ladda": "^1.0.6",
+    "lodash": "^4.17.5",
+    "metamask-logo": "^2.1.3",
+    "mocha": "^5.0.5",
+    "prop-types": "^15.6.1",
+    "query-string": "^5.1.0",
+    "react-ladda": "^6.0.0",
+    "react-textfit": "^1.1.0",
+    "reselect": "^3.0.1",
+    "rodal": "^1.6.3",
+    "styled-components": "^3.2.1",
+    "universal-cookie": "^2.1.2",
+    "web3": "1.0.0-beta.30"
+  },
+  "peerDependencies": {
+    "react": "16.x",
+    "react-redux": "^5.0.7",
+    "redux": "^3.7.2",
+    "redux-saga": "^0.16.0"
+  },
+  "devDependencies": {
+    "nwb": "0.21.x",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-helmet": "^5.2.0",
+    "react-redux": "^5.0.7",
+    "redux": "^3.7.2",
+    "redux-saga": "^0.16.0",
+    "react-router-dom": "^4.2.2",
+    "react-router-redux": "next"
+  },
+  "author": "",
+  "homepage": "",
+  "license": "MIT",
+  "repository": "",
+  "keywords": [
+    "react-component"
+  ]
+}
