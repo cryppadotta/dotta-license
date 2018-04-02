@@ -52,3 +52,6 @@ compiler-version:
 deployed-addresses:
 	cat build/contracts/LicenseCore.json  | jq -r '.networks'
 	cat build/contracts/AffiliateProgram.json  | jq -r '.networks'
+
+networks:
+	truffle networks
