@@ -11,41 +11,41 @@ let dotAbiCliConfig = {
   methods: {
     'setCEO(address)': {
       // skip: true
-      dangerous: true
+      dangerous: true,
     },
     'setNewAddress(address)': {
       // skip: true
-      dangerous: true
+      dangerous: true,
     },
     'ceoAddress()': {
       userdoc: {
-        notice: "Get the CEO's Address"
-      }
+        notice: "Get the CEO's Address",
+      },
     },
     'cfoAddress()': {
       userdoc: {
-        notice: "Get the CFO's Address"
-      }
+        notice: "Get the CFO's Address",
+      },
     },
     'unpause()': { userdoc: { notice: 'Unpause the contract' } },
     'paused()': { userdoc: { notice: 'Checks if the contract is paused' } },
     'newContractAddress()': {
-      userdoc: { notice: 'Gets the new contract address' }
+      userdoc: { notice: 'Gets the new contract address' },
     },
     'setNewAddress(address)': {
       userdoc: { notice: 'Sets a new contract address' },
-      dangerous: true
+      dangerous: true,
     },
     'products()': { userdoc: { notice: 'Gets the products' } },
     'cooAddress()': { userdoc: { notice: 'Get the COOs address' } },
     'affiliateProgram()': {
-      userdoc: { notice: 'Get the affiliate program address' }
+      userdoc: { notice: 'Get the affiliate program address' },
     },
     'allProductIds()': { userdoc: { notice: 'Get all product ids' } },
     'withdrawalAddress()': {
-      userdoc: { notice: 'Get the withdrawal address' }
-    }
-  }
+      userdoc: { notice: 'Get the withdrawal address' },
+    },
+  },
 };
 
 let builder = dotAbiCli(
@@ -60,7 +60,7 @@ builder = builder
   .commandDir(path.join(__dirname, '..', 'lib', 'cmds', 'license'))
   .wrap(yargs.terminalWidth());
 
-if (process.env.NODE_ENV == 'ropsten' || process.env.NODE_ENV == 'rinkeby') {
+if (process.env.KEY_MNEMONIC) {
   let provider = new HDWalletProvider(
     process.env.KEY_MNEMONIC,
     process.env.WALLET_PROVIDER_URL,
@@ -69,7 +69,7 @@ if (process.env.NODE_ENV == 'ropsten' || process.env.NODE_ENV == 'rinkeby') {
   provider.engine.addProvider(new NonceTrackerSubprovider());
   builder
     .option('provider', {
-      hidden: true
+      hidden: true,
     })
     .default('provider', provider, '(provider)');
 }

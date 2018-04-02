@@ -12,10 +12,10 @@ let dotAbiCliConfig = {
     'balances(address)': { userdoc: { notice: 'Look up a balance' } },
     'baselineRate()': { userdoc: { notice: 'The baseline rate' } },
     'lastDepositTime()': {
-      userdoc: { notice: 'The global last deposit time' }
+      userdoc: { notice: 'The global last deposit time' },
     },
     'lastDepositTimes(address)': {
-      userdoc: { notice: "A user's last deposit time" }
+      userdoc: { notice: "A user's last deposit time" },
     },
     'maximumRate()': { userdoc: { notice: 'The maximum rate' } },
     'owner()': { userdoc: { notice: 'The owner' } },
@@ -25,9 +25,9 @@ let dotAbiCliConfig = {
     'storeAddress()': { userdoc: { notice: 'The store address' } },
     'transferOwnership(address)': { userdoc: { notice: 'Transfer ownership' } },
     'whitelistRates(address)': {
-      userdoc: { notice: 'The whitelist rate for address' }
-    }
-  }
+      userdoc: { notice: 'The whitelist rate for address' },
+    },
+  },
 };
 
 let builder = dotAbiCli(
@@ -43,7 +43,7 @@ builder = builder
   .commandDir(path.join(__dirname, '..', 'lib', 'cmds', 'affiliate'))
   .wrap(yargs.terminalWidth());
 
-if (process.env.NODE_ENV == 'ropsten' || process.env.NODE_ENV == 'rinkeby') {
+if (process.env.KEY_MNEMONIC) {
   let provider = new HDWalletProvider(
     process.env.KEY_MNEMONIC,
     process.env.WALLET_PROVIDER_URL,
@@ -52,7 +52,7 @@ if (process.env.NODE_ENV == 'ropsten' || process.env.NODE_ENV == 'rinkeby') {
   provider.engine.addProvider(new NonceTrackerSubprovider());
   builder
     .option('provider', {
-      hidden: true
+      hidden: true,
     })
     .default('provider', provider, '(provider)');
 }

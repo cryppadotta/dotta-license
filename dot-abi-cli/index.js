@@ -9,6 +9,8 @@ let _engine;
 const configure = require('./lib/config');
 
 const handleResponse = (response, argv, abi, functionAbi) => {
+  // TODO, convert this to a promise like:
+  // return new Promise(function(resolve, reject) {...})
   return response
     .once('transactionHash', function(hash) {
       console.log('transactionHash', hash);
@@ -55,7 +57,7 @@ const handleWrite = async (argv, abi, functionAbi, web3) => {
 
   // build sendOpts
   const sendOpts = {
-    from
+    from,
   };
 
   if (argv.gasPrice) sendOpts.gasPrice = argv.gasPrice;
@@ -69,7 +71,7 @@ const handleWrite = async (argv, abi, functionAbi, web3) => {
         _.merge(
           {
             method: functionAbi.name,
-            args: transactionArguments
+            args: transactionArguments,
           },
           sendOpts
         ),
@@ -95,7 +97,7 @@ const buildAbiCommands = (yargs, pathToFile, opts) => {
         acc[name] = {
           abi: JSON.parse(attributes.abi),
           devdoc: JSON.parse(attributes.devdoc),
-          userdoc: JSON.parse(attributes.userdoc)
+          userdoc: JSON.parse(attributes.userdoc),
         };
       }
       return acc;
@@ -135,7 +137,7 @@ const buildAbiCommands = (yargs, pathToFile, opts) => {
         .join(' ');
       let commandString = _.compact([
         iface.name,
-        positionalArgumentsString
+        positionalArgumentsString,
       ]).join(' ');
 
       yargs.command(
@@ -145,7 +147,7 @@ const buildAbiCommands = (yargs, pathToFile, opts) => {
           iface.inputs.forEach(input => {
             const description = _.get(devdoc, ['params', sp(input.name)]);
             yargs.positional(sp(input.name), {
-              describe: description
+              describe: description,
             });
             yargs.demand(sp(input.name));
             if (input.name != sp(input.name)) {
@@ -163,7 +165,7 @@ const buildAbiCommands = (yargs, pathToFile, opts) => {
             yargs.option(confirmationOptionName, {
               type: 'boolean',
               demandOption: true,
-              default: undefined
+              default: undefined,
             });
             yargs.demandOption(
               confirmationOptionName,
@@ -207,28 +209,29 @@ function buildDefaultOptions(yargs, pathToCombinedAbiFile, opts) {
       .option('from', { description: 'from address' })
       .option('gasPrice', {
         description: 'gas price in wei to use for this transaction',
-        default: process.env.GAS_PRICE
+        default: process.env.GAS_PRICE,
       })
       .option('gasLimit', {
         description: 'maximum gas provided for this transaction',
-        default: process.env.GAS_LIMIT
+        default: process.env.GAS_LIMIT,
       })
       .option('value', {
-        description: 'The value transferred for the transaction in wei'
+        description: 'The value transferred for the transaction in wei',
       })
       .describe('contract-address', 'address to contract')
       // .demand('contract-addresss') // hmm this is demanded, but the ordering is difficult
       .option('network-id', {
         description: 'The network ID',
-        default: process.env.NETWORK_ID
+        default: process.env.NETWORK_ID,
       })
       .option('ledger', {
-        description: 'use a ledger'
+        description: 'use a ledger',
+        default: process.env.USE_LEDGER,
       })
       .boolean('ledger')
       .option('hd-path', {
         description: 'hd-path (used for hardware wallets)',
-        default: "44'/60'/0'/0"
+        default: "44'/60'/0'/0",
       })
       // .option('hardware-confirm', {
       //   description: 'when using a hardware wallet, ask for on-device confirmation',
