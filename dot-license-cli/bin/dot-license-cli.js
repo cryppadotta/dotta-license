@@ -63,7 +63,7 @@ builder = builder
 if (process.env.KEY_MNEMONIC) {
   let provider = new HDWalletProvider(
     process.env.KEY_MNEMONIC,
-    process.env.WALLET_PROVIDER_URL,
+    process.env.WEB3_PROVIDER_URL,
     process.env.HD_KEY_IDX ? parseInt(process.env.HD_KEY_IDX) : 0
   );
   provider.engine.addProvider(new NonceTrackerSubprovider());
