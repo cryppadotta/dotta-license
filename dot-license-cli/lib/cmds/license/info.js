@@ -10,7 +10,7 @@ exports.command = 'info';
 exports.desc = 'Describe contract info';
 exports.builder = function(yargs) {
   yargs.option('inventory', {
-    type: 'boolean'
+    type: 'boolean',
   });
   return yargs;
 };
@@ -33,7 +33,7 @@ exports.handler = async function(argv) {
         acc[name] = {
           abi: JSON.parse(attributes.abi),
           devdoc: JSON.parse(attributes.devdoc),
-          userdoc: JSON.parse(attributes.userdoc)
+          userdoc: JSON.parse(attributes.userdoc),
         };
       }
       return acc;
@@ -64,7 +64,7 @@ exports.handler = async function(argv) {
     'totalSupply',
 
     // LicenseSale
-    'affiliateProgram'
+    'affiliateProgram',
   ];
 
   // const cfoAddress = await license.methods.cfoAddress().call();
@@ -78,6 +78,8 @@ exports.handler = async function(argv) {
     },
     {}
   );
+
+  info['getAllProductIds'] = info['getAllProductIds'].sort();
 
   if (
     argv.inventory &&
@@ -94,7 +96,7 @@ exports.handler = async function(argv) {
           price: results['0'],
           inventory: results['1'],
           totalSupply: results['2'],
-          interval: results['3']
+          interval: results['3'],
         };
       }
     );
