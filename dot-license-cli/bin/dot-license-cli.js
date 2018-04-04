@@ -28,7 +28,9 @@ let dotAbiCliConfig = {
       },
     },
     'unpause()': { userdoc: { notice: 'Unpause the contract' } },
-    'paused()': { userdoc: { notice: 'Checks if the contract is paused' } },
+    'paused()': {
+      userdoc: { notice: 'Checks if the contract is paused' },
+    },
     'newContractAddress()': {
       userdoc: { notice: 'Gets the new contract address' },
     },
@@ -44,6 +46,9 @@ let dotAbiCliConfig = {
     'allProductIds()': { userdoc: { notice: 'Get all product ids' } },
     'withdrawalAddress()': {
       userdoc: { notice: 'Get the withdrawal address' },
+    },
+    'createPromotionalPurchase(uint256,uint256,address,uint256)': {
+      userdoc: { notice: 'Creates a promotional purchase' },
     },
   },
 };
