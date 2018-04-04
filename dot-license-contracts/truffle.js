@@ -63,6 +63,15 @@ module.exports = {
       network_id: 1,
       gas: 4700000, // Gas limit used for deploys
       gasPrice: 1000000000 // 1 gwei
+    },
+    remix: {
+      provider: new HDWalletProvider(
+        process.env.KEY_MNEMONIC,
+        process.env.WALLET_PROVIDER_URL
+      ),
+      network_id: 1,
+      gas: 4700000, // Gas limit used for deploys
+      gasPrice: 1000000000 // 1 gwei
     }
   },
   solc: {
