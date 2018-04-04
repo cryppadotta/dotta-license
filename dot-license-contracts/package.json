@@ -43,7 +43,7 @@
     "ganache-cli": "6.1.0",
     "nodemon": "^1.15.0",
     "solc": "^0.4.11",
-    "truffle": "4.1.0",
+    "truffle": "4.1.5",
     "tsc-watch": "^1.0.16",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "machinomy/types-ethereumjs-util",
