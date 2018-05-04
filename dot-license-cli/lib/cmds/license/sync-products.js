@@ -14,7 +14,7 @@ exports.desc = `Create or update products described in a file`;
 exports.builder = function(yargs) {
   yargs
     .option('products', {
-      type: 'string',
+      type: 'string'
     })
     .demandOption(
       'products',
@@ -22,6 +22,11 @@ exports.builder = function(yargs) {
     )
     .coerce('products', function(arg) {
       return require(arg);
+    })
+    .option('inventory', {
+      description: 'sync inventory levels',
+      type: 'boolean',
+      default: false
     });
   return yargs;
 };
@@ -45,7 +50,7 @@ exports.handler = async function(argv) {
         acc[name] = {
           abi: JSON.parse(attributes.abi),
           devdoc: JSON.parse(attributes.devdoc),
-          userdoc: JSON.parse(attributes.userdoc),
+          userdoc: JSON.parse(attributes.userdoc)
         };
       }
       return acc;
@@ -75,16 +80,24 @@ exports.handler = async function(argv) {
 
   const handleResponse = response => {
     return new Promise(function(resolve, reject) {
+      let timeout;
+
       return response
         .once('transactionHash', function(hash) {
           console.log(`Transaction: ${chalk.yellow(hash)}`);
+          timeout = setTimeout(
+            () => reject(new Error(`Timeout: waiting for receipt of ${hash}.`)),
+            30 * 1000
+          );
         })
         .once('receipt', function(receipt) {
           console.log('Receipt:', chalk.green(stringify(receipt, null, 2)));
+          clearTimeout(timeout);
           return resolve(receipt);
         })
         .once('error', function(error) {
           console.log(chalk.red('Error:'), error);
+          clearTimeout(timeout);
           return reject(error);
         });
     });
@@ -96,7 +109,7 @@ exports.handler = async function(argv) {
 
     // build sendOpts
     const sendOpts = {
-      from,
+      from
     };
 
     if (argv.gasPrice) sendOpts.gasPrice = argv.gasPrice;
@@ -110,7 +123,7 @@ exports.handler = async function(argv) {
           _.merge(
             {
               method: functionName,
-              args: transactionArguments,
+              args: transactionArguments
             },
             sendOpts
           ),
@@ -133,9 +146,9 @@ exports.handler = async function(argv) {
       product.price,
       product.initialInventoryQuantity,
       product.supply,
-      product.interval,
+      product.interval
     ];
-    handleWrite('createProduct', transactionArguments);
+    await handleWrite('createProduct', transactionArguments);
   };
 
   const updateProduct = async (product, existingProductInfo) => {
@@ -153,11 +166,37 @@ exports.handler = async function(argv) {
 
     // Check renewable
     if (product.renewable !== existingProductInfo['4']) {
+      console.log('existingProductInfo', existingProductInfo);
       neededUpdate = true;
 
       console.log(chalk.blue('Updating renewable for'), product);
       const transactionArguments = [product.productId, product.renewable];
-      handleWrite('setRenewable', transactionArguments);
+      await handleWrite('setRenewable', transactionArguments);
+    }
+
+    if (
+      argv.inventory &&
+      _.isNumber(product.inventory) &&
+      product.inventory.toString() != existingProductInfo['1'].toString()
+    ) {
+      neededUpdate = true;
+      const wanted = product.inventory;
+      const actual = parseInt(existingProductInfo['1']); // careful about overflows
+      const difference = wanted - actual;
+      const incrementing = difference > 0;
+
+      if (incrementing) {
+        console.log(chalk.blue(`Adding ${difference} inventory for`), product);
+        const transactionArguments = [product.productId, difference];
+        await handleWrite('incrementInventory', transactionArguments);
+      } else {
+        console.log(
+          chalk.blue(`Removing ${difference * -1} inventory for`),
+          product
+        );
+        const transactionArguments = [product.productId, difference * -1];
+        await handleWrite('decrementInventory', transactionArguments);
+      }
     }
 
     if (!neededUpdate) {
@@ -175,7 +214,11 @@ exports.handler = async function(argv) {
       .call();
 
     if (haveProduct(existingProductInfo)) {
-      await updateProduct(product, existingProductInfo);
+      try {
+        await updateProduct(product, existingProductInfo);
+      } catch (err) {
+        console.log(product, existingProductInfo, err);
+      }
     } else {
       await createProduct(product);
     }
