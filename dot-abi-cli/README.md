@@ -4,15 +4,13 @@ Generate a DApp CLI scaffold from an ABI
 
 (with Ledger hardware wallet support)
 
-## Usage
+## Motivation
 
-`dot-abi-cli` is a _framework_ for building commandline tools.
+`dot-abi-cli` is a _framework_ for building commandline tools for smart contracts. It automates generating documented commands from comments and types extracted from Solidity code.
 
-The core steps are:
+It is designed for teams who wish to provide custom CLI tools for their own smart contracts.
 
-* Generate a combined ABI
-* Create an entrypoint command
-* Load your environment variables
+If you're interacting with a lot of different contracts and are firing one-off commands, you may find that [seth](https://github.com/dapphub/seth) works better for your needs.
 
 ## Automatic Command Generation
 
@@ -54,6 +52,16 @@ This command could be run as:
 ```
 dot-license-cli.js purchase 1 4 0xdeadbeef 0xdeadbeef --value 12345
 ```
+
+## Usage
+
+The core steps are:
+
+* Generate a combined ABI
+* Create an entrypoint command
+* Load your environment variables
+
+An example makes this clearer:
 
 ## Cryptokitties CLI Example
 
