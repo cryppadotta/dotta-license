@@ -1,6 +1,6 @@
 const path = require('path');
 const yargs = require('yargs');
-const dotAbiCli = require('../../index');
+const dotAbiCli = require('dot-abi-cli');
 const HDWalletProvider = require('truffle-hdwallet-provider');
 const NonceTrackerSubprovider = require('web3-provider-engine/subproviders/nonce-tracker');
 

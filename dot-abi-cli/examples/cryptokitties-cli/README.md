@@ -40,11 +40,11 @@ CONTRACT_ADDRESS=0x06012c8cf97BEaD5deAe237070F9587f8E7A266d
 
 ```bash
 npm install
-./node_modules/.bin/babel-node cryptokitties-cli.js --help
+node cryptokitties-cli.js --help
 
 # ... help results ...
 
-./node_modules/.bin/babel-node cryptokitties-cli.js getKitty 3
+node cryptokitties-cli.js getKitty 3
 
 Result {
   '0': false,
