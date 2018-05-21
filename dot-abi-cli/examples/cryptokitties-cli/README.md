@@ -12,7 +12,7 @@
 e.g. something like:
 
 ```shell
-docker run -v "$PWD/contracts":/contracts ethereum/solc:stable --combined-json abi,devdoc,userdoc --pretty-json /contracts/KittyCore.sol > ../pathTo/MyCombined.abi.json
+docker run -v "$PWD/contracts":/contracts ethereum/solc:stable --combined-json abi,devdoc,userdoc --pretty-json /contracts/KittyCore.sol > KittyCore.combined.abi.json
 ```
 
 2.  Create the command entry point as in [`cryptokitties-cli.js`](cryptokitties-cli.js)
