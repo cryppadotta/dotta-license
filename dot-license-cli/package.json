@@ -15,7 +15,7 @@
     "debug": "^3.1.0",
     "dotenv": "^5.0.0",
     "ledger-wallet-provider": "^2.0.1-beta.2",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.21",
     "truffle-hdwallet-provider": "^0.0.3",
     "web3": "1.0.0-beta.30",
     "web3-provider-engine": "^13.6.5",

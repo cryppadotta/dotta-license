@@ -2939,10 +2939,6 @@ eth-lib@^0.1.26, eth-lib@^0.1.27:
     ws "^3.0.0"
     xhr-request-promise "^0.1.2"
 
-etherscan-link@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/etherscan-link/-/etherscan-link-1.0.2.tgz#c7b9142c4b59509b338a204b6328aea40dd3c64e"
-
 ethjs-unit@0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/ethjs-unit/-/ethjs-unit-0.1.6.tgz#c665921e476e87bce2a9d588a6fe0405b2c41699"
@@ -4938,9 +4934,9 @@ lodash@^3.8.0:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
 
-lodash@^4.0.0, lodash@^4.0.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.2, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.6.1:
-  version "4.17.5"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
+lodash@^4.0.0, lodash@^4.0.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.2, lodash@^4.17.21, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.6.1:
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
 
 log-symbols@^1.0.2:
   version "1.0.2"
@@ -7374,8 +7370,8 @@ set-blocking@^2.0.0, set-blocking@~2.0.0:
   resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
 
 set-getter@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/set-getter/-/set-getter-0.1.0.tgz#d769c182c9d5a51f409145f2fba82e5e86e80376"
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/set-getter/-/set-getter-0.1.1.tgz#a3110e1b461d31a9cfc8c5c9ee2e9737ad447102"
   dependencies:
     to-object-path "^0.3.0"
 
